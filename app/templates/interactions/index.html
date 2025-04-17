@@ -3,147 +3,212 @@
 {% block title %}Interactions - Effect CRM{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <!-- Header section with actions -->
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-1">Interactions</h1>
-            <p class="text-muted mb-0">Track and manage customer interactions</p>
-        </div>
-        <div>
-            <a href="{{ url_for('interactions.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Add Interaction
-            </a>
-        </div>
+        <h1 class="h3 mb-0">Interactions</h1>
+        <a href="{{ url_for('interactions.create') }}" class="btn btn-primary">
+            + New Interaction
+        </a>
     </div>
 
-    <!-- Filters and search -->
+    <!-- Search and Filters -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-4">
                     <div class="input-group">
-                        <span class="input-group-text bg-white">
-                            <i class="bi bi-search"></i>
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
                         </span>
-                        <input type="text" class="form-control" name="search" placeholder="Search interactions..." value="{{ request.args.get('search', '') }}">
+                        <input type="text" class="form-control border-start-0 ps-0" 
+                               name="search" placeholder="Search interactions..." 
+                               value="{{ request.args.get('search', '') }}">
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <select class="form-select" name="type">
                         <option value="">All Types</option>
-                        <option value="Call" {% if request.args.get('type') == 'Call' %}selected{% endif %}>Call</option>
-                        <option value="Email" {% if request.args.get('type') == 'Email' %}selected{% endif %}>Email</option>
-                        <option value="Meeting" {% if request.args.get('type') == 'Meeting' %}selected{% endif %}>Meeting</option>
-                        <option value="Social Media" {% if request.args.get('type') == 'Social Media' %}selected{% endif %}>Social Media</option>
-                        <option value="Other" {% if request.args.get('type') == 'Other' %}selected{% endif %}>Other</option>
+                        {% for type in interaction_types %}
+                            <option value="{{ type }}" {% if type == request.args.get('type') %}selected{% endif %}>
+                                {{ type }}
+                            </option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <select class="form-select" name="customer_id">
-                        <option value="">All Customers</option>
-                        {% for customer in customers %}
-                            <option value="{{ customer.id }}" {% if request.args.get('customer_id')|int == customer.id %}selected{% endif %}>
-                                {{ customer.name }}
+                    <select class="form-select" name="assigned_to">
+                        <option value="">All Users</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}" {% if user.id|string == request.args.get('assigned_to') %}selected{% endif %}>
+                                {{ user.full_name }}
                             </option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    <select class="form-select" name="sort">
+                        <option value="newest" {% if request.args.get('sort') == 'newest' %}selected{% endif %}>Newest First</option>
+                        <option value="oldest" {% if request.args.get('sort') == 'oldest' %}selected{% endif %}>Oldest First</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Interactions list -->
+    <!-- Interactions Table -->
     <div class="card shadow-sm">
         <div class="card-body p-0">
             {% if interactions %}
-                <div class="list-group list-group-flush">
-                    {% for interaction in interactions %}
-                    <a href="{{ url_for('interactions.detail', interaction_id=interaction.id) }}" class="list-group-item list-group-item-action py-3">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ interaction.type }} with {{ interaction.customer.name }}</h6>
-                            <small class="text-muted">{{ interaction.timestamp.strftime('%b %d, %Y') }}</small>
-                        </div>
-                        <p class="mb-1 text-truncate">{{ interaction.summary }}</p>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <div>
-                                <span class="badge bg-{{ 'success' if interaction.customer.status == 'Active' else 'warning' if interaction.customer.status == 'Lead' else 'danger' }}">
-                                    {{ interaction.customer.status }}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="border-bottom-0">Type</th>
+                            <th class="border-bottom-0">Customer</th>
+                            <th class="border-bottom-0">Summary</th>
+                            <th class="border-bottom-0">Created By</th>
+                            <th class="border-bottom-0">Date</th>
+                            <th class="border-bottom-0 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        {% for interaction in interactions %}
+                        <tr>
+                            <td>
+                                <span class="badge bg-{{ 'primary' if interaction.type == 'Call' 
+                                                    else 'info' if interaction.type == 'Email' 
+                                                    else 'success' if interaction.type == 'Meeting' 
+                                                    else 'secondary' }}">
+                                    {{ interaction.type }}
                                 </span>
-                            </div>
-                            <div class="btn-group">
-                                <a href="{{ url_for('interactions.edit', interaction_id=interaction.id) }}" class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-pencil"></i>
+                            </td>
+                            <td>
+                                <div>
+                                    <a href="{{ url_for('customers.show', id=interaction.customer.id) }}" class="text-decoration-none fw-medium">
+                                        {{ interaction.customer.full_name }}
+                                    </a>
+                                    <div class="small text-muted">{{ interaction.customer.company_name }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('interactions.show', interaction_id=interaction.id) }}" class="text-decoration-none text-body">
+                                    {{ interaction.summary }}
                                 </a>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ interaction.id }}">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Delete Modal for each interaction -->
-                        <div class="modal fade" id="deleteModal{{ interaction.id }}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Confirm Deletion</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p>Are you sure you want to delete this interaction? This action cannot be undone.</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <form action="{{ url_for('interactions.delete', interaction_id=interaction.id) }}" method="post">
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>
+                            </td>
+                            <td>
+                                <div class="small">{{ interaction.created_by.full_name }}</div>
+                            </td>
+                            <td>
+                                <div class="small" data-bs-toggle="tooltip" title="{{ interaction.created_at.strftime('%Y-%m-%d %H:%M') }}">
+                                    {{ interaction.created_at.strftime('%Y-%m-%d') }}
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group">
+                                    <a href="{{ url_for('interactions.show', interaction_id=interaction.id) }}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('interactions.edit', interaction_id=interaction.id) }}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteModal{{ interaction.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Delete Modal -->
+                                <div class="modal fade" id="deleteModal{{ interaction.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Delete Interaction</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p class="mb-0">Are you sure you want to delete this interaction? This action cannot be undone.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-link" data-bs-dismiss="modal">Cancel</button>
+                                                <form action="{{ url_for('interactions.delete', interaction_id=interaction.id) }}" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </a>
-                    {% endfor %}
-                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-                <div class="text-center py-5">
-                    <i class="bi bi-chat-dots text-muted" style="font-size: 3rem;"></i>
-                    <p class="mt-3 text-muted">No interactions found.</p>
-                    <a href="{{ url_for('interactions.create') }}" class="btn btn-primary mt-2">
-                        <i class="bi bi-plus-circle"></i> Add Your First Interaction
-                    </a>
-                </div>
+            <div class="text-center py-5">
+                <i class="bi bi-chat-dots display-1 text-muted"></i>
+                <h3 class="mt-3">No Interactions Found</h3>
+                <p class="text-muted">Get started by adding your first interaction.</p>
+                <a href="{{ url_for('interactions.create') }}" class="btn btn-primary mt-3">
+                    + New Interaction
+                </a>
+            </div>
             {% endif %}
         </div>
     </div>
-    
+
     <!-- Pagination -->
     {% if pagination and pagination.pages > 1 %}
-    <nav aria-label="Page navigation" class="mt-4">
+    <nav class="mt-4" aria-label="Page navigation">
         <ul class="pagination justify-content-center">
             <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-                <a class="page-link" href="{{ url_for('interactions.show', page=pagination.prev_num, **request.args) if pagination.has_prev else '#' }}" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
+                <a class="page-link" href="{{ url_for('interactions.index', page=pagination.prev_num, **request.args) if pagination.has_prev else '#' }}">
+                    <i class="bi bi-chevron-left"></i>
                 </a>
             </li>
-            {% for page_num in pagination.iter_pages() %}
-                {% if page_num %}
-                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-                        <a class="page-link" href="{{ url_for('interactions.show', page=page_num, **request.args) }}">{{ page_num }}</a>
+            {% for page in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page %}
+                    <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('interactions.index', page=page, **request.args) }}">{{ page }}</a>
                     </li>
                 {% else %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
                 {% endif %}
             {% endfor %}
             <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-                <a class="page-link" href="{{ url_for('interactions.show', page=pagination.next_num, **request.args) if pagination.has_next else '#' }}" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
+                <a class="page-link" href="{{ url_for('interactions.index', page=pagination.next_num, **request.args) if pagination.has_next else '#' }}">
+                    <i class="bi bi-chevron-right"></i>
                 </a>
             </li>
         </ul>
     </nav>
     {% endif %}
 </div>
+
+{% block styles %}
+<style>
+.table > :not(caption) > * > * {
+    padding: 1rem;
+}
+.page-link {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0 3px;
+    border-radius: 4px !important;
+}
+</style>
+{% endblock %}
+
 {% endblock %} 

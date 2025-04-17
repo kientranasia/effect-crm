@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Organizations - Effect CRM{% endblock %}
+
+{% block content %}
+<div class="container-fluid h-100 py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h3 mb-0">Organizations</h1>
+            {% if organizations.total > 0 %}
+            <p class="text-muted mb-0">Found {{ organizations.total }} organization{{ 's' if organizations.total != 1 else '' }}</p>
+            {% endif %}
+        </div>
+        <a href="{{ url_for('organizations.create') }}" class="btn btn-primary">
+            + New Organization
+        </a>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="GET" action="{{ url_for('organizations.index') }}" class="row g-2 mb-3">
+        <div class="col-sm-12 col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" class="form-control border-start-0 ps-0" id="search" name="search" 
+                       value="{{ request.args.get('search', '') }}" 
+                       placeholder="Search organizations...">
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <select class="form-select" id="industry" name="industry">
+                <option value="">All Industries</option>
+                {% for industry in industries %}
+                    <option value="{{ industry }}" {% if industry == request.args.get('industry') %}selected{% endif %}>
+                        {{ industry }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <select class="form-select" id="sort" name="sort">
+                <option value="newest" {% if request.args.get('sort') == 'newest' %}selected{% endif %}>Newest First</option>
+                <option value="oldest" {% if request.args.get('sort') == 'oldest' %}selected{% endif %}>Oldest First</option>
+                <option value="name" {% if request.args.get('sort') == 'name' %}selected{% endif %}>Sort by Name</option>
+                <option value="leads" {% if request.args.get('sort') == 'leads' %}selected{% endif %}>Sort by Lead Count</option>
+            </select>
+        </div>
+        <div class="col-sm-12 col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1">Apply</button>
+            <a href="{{ url_for('organizations.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        </div>
+    </form>
+
+    <!-- Organizations Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            {% if organizations.total > 0 %}
+            <div class="px-4 py-3 border-bottom bg-light">
+                <span class="text-muted">
+                    Showing {{ organizations.items|length }} of {{ organizations.total }} organizations
+                    {% if request.args.get('industry') %} in "{{ request.args.get('industry') }}" industry{% endif %}
+                </span>
+            </div>
+            {% endif %}
+            
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="border-bottom-0">Organization</th>
+                            <th class="border-bottom-0">Industry</th>
+                            <th class="border-bottom-0">Website</th>
+                            <th class="border-bottom-0">Leads</th>
+                            <th class="border-bottom-0">Customers</th>
+                            <th class="border-bottom-0 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        {% for org in organizations.items %}
+                        <tr>
+                            <td class="align-middle">
+                                <div>
+                                    <a href="{{ url_for('organizations.show', id=org.id) }}" class="text-decoration-none fw-medium">
+                                        {{ org.name }}
+                                    </a>
+                                    <div class="small text-muted">Created {{ org.created_at.strftime('%Y-%m-%d') }}</div>
+                                </div>
+                            </td>
+                            <td class="align-middle">
+                                <span class="badge rounded-pill bg-light text-dark">{{ org.industry }}</span>
+                            </td>
+                            <td class="align-middle">
+                                {% if org.website %}
+                                <a href="{{ org.website }}" target="_blank" class="text-decoration-none small">
+                                    {{ org.website.replace('https://', '').replace('http://', '') }}
+                                    <i class="bi bi-box-arrow-up-right ms-1"></i>
+                                </a>
+                                {% else %}
+                                <span class="text-muted small">Not available</span>
+                                {% endif %}
+                            </td>
+                            <td class="align-middle">
+                                <a href="{{ url_for('leads.index', organization_id=org.id) }}" class="text-decoration-none">
+                                    {{ org.leads|length }} leads
+                                </a>
+                            </td>
+                            <td class="align-middle">
+                                <a href="{{ url_for('customers.index', organization_id=org.id) }}" class="text-decoration-none">
+                                    {{ org.customers|length }} customers
+                                </a>
+                            </td>
+                            <td class="align-middle text-end">
+                                <div class="btn-group">
+                                    <a href="{{ url_for('organizations.show', id=org.id) }}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('organizations.edit', id=org.id) }}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteModal{{ org.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Delete Modal -->
+                                <div class="modal fade" id="deleteModal{{ org.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-sm">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Delete Organization</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body text-center">
+                                                <p class="mb-0">Are you sure you want to delete <strong>{{ org.name }}</strong>?</p>
+                                                <small class="text-muted">This action cannot be undone.</small>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form action="{{ url_for('organizations.delete', id=org.id) }}" method="POST" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="bi bi-building h4 mb-3 d-block"></i>
+                                    No organizations found
+                                </div>
+                                <a href="{{ url_for('organizations.create') }}" class="btn btn-primary btn-sm">
+                                    Add your first organization
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if organizations.pages > 1 %}
+            <div class="border-top px-4 py-3 d-flex align-items-center justify-content-between">
+                <small class="text-muted">
+                    Showing {{ organizations.items|length }} of {{ organizations.total }} organizations
+                </small>
+                <nav aria-label="Organization pagination" class="mb-0">
+                    <ul class="pagination pagination-sm mb-0">
+                        <!-- Previous Page -->
+                        <li class="page-item {% if not organizations.has_prev %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('organizations.index', page=organizations.prev_num, industry=request.args.get('industry', ''), sort=request.args.get('sort', ''), search=request.args.get('search', '')) if organizations.has_prev else '#' }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        
+                        <!-- Page Numbers -->
+                        {% for page_num in organizations.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+                            {% if page_num %}
+                                <li class="page-item {% if page_num == organizations.page %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('organizations.index', page=page_num, industry=request.args.get('industry', ''), sort=request.args.get('sort', ''), search=request.args.get('search', '')) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <!-- Next Page -->
+                        <li class="page-item {% if not organizations.has_next %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('organizations.index', page=organizations.next_num, industry=request.args.get('industry', ''), sort=request.args.get('sort', ''), search=request.args.get('search', '')) if organizations.has_next else '#' }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block styles %}
+<style>
+    .table > :not(caption) > * > * {
+        padding: 0.75rem 1rem;
+    }
+    
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .badge {
+        font-weight: 500;
+    }
+    
+    .page-link {
+        min-width: 32px;
+        text-align: center;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.025);
+    }
+</style>
+{% endblock %}
+
+{% endblock %} 

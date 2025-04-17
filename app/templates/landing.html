@@ -1,0 +1,56 @@
+{% extends "base_landing.html" %}
+
+{% block title %}Effect CRM - Customer Relationship Management{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row align-items-center min-vh-100">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-4">Effect CRM</h1>
+            <p class="lead mb-4">A powerful and intuitive Customer Relationship Management system designed to help you manage your customer relationships effectively.</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-4 me-md-2">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-outline-secondary btn-lg px-4">Register</a>
+            </div>
+            <div class="mt-4">
+                <a href="https://github.com/kientranasia/effect-crm" class="text-decoration-none" target="_blank">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-6 d-none d-lg-block">
+            <img src="{{ url_for('static', filename='img/crm-illustration.svg') }}" alt="CRM Illustration" class="img-fluid">
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <h2 class="text-center mb-5">Features</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-users text-primary"></i> Customer Management</h5>
+                    <p class="card-text">Easily manage your customer information, track interactions, and maintain relationships.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-chart-line text-success"></i> Analytics</h5>
+                    <p class="card-text">Get insights into your customer data with powerful analytics and reporting tools.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-tasks text-info"></i> Task Management</h5>
+                    <p class="card-text">Stay organized with task management features to track follow-ups and important deadlines.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

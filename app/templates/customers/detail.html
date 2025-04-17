@@ -1,1 +1,143 @@
- 
+{% extends "base.html" %}
+
+{% block title %}{{ customer.first_name }} {{ customer.last_name }} - Customer Details - Effect CRM{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ customer.first_name }} {{ customer.last_name }}</h1>
+        <p class="text-muted mb-0">{{ customer.job_title }} at {{ customer.company_name }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('customers.edit', id=customer.id) }}" 
+           class="btn btn-primary">
+            Edit Customer
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Customer Overview -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title mb-0">Customer Overview</h5>
+                    <span class="badge bg-{{ 'success' if customer.status == 'active' else 'danger' }} px-3 py-2">
+                        {{ customer.status|title }}
+                    </span>
+                </div>
+                
+                <div class="row g-4">
+                    <!-- Contact Information -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Contact Information</h6>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Email</dt>
+                            <dd class="col-sm-8">
+                                <a href="mailto:{{ customer.email }}">{{ customer.email }}</a>
+                            </dd>
+                            
+                            <dt class="col-sm-4">Phone</dt>
+                            <dd class="col-sm-8">
+                                <a href="tel:{{ customer.phone }}">{{ customer.phone }}</a>
+                            </dd>
+                            
+                            <dt class="col-sm-4">Job Title</dt>
+                            <dd class="col-sm-8">{{ customer.job_title }}</dd>
+                        </dl>
+                    </div>
+                    
+                    <!-- Company Information -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Company Information</h6>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Company</dt>
+                            <dd class="col-sm-8">{{ customer.company_name }}</dd>
+                            
+                            <dt class="col-sm-4">Industry</dt>
+                            <dd class="col-sm-8">{{ customer.industry }}</dd>
+                            
+                            <dt class="col-sm-4">Size</dt>
+                            <dd class="col-sm-8">{{ customer.company_size }}</dd>
+                            
+                            <dt class="col-sm-4">Website</dt>
+                            <dd class="col-sm-8">
+                                {% if customer.website %}
+                                <a href="{{ customer.website }}" target="_blank">{{ customer.website }}</a>
+                                {% else %}
+                                <span class="text-muted">Not provided</span>
+                                {% endif %}
+                            </dd>
+                        </dl>
+                    </div>
+                    
+                    <!-- Conversion Information -->
+                    {% if customer.converted_from_lead %}
+                    <div class="col-12">
+                        <h6 class="text-muted mb-3">Conversion Information</h6>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-2">Converted From</dt>
+                            <dd class="col-sm-10">
+                                <a href="{{ url_for('leads.show', lead_id=customer.converted_from_lead.id) }}">
+                                    Lead #{{ customer.converted_from_lead.id }}
+                                </a>
+                            </dd>
+                            
+                            <dt class="col-sm-2">Conversion Date</dt>
+                            <dd class="col-sm-10">{{ customer.converted_from_lead.converted_date.strftime('%B %d, %Y') }}</dd>
+                            
+                            <dt class="col-sm-2">Conversion Notes</dt>
+                            <dd class="col-sm-10">{{ customer.conversion_notes or 'No notes provided' }}</dd>
+                        </dl>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Notes -->
+                    <div class="col-12">
+                        <h6 class="text-muted mb-3">Notes</h6>
+                        <p>{{ customer.notes or 'No notes added' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Assignment Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Assignment</h5>
+                <div class="mb-3">
+                    <label class="form-label">Assigned To</label>
+                    <div class="d-flex align-items-center">
+                        {% if customer.assigned_to %}
+                        <div class="avatar avatar-sm me-2">
+                            {{ customer.assigned_to.initials }}
+                        </div>
+                        <div>
+                            <div>{{ customer.assigned_to.name }}</div>
+                            <small class="text-muted">{{ customer.assigned_to.role }}</small>
+                        </div>
+                        {% else %}
+                        <span class="text-muted">Unassigned</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Stats -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Customer Statistics</h5>
+                <div class="mb-3">
+                    <label class="form-label">Customer Since</label>
+                    <div>{{ customer.created_at.strftime('%B %d, %Y') }}</div>
+                    <small class="text-muted">{{ customer.created_at|timeago }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

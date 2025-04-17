@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if organization else 'New' }} Organization{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ 'Edit' if organization else 'New' }} Organization</h1>
+        <a href="{{ url_for('organizations.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Organizations
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Organization Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ organization.name if organization else '' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="industry" class="form-label">Industry</label>
+                            <input type="text" class="form-control" id="industry" name="industry"
+                                   value="{{ organization.industry if organization else '' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="website" class="form-label">Website</label>
+                            <input type="url" class="form-control" id="website" name="website"
+                                   value="{{ organization.website if organization else '' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4">{{ organization.description if organization else '' }}</textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Organization
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Organization Details</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Organizations are the top-level entities in your CRM system. They can have multiple customers
+                        and users associated with them.
+                    </p>
+                    <hr>
+                    <p class="mb-0">
+                        <small class="text-muted">Fields marked with * are required.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,25 +1,38 @@
 from flask import render_template, redirect, url_for, flash, request
-from flask_login import login_user, logout_user, login_required
-from . import auth_bp
-from app.models import User, db
+from flask_login import login_user, logout_user, login_required, current_user
+from . import bp
+from app.models import User, Role, db
+import logging
 
-@auth_bp.route('/login', methods=['GET', 'POST'])
+@bp.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.dashboard'))
+        
     if request.method == 'POST':
-        username = request.form.get('username')
+        email = request.form.get('email')
         password = request.form.get('password')
-        user = User.query.filter_by(username=username).first()
+        print(f"Login attempt for email: {email}")  # Debug print
         
-        if user and user.password == password:  # In production, use proper password hashing
-            login_user(user)
-            flash('Login successful!', 'success')
-            next_page = request.args.get('next')
-            return redirect(next_page or url_for('dashboard'))
-        
-        flash('Invalid username or password.', 'danger')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            print(f"User found: {user.username}, is_active: {user.is_active}")  # Debug print
+            if user.check_password(password):
+                print("Password check passed")  # Debug print
+                login_user(user, remember=True)
+                next_page = request.args.get('next')
+                if next_page:
+                    return redirect(next_page)
+                return redirect(url_for('main.dashboard'))
+            else:
+                print("Password check failed")  # Debug print
+        else:
+            print("User not found")  # Debug print
+            
+        flash('Invalid email or password', 'danger')
     return render_template('auth/login.html')
 
-@auth_bp.route('/register', methods=['GET', 'POST'])
+@bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -27,25 +40,35 @@ def register():
         email = request.form.get('email')
         
         if User.query.filter_by(username=username).first():
-            flash('Username already exists.', 'danger')
+            flash('Username already exists', 'danger')
             return render_template('auth/register.html')
             
         if User.query.filter_by(email=email).first():
-            flash('Email already registered.', 'danger')
+            flash('Email already exists', 'danger')
             return render_template('auth/register.html')
-        
-        user = User(username=username, password=password, email=email)  # In production, hash the password
+            
+        # Get or create user role
+        user_role = Role.query.filter_by(name='user').first()
+        if not user_role:
+            user_role = Role(name='user', description='Regular user')
+            db.session.add(user_role)
+            db.session.commit()
+            
+        user = User(
+            username=username,
+            email=email,
+            role_id=user_role.id,
+            is_active=True
+        )
+        user.set_password(password)
         db.session.add(user)
         db.session.commit()
-        
-        flash('Registration successful! Please login.', 'success')
+        flash('Registration successful', 'success')
         return redirect(url_for('auth.login'))
-        
     return render_template('auth/register.html')
 
-@auth_bp.route('/logout')
+@bp.route('/logout')
 @login_required
 def logout():
     logout_user()
-    flash('You have been logged out.', 'success')
     return redirect(url_for('auth.login')) 

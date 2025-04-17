@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}{{ interaction.type }} with {{ interaction.customer.full_name }} - Effect CRM{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('interactions.index') }}">Interactions</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('customers.show', id=interaction.customer.id) }}">{{ interaction.customer.full_name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ interaction.type }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">{{ interaction.type }} with {{ interaction.customer.full_name }}</h1>
+            <p class="text-muted mb-0">{{ interaction.customer.company_name }}</p>
+        </div>
+        <div class="btn-group">
+            <a href="{{ url_for('interactions.edit', interaction_id=interaction.id) }}" class="btn btn-outline-primary">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="bi bi-trash"></i> Delete
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Interaction Details -->
+        <div class="col-lg-8">
+            <!-- Summary Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">Summary</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ interaction.summary }}</p>
+                </div>
+            </div>
+
+            <!-- Notes Card -->
+            {% if interaction.notes %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">Notes</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0 white-space-pre-wrap">{{ interaction.notes }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Follow-up Card -->
+            {% if interaction.follow_up_date or interaction.follow_up_notes %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">Follow-up</h5>
+                </div>
+                <div class="card-body">
+                    {% if interaction.follow_up_date %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Follow-up Date</label>
+                        <p class="mb-0">{{ interaction.follow_up_date.strftime('%B %d, %Y') }}</p>
+                    </div>
+                    {% endif %}
+                    {% if interaction.follow_up_notes %}
+                    <div>
+                        <label class="form-label text-muted">Follow-up Notes</label>
+                        <p class="mb-0 white-space-pre-wrap">{{ interaction.follow_up_notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- AI Analysis -->
+            {% if interaction.ai_analysis %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">AI Analysis</h5>
+                    <span class="badge bg-primary">AI Generated</span>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ interaction.ai_analysis }}</p>
+                </div>
+            </div>
+            {% else %}
+            <form action="{{ url_for('interactions.analyze', interaction_id=interaction.id) }}" method="post">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-robot"></i> Generate AI Analysis
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        <!-- Customer Information -->
+        <div class="col-lg-4">
+            <!-- Interaction Info Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">Interaction Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Type</label>
+                        <p class="mb-0">
+                            <span class="badge bg-{{ 'primary' if interaction.type == 'Call' else 'info' if interaction.type == 'Email' else 'success' if interaction.type == 'Meeting' else 'secondary' }}">
+                                {{ interaction.type }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Outcome</label>
+                        <p class="mb-0">
+                            <span class="badge bg-{{ 'success' if interaction.outcome == 'Positive' else 'warning' if interaction.outcome == 'Neutral' else 'danger' if interaction.outcome == 'Negative' else 'secondary' }}">
+                                {{ interaction.outcome }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Created By</label>
+                        <p class="mb-0">{{ interaction.created_by.full_name }}</p>
+                    </div>
+                    <div>
+                        <label class="form-label text-muted">Created At</label>
+                        <p class="mb-0">{{ interaction.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Info Card -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">Customer Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Name</label>
+                        <p class="mb-0">{{ interaction.customer.full_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Email</label>
+                        <p class="mb-0">{{ interaction.customer.email or 'Not provided' }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Phone</label>
+                        <p class="mb-0">{{ interaction.customer.phone or 'Not provided' }}</p>
+                    </div>
+                    <div>
+                        <label class="form-label text-muted">Status</label>
+                        <p class="mb-0">
+                            <span class="badge bg-{{ 'success' if interaction.customer.status == 'Active' else 'warning' if interaction.customer.status == 'Lead' else 'danger' }}">
+                                {{ interaction.customer.status }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="{{ url_for('customers.show', id=interaction.customer.id) }}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-person"></i> View Customer Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Delete Interaction</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this interaction? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('interactions.delete', interaction_id=interaction.id) }}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .white-space-pre-wrap {
+        white-space: pre-wrap;
+    }
+</style>
+{% endblock %} 

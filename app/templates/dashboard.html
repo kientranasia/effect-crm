@@ -1,165 +1,282 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - Effect CRM{% endblock %}
+{% block title %}Executive Dashboard - Effect CRM{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <!-- Welcome section -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-1">Welcome, {{ current_user.username }}</h1>
-            <p class="text-muted mb-0">Here's an overview of your CRM activity</p>
-        </div>
-        <div>
-            <a href="{{ url_for('customers.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Add Customer
-            </a>
+<!-- Page header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Executive Dashboard</h1>
+        <p class="text-muted mb-0">Welcome back, {{ current_user.full_name }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <div class="btn-group">
+            <button type="button" class="btn btn-light active">Today</button>
+            <button type="button" class="btn btn-light">Week</button>
+            <button type="button" class="btn btn-light">Month</button>
+            <button type="button" class="btn btn-light">Quarter</button>
+            <button type="button" class="btn btn-light">Year</button>
         </div>
     </div>
+</div>
 
-    <!-- Stats cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value">{{ total_customers }}</div>
-                <div class="stat-label">Total Customers</div>
-                <div class="mt-2">
-                    <span class="badge bg-primary">All Time</span>
-                </div>
+<!-- Key Metrics -->
+<div class="row g-4 mb-4">
+    <!-- Revenue Metrics -->
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="icon bg-success bg-opacity-10 text-success">
+                <i class="bi bi-currency-dollar"></i>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value">{{ active_customers }}</div>
-                <div class="stat-label">Active Customers</div>
-                <div class="mt-2">
-                    <span class="badge bg-success">Active</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value">{{ lead_customers }}</div>
-                <div class="stat-label">Lead Customers</div>
-                <div class="mt-2">
-                    <span class="badge bg-warning">Leads</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value">{{ lost_customers }}</div>
-                <div class="stat-label">Lost Customers</div>
-                <div class="mt-2">
-                    <span class="badge bg-danger">Lost</span>
-                </div>
+            <div class="number text-success">180M</div>
+            <div class="label">Revenue</div>
+            <div class="mt-2 d-flex align-items-center">
+                <i class="bi bi-arrow-up-short text-success"></i>
+                <span class="text-success me-1">12.5%</span>
+                <small class="text-muted">vs last period</small>
             </div>
         </div>
     </div>
-
-    <!-- Charts and tables -->
-    <div class="row g-4">
-        <!-- Customer growth chart -->
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">Customer Growth</h5>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="customerGrowthChart"></canvas>
-                    </div>
-                </div>
+    
+    <!-- Sales Pipeline -->
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="icon bg-primary bg-opacity-10 text-primary">
+                <i class="bi bi-funnel"></i>
+            </div>
+            <div class="number text-primary">$25M</div>
+            <div class="label">Pipeline Value</div>
+            <div class="mt-2 d-flex align-items-center">
+                <i class="bi bi-arrow-up-short text-success"></i>
+                <span class="text-success me-1">8.3%</span>
+                <small class="text-muted">conversion rate</small>
             </div>
         </div>
-
-        <!-- Customer status distribution -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">Customer Status</h5>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="customerStatusChart"></canvas>
-                    </div>
-                </div>
+    </div>
+    
+    <!-- Customer Metrics -->
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="icon bg-info bg-opacity-10 text-info">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="number text-info">2.4K</div>
+            <div class="label">Active Customers</div>
+            <div class="mt-2 d-flex align-items-center">
+                <span class="text-success me-1">96%</span>
+                <small class="text-muted">retention rate</small>
             </div>
         </div>
-
-        <!-- Recent customers -->
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Recent Customers</h5>
-                    <a href="{{ url_for('customers.index') }}" class="btn btn-sm btn-outline-primary">View All</a>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Status</th>
-                                    <th>Added</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for customer in recent_customers %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-circle me-2">
-                                                {{ customer.name[:1] }}
-                                            </div>
-                                            <div>
-                                                <div class="fw-medium">{{ customer.name }}</div>
-                                                <div class="small text-muted">{{ customer.email or 'No email' }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-{{ 'success' if customer.status == 'Active' else 'warning' if customer.status == 'Lead' else 'danger' }}">
-                                            {{ customer.status }}
-                                        </span>
-                                    </td>
-                                    <td>{{ customer.created_at.strftime('%b %d, %Y') }}</td>
-                                    <td>
-                                        <a href="{{ url_for('customers.show', customer_id=customer.id) }}" class="btn btn-sm btn-link p-0">
-                                            <i class="bi bi-arrow-right"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    </div>
+    
+    <!-- Customer Acquisition Cost -->
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="icon bg-warning bg-opacity-10 text-warning">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div class="number text-warning">$850</div>
+            <div class="label">Avg. CAC</div>
+            <div class="mt-2 d-flex align-items-center">
+                <i class="bi bi-arrow-down-short text-success"></i>
+                <span class="text-success me-1">5.2%</span>
+                <small class="text-muted">improvement</small>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Recent interactions -->
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">Recent Interactions</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        {% for interaction in recent_interactions %}
-                        <a href="{{ url_for('interactions.detail', interaction_id=interaction.id) }}" class="list-group-item list-group-item-action py-3">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">{{ interaction.type }} with {{ interaction.customer.name }}</h6>
-                                <small class="text-muted">{{ interaction.timestamp.strftime('%b %d') }}</small>
+<!-- Charts section -->
+<div class="row g-4 mb-4">
+    <!-- Revenue & Pipeline Forecast -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="card-title mb-1">Revenue & Pipeline Forecast</h5>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle bg-success" style="width: 8px; height: 8px;"></div>
+                                <span class="text-muted small">Actual Revenue</span>
                             </div>
-                            <p class="mb-1 text-truncate">{{ interaction.summary }}</p>
-                        </a>
-                        {% endfor %}
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle bg-primary" style="width: 8px; height: 8px;"></div>
+                                <span class="text-muted small">Pipeline</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle bg-warning" style="width: 8px; height: 8px;"></div>
+                                <span class="text-muted small">Target</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="card-footer bg-white">
-                    <a href="{{ url_for('interactions.index') }}" class="btn btn-link btn-sm p-0">View all interactions</a>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Pipeline Stages -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Pipeline by Stage</h5>
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Qualified Leads</span>
+                            <span class="fw-medium">$8.5M</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-info" style="width: 35%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Technical Review</span>
+                            <span class="fw-medium">$6.2M</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" style="width: 25%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Proposal</span>
+                            <span class="fw-medium">$5.8M</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" style="width: 20%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Negotiation</span>
+                            <span class="fw-medium">$4.5M</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 15%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <h3 class="mb-1">$25M</h3>
+                    <p class="text-muted small mb-0">Total Pipeline Value</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Insights -->
+<div class="row g-4">
+    <!-- Top Opportunities -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title mb-0">Top Opportunities</h5>
+                    <button class="btn btn-sm btn-outline-primary">View All</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Deal Value</th>
+                                <th>Stage</th>
+                                <th>Probability</th>
+                                <th>Close Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://ui-avatars.com/api/?name=Tech+Corp&background=random" class="rounded" width="32" height="32" alt="Tech Corp">
+                                        <span>Tech Corp</span>
+                                    </div>
+                                </td>
+                                <td>$2.5M</td>
+                                <td><span class="badge bg-warning">Proposal</span></td>
+                                <td>75%</td>
+                                <td>Dec 31, 2024</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://ui-avatars.com/api/?name=Global+Systems&background=random" class="rounded" width="32" height="32" alt="Global Systems">
+                                        <span>Global Systems</span>
+                                    </div>
+                                </td>
+                                <td>$1.8M</td>
+                                <td><span class="badge bg-success">Negotiation</span></td>
+                                <td>90%</td>
+                                <td>Nov 15, 2024</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Team Performance -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title mb-0">Sales Team Performance</h5>
+                    <button class="btn btn-sm btn-outline-primary">Full Report</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Sales Rep</th>
+                                <th>Quota</th>
+                                <th>Closed</th>
+                                <th>Pipeline</th>
+                                <th>Achievement</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://ui-avatars.com/api/?name=Sarah+Wilson&background=random" class="rounded-circle" width="32" height="32" alt="Sarah Wilson">
+                                        <span>Sarah Wilson</span>
+                                    </div>
+                                </td>
+                                <td>$2M</td>
+                                <td>$1.8M</td>
+                                <td>$1.2M</td>
+                                <td>
+                                    <div class="progress" style="height: 8px; width: 100px;">
+                                        <div class="progress-bar bg-success" style="width: 90%"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://ui-avatars.com/api/?name=Mike+Johnson&background=random" class="rounded-circle" width="32" height="32" alt="Mike Johnson">
+                                        <span>Mike Johnson</span>
+                                    </div>
+                                </td>
+                                <td>$2M</td>
+                                <td>$1.5M</td>
+                                <td>$800K</td>
+                                <td>
+                                    <div class="progress" style="height: 8px; width: 100px;">
+                                        <div class="progress-bar bg-warning" style="width: 75%"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -169,24 +286,35 @@
 
 {% block scripts %}
 <script>
-    // Customer Growth Chart
-    const customerGrowthCtx = document.getElementById('customerGrowthChart').getContext('2d');
-    const customerGrowthChart = new Chart(customerGrowthCtx, {
+document.addEventListener('DOMContentLoaded', function() {
+    // Revenue & Pipeline Chart
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctx, {
         type: 'line',
         data: {
-            labels: {{ sorted_months|tojson }},
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
             datasets: [{
-                label: 'Customers',
-                data: [
-                    {% for month in sorted_months %}
-                        {{ customers_by_month[month] }}{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                ],
-                backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                borderColor: '#4f46e5',
-                borderWidth: 2,
-                tension: 0.3,
+                label: 'Actual Revenue',
+                data: [12.5, 13.2, 14.8, 14.2, 15.5, 16.2, 16.8, 17.5, 18.2, 18.8, 19.5, 20.2],
+                borderColor: '#198754',
+                backgroundColor: '#19875410',
+                tension: 0.4,
                 fill: true
+            }, {
+                label: 'Pipeline',
+                data: [15.5, 16.2, 17.8, 18.2, 19.5, 20.2, 21.8, 22.5, 23.2, 24.8, 25.5, 26.2],
+                borderColor: '#0d6efd',
+                backgroundColor: '#0d6efd10',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Target',
+                data: [14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0],
+                borderColor: '#ffc107',
+                backgroundColor: '#ffc10710',
+                borderDash: [5, 5],
+                tension: 0.4,
+                fill: false
             }]
         },
         options: {
@@ -195,45 +323,36 @@
             plugins: {
                 legend: {
                     display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': $' + context.parsed.y + 'M';
+                        }
+                    }
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
+                    grid: {
+                        display: true,
+                        drawBorder: false
+                    },
                     ticks: {
-                        precision: 0
+                        callback: function(value) {
+                            return '$' + value + 'M';
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
                     }
                 }
             }
         }
     });
-
-    // Customer Status Chart
-    const customerStatusCtx = document.getElementById('customerStatusChart').getContext('2d');
-    const customerStatusChart = new Chart(customerStatusCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Active', 'Lead', 'Lost'],
-            datasets: [{
-                data: [{{ active_customers }}, {{ lead_customers }}, {{ lost_customers }}],
-                backgroundColor: [
-                    '#10b981', // Success green
-                    '#f59e0b', // Warning yellow
-                    '#ef4444'  // Danger red
-                ],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            },
-            cutout: '70%'
-        }
-    });
+});
 </script>
 {% endblock %} 
