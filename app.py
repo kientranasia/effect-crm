@@ -47,6 +47,12 @@ class Customer(db.Model):
     last_contact = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     interactions = db.relationship('Interaction', backref='customer', lazy=True, cascade="all, delete-orphan")
+    
+    @property
+    def last_interaction(self):
+        if self.interactions:
+            return max(self.interactions, key=lambda x: x.timestamp)
+        return None
 
 class Interaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -315,134 +321,297 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    # Get all customers for the current user
     customers = Customer.query.filter_by(user_id=current_user.id).all()
-    return render_template('dashboard.html', customers=customers)
+    
+    # Calculate customer statistics
+    total_customers = len(customers)
+    active_customers = sum(1 for c in customers if c.status == 'Active')
+    lead_customers = sum(1 for c in customers if c.status == 'Lead')
+    lost_customers = sum(1 for c in customers if c.status == 'Lost')
+    
+    # Get recent customers (last 5)
+    recent_customers = Customer.query.filter_by(user_id=current_user.id).order_by(Customer.created_at.desc()).limit(5).all()
+    
+    # Get all interactions for the current user's customers
+    customer_ids = [c.id for c in customers]
+    recent_interactions = Interaction.query.filter(Interaction.customer_id.in_(customer_ids)).order_by(Interaction.timestamp.desc()).limit(5).all()
+    
+    # Get customer status distribution
+    status_distribution = {}
+    for customer in customers:
+        status = customer.status
+        if status in status_distribution:
+            status_distribution[status] += 1
+        else:
+            status_distribution[status] = 1
+    
+    # Get interactions by type
+    interaction_types = {}
+    for interaction in Interaction.query.filter(Interaction.customer_id.in_(customer_ids)).all():
+        interaction_type = interaction.type
+        if interaction_type in interaction_types:
+            interaction_types[interaction_type] += 1
+        else:
+            interaction_types[interaction_type] = 1
+    
+    # Get customers by month (for chart)
+    from collections import defaultdict
+    customers_by_month = defaultdict(int)
+    for customer in customers:
+        month = customer.created_at.strftime('%Y-%m')
+        customers_by_month[month] += 1
+    
+    # Sort months chronologically
+    sorted_months = sorted(customers_by_month.keys())
+    
+    return render_template('dashboard.html', 
+                          customers=customers,
+                          total_customers=total_customers,
+                          active_customers=active_customers,
+                          lead_customers=lead_customers,
+                          lost_customers=lost_customers,
+                          recent_customers=recent_customers,
+                          recent_interactions=recent_interactions,
+                          status_distribution=status_distribution,
+                          interaction_types=interaction_types,
+                          customers_by_month=customers_by_month,
+                          sorted_months=sorted_months)
 
-@app.route('/customers', methods=['GET', 'POST'])
+# Customer routes
+@app.route('/customers')
 @login_required
-def customers():
+def customers_show():
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    
+    # Get filter parameters
+    search = request.args.get('search', '')
+    status = request.args.get('status', '')
+    sort = request.args.get('sort', 'name')
+    
+    # Base query
+    query = Customer.query.filter_by(user_id=current_user.id)
+    
+    # Apply filters
+    if search:
+        query = query.filter(Customer.name.ilike(f'%{search}%') | Customer.email.ilike(f'%{search}%'))
+    if status:
+        query = query.filter_by(status=status)
+    
+    # Apply sorting
+    if sort == 'name':
+        query = query.order_by(Customer.name)
+    elif sort == 'created_at':
+        query = query.order_by(Customer.created_at.desc())
+    elif sort == 'status':
+        query = query.order_by(Customer.status)
+    
+    # Paginate results
+    pagination = query.paginate(page=page, per_page=per_page)
+    customers = pagination.items
+    
+    return render_template('customers/index.html', customers=customers, pagination=pagination)
+
+@app.route('/customers/create', methods=['GET', 'POST'])
+@login_required
+def customers_create():
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
         phone = request.form.get('phone')
+        company = request.form.get('company')
         status = request.form.get('status')
+        notes = request.form.get('notes')
         
         new_customer = Customer(
             name=name,
             email=email,
             phone=phone,
             status=status,
+            notes=notes,
             user_id=current_user.id
         )
         db.session.add(new_customer)
         db.session.commit()
         flash('Customer added successfully', 'success')
+        return redirect(url_for('customers_show'))
     
-    customers = Customer.query.filter_by(user_id=current_user.id).all()
-    return render_template('customers.html', customers=customers)
+    return render_template('customers/form.html')
 
-@app.route('/customer/<int:customer_id>')
+@app.route('/customers/<int:customer_id>')
 @login_required
-def customer_detail(customer_id):
+def customers_detail(customer_id):
     customer = Customer.query.get_or_404(customer_id)
     if customer.user_id != current_user.id:
         flash('Unauthorized access', 'error')
-        return redirect(url_for('customers'))
+        return redirect(url_for('customers_show'))
     
     interactions = Interaction.query.filter_by(customer_id=customer_id).order_by(Interaction.timestamp.desc()).all()
-    return render_template('customer_detail.html', customer=customer, interactions=interactions)
+    return render_template('customers/detail.html', customer=customer, interactions=interactions)
 
-@app.route('/customer/<int:customer_id>/edit', methods=['GET', 'POST'])
+@app.route('/customers/<int:customer_id>/edit', methods=['GET', 'POST'])
 @login_required
-def edit_customer(customer_id):
+def customers_edit(customer_id):
     customer = Customer.query.get_or_404(customer_id)
     if customer.user_id != current_user.id:
         flash('Unauthorized access', 'error')
-        return redirect(url_for('customers'))
+        return redirect(url_for('customers_show'))
     
     if request.method == 'POST':
         customer.name = request.form.get('name')
         customer.email = request.form.get('email')
         customer.phone = request.form.get('phone')
+        customer.company = request.form.get('company')
         customer.status = request.form.get('status')
         customer.notes = request.form.get('notes')
         
         db.session.commit()
         flash('Customer updated successfully', 'success')
-        return redirect(url_for('customer_detail', customer_id=customer.id))
+        return redirect(url_for('customers_detail', customer_id=customer.id))
     
-    return render_template('edit_customer.html', customer=customer)
+    return render_template('customers/form.html', customer=customer)
 
-@app.route('/customer/<int:customer_id>/delete', methods=['POST'])
+@app.route('/customers/<int:customer_id>/delete', methods=['POST'])
 @login_required
-def delete_customer(customer_id):
+def customers_delete(customer_id):
     customer = Customer.query.get_or_404(customer_id)
     if customer.user_id != current_user.id:
         flash('Unauthorized access', 'error')
-        return redirect(url_for('customers'))
+        return redirect(url_for('customers_show'))
     
     db.session.delete(customer)
     db.session.commit()
     flash('Customer deleted successfully', 'success')
-    return redirect(url_for('customers'))
+    return redirect(url_for('customers_show'))
 
-@app.route('/customer/<int:customer_id>/add_interaction', methods=['GET', 'POST'])
+# Interaction routes
+@app.route('/interactions')
 @login_required
-def add_interaction(customer_id):
-    customer = Customer.query.get_or_404(customer_id)
-    if customer.user_id != current_user.id:
-        flash('Unauthorized access', 'error')
-        return redirect(url_for('customers'))
+def interactions_show():
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
     
+    # Get filter parameters
+    search = request.args.get('search', '')
+    interaction_type = request.args.get('type', '')
+    customer_id = request.args.get('customer_id', type=int)
+    
+    # Base query - get interactions for all customers of the current user
+    customer_ids = [c.id for c in Customer.query.filter_by(user_id=current_user.id).all()]
+    query = Interaction.query.filter(Interaction.customer_id.in_(customer_ids))
+    
+    # Apply filters
+    if search:
+        query = query.filter(Interaction.summary.ilike(f'%{search}%'))
+    if interaction_type:
+        query = query.filter_by(type=interaction_type)
+    if customer_id:
+        query = query.filter_by(customer_id=customer_id)
+    
+    # Sort by timestamp (newest first)
+    query = query.order_by(Interaction.timestamp.desc())
+    
+    # Paginate results
+    pagination = query.paginate(page=page, per_page=per_page)
+    interactions = pagination.items
+    
+    # Get all customers for the filter dropdown
+    customers = Customer.query.filter_by(user_id=current_user.id).all()
+    
+    return render_template('interactions/index.html', interactions=interactions, customers=customers, pagination=pagination)
+
+@app.route('/interactions/create', methods=['GET', 'POST'])
+@login_required
+def interactions_create():
     if request.method == 'POST':
+        customer_id = request.form.get('customer_id')
         interaction_type = request.form.get('type')
         summary = request.form.get('summary')
         details = request.form.get('details')
-        llm_provider = request.form.get('llm_provider')
-        analysis_type = request.form.get('analysis_type', 'general')
+        timestamp = datetime.strptime(request.form.get('timestamp'), '%Y-%m-%dT%H:%M')
+        
+        # Verify customer belongs to current user
+        customer = Customer.query.get_or_404(customer_id)
+        if customer.user_id != current_user.id:
+            flash('Unauthorized access', 'error')
+            return redirect(url_for('interactions_show'))
         
         new_interaction = Interaction(
             type=interaction_type,
             summary=summary,
             details=details,
+            timestamp=timestamp,
             customer_id=customer_id
         )
-        
-        # Update customer's last contact time
-        customer.last_contact = datetime.utcnow()
-        
-        # Process with LLM if selected
-        if llm_provider:
-            text_to_analyze = f"Customer: {customer.name}\nInteraction Type: {interaction_type}\nSummary: {summary}\nDetails: {details}"
-            
-            if llm_provider == 'claude':
-                analysis = analyze_with_claude(text_to_analyze, analysis_type)
-            elif llm_provider == 'openai':
-                analysis = analyze_with_openai(text_to_analyze, analysis_type)
-            elif llm_provider == 'demo':
-                analysis = get_demo_analysis(text_to_analyze, analysis_type)
-            else:
-                analysis = "No LLM analysis requested"
-                
-            new_interaction.ai_analysis = analysis
         
         db.session.add(new_interaction)
         db.session.commit()
         flash('Interaction added successfully', 'success')
-        return redirect(url_for('customer_detail', customer_id=customer.id))
+        return redirect(url_for('interactions_detail', interaction_id=new_interaction.id))
     
-    return render_template('add_interaction.html', customer=customer)
+    # Get all customers for the dropdown
+    customers = Customer.query.filter_by(user_id=current_user.id).all()
+    return render_template('interactions/form.html', customers=customers)
 
-# Add a new route to analyze an existing interaction
-@app.route('/interaction/<int:interaction_id>/analyze', methods=['POST'])
+@app.route('/interactions/<int:interaction_id>')
 @login_required
-def analyze_interaction(interaction_id):
+def interactions_detail(interaction_id):
     interaction = Interaction.query.get_or_404(interaction_id)
     customer = Customer.query.get_or_404(interaction.customer_id)
     
     if customer.user_id != current_user.id:
         flash('Unauthorized access', 'error')
-        return redirect(url_for('customers'))
+        return redirect(url_for('interactions_show'))
+    
+    return render_template('interaction_detail.html', interaction=interaction, customer=customer)
+
+@app.route('/interactions/<int:interaction_id>/edit', methods=['GET', 'POST'])
+@login_required
+def interactions_edit(interaction_id):
+    interaction = Interaction.query.get_or_404(interaction_id)
+    customer = Customer.query.get_or_404(interaction.customer_id)
+    
+    if customer.user_id != current_user.id:
+        flash('Unauthorized access', 'error')
+        return redirect(url_for('interactions_show'))
+    
+    if request.method == 'POST':
+        interaction.type = request.form.get('type')
+        interaction.summary = request.form.get('summary')
+        interaction.details = request.form.get('details')
+        interaction.timestamp = datetime.strptime(request.form.get('timestamp'), '%Y-%m-%dT%H:%M')
+        
+        db.session.commit()
+        flash('Interaction updated successfully', 'success')
+        return redirect(url_for('interactions_detail', interaction_id=interaction.id))
+    
+    return render_template('interactions/form.html', interaction=interaction)
+
+@app.route('/interactions/<int:interaction_id>/delete', methods=['POST'])
+@login_required
+def interactions_delete(interaction_id):
+    interaction = Interaction.query.get_or_404(interaction_id)
+    customer = Customer.query.get_or_404(interaction.customer_id)
+    
+    if customer.user_id != current_user.id:
+        flash('Unauthorized access', 'error')
+        return redirect(url_for('interactions_show'))
+    
+    db.session.delete(interaction)
+    db.session.commit()
+    flash('Interaction deleted successfully', 'success')
+    return redirect(url_for('interactions_show'))
+
+@app.route('/interactions/<int:interaction_id>/analyze', methods=['POST'])
+@login_required
+def interactions_analyze(interaction_id):
+    interaction = Interaction.query.get_or_404(interaction_id)
+    customer = Customer.query.get_or_404(interaction.customer_id)
+    
+    if customer.user_id != current_user.id:
+        flash('Unauthorized access', 'error')
+        return redirect(url_for('interactions_show'))
     
     llm_provider = request.form.get('llm_provider')
     analysis_type = request.form.get('analysis_type', 'general')
@@ -462,19 +631,7 @@ def analyze_interaction(interaction_id):
     db.session.commit()
     
     flash('Analysis generated successfully', 'success')
-    return redirect(url_for('interaction_detail', interaction_id=interaction.id))
-
-
-@app.route('/interaction/<int:interaction_id>')
-@login_required
-def interaction_detail(interaction_id):
-    interaction = Interaction.query.get_or_404(interaction_id)
-    customer = Customer.query.get_or_404(interaction.customer_id)
-    if customer.user_id != current_user.id:
-        flash('Unauthorized access', 'error')
-        return redirect(url_for('customers'))
-    
-    return render_template('interaction_detail.html', interaction=interaction, customer=customer)
+    return redirect(url_for('interactions_detail', interaction_id=interaction.id))
 
 @app.route('/api/analyze_with_llm', methods=['POST'])
 @login_required

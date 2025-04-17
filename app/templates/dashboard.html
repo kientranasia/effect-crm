@@ -1,49 +1,239 @@
 {% extends "base.html" %}
 
+{% block title %}Dashboard - Effect CRM{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <h1 class="mb-4">Dashboard</h1>
-            
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Customers</h5>
-                            <p class="card-text">Manage your customer relationships</p>
-                            <a href="{{ url_for('customers.index') }}" class="btn btn-primary">View Customers</a>
-                        </div>
+<div class="container py-5">
+    <!-- Welcome section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Welcome, {{ current_user.username }}</h1>
+            <p class="text-muted mb-0">Here's an overview of your CRM activity</p>
+        </div>
+        <div>
+            <a href="{{ url_for('customers.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add Customer
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ total_customers }}</div>
+                <div class="stat-label">Total Customers</div>
+                <div class="mt-2">
+                    <span class="badge bg-primary">All Time</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ active_customers }}</div>
+                <div class="stat-label">Active Customers</div>
+                <div class="mt-2">
+                    <span class="badge bg-success">Active</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ lead_customers }}</div>
+                <div class="stat-label">Lead Customers</div>
+                <div class="mt-2">
+                    <span class="badge bg-warning">Leads</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ lost_customers }}</div>
+                <div class="stat-label">Lost Customers</div>
+                <div class="mt-2">
+                    <span class="badge bg-danger">Lost</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and tables -->
+    <div class="row g-4">
+        <!-- Customer growth chart -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">Customer Growth</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="customerGrowthChart"></canvas>
                     </div>
                 </div>
-                
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Recent Activity</h5>
-                            <p class="card-text">View your recent customer interactions</p>
-                            <a href="#" class="btn btn-secondary">View Activity</a>
-                        </div>
+            </div>
+        </div>
+
+        <!-- Customer status distribution -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">Customer Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="customerStatusChart"></canvas>
                     </div>
                 </div>
-                
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Quick Actions</h5>
-                            <div class="list-group">
-                                <a href="{{ url_for('customers.create') }}" class="list-group-item list-group-item-action">
-                                    Add New Customer
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action">
-                                    Create Interaction
-                                </a>
+            </div>
+        </div>
+
+        <!-- Recent customers -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Recent Customers</h5>
+                    <a href="{{ url_for('customers.index') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Added</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in recent_customers %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2">
+                                                {{ customer.name[:1] }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ customer.name }}</div>
+                                                <div class="small text-muted">{{ customer.email or 'No email' }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if customer.status == 'Active' else 'warning' if customer.status == 'Lead' else 'danger' }}">
+                                            {{ customer.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ customer.created_at.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('customers.show', customer_id=customer.id) }}" class="btn btn-sm btn-link p-0">
+                                            <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent interactions -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">Recent Interactions</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for interaction in recent_interactions %}
+                        <a href="{{ url_for('interactions.detail', interaction_id=interaction.id) }}" class="list-group-item list-group-item-action py-3">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ interaction.type }} with {{ interaction.customer.name }}</h6>
+                                <small class="text-muted">{{ interaction.timestamp.strftime('%b %d') }}</small>
                             </div>
-                        </div>
+                            <p class="mb-1 text-truncate">{{ interaction.summary }}</p>
+                        </a>
+                        {% endfor %}
                     </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="{{ url_for('interactions.index') }}" class="btn btn-link btn-sm p-0">View all interactions</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Customer Growth Chart
+    const customerGrowthCtx = document.getElementById('customerGrowthChart').getContext('2d');
+    const customerGrowthChart = new Chart(customerGrowthCtx, {
+        type: 'line',
+        data: {
+            labels: {{ sorted_months|tojson }},
+            datasets: [{
+                label: 'Customers',
+                data: [
+                    {% for month in sorted_months %}
+                        {{ customers_by_month[month] }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                borderColor: '#4f46e5',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+
+    // Customer Status Chart
+    const customerStatusCtx = document.getElementById('customerStatusChart').getContext('2d');
+    const customerStatusChart = new Chart(customerStatusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Active', 'Lead', 'Lost'],
+            datasets: [{
+                data: [{{ active_customers }}, {{ lead_customers }}, {{ lost_customers }}],
+                backgroundColor: [
+                    '#10b981', // Success green
+                    '#f59e0b', // Warning yellow
+                    '#ef4444'  // Danger red
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            cutout: '70%'
+        }
+    });
+</script>
 {% endblock %} 

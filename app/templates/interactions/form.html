@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if interaction else 'New' }} Interaction - Effect CRM{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('interactions.show') }}">Interactions</a></li>
+            {% if interaction and interaction.customer %}
+                <li class="breadcrumb-item"><a href="{{ url_for('customers.detail', customer_id=interaction.customer.id) }}">{{ interaction.customer.name }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{{ 'Edit' if interaction else 'New' }} Interaction</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h1 class="h3 mb-4">{{ 'Edit' if interaction else 'New' }} Interaction</h1>
+                    
+                    <form method="post" class="needs-validation" novalidate>
+                        <!-- Customer selection (only for new interactions) -->
+                        {% if not interaction %}
+                        <div class="mb-4">
+                            <label for="customer_id" class="form-label">Customer</label>
+                            <select class="form-select" id="customer_id" name="customer_id" required>
+                                <option value="">Select a customer</option>
+                                {% for customer in customers %}
+                                    <option value="{{ customer.id }}" {% if request.form.get('customer_id')|int == customer.id %}selected{% endif %}>
+                                        {{ customer.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">Please select a customer.</div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Interaction type -->
+                        <div class="mb-4">
+                            <label for="type" class="form-label">Type</label>
+                            <select class="form-select" id="type" name="type" required>
+                                <option value="">Select type</option>
+                                <option value="Call" {% if (interaction and interaction.type == 'Call') or request.form.get('type') == 'Call' %}selected{% endif %}>Call</option>
+                                <option value="Email" {% if (interaction and interaction.type == 'Email') or request.form.get('type') == 'Email' %}selected{% endif %}>Email</option>
+                                <option value="Meeting" {% if (interaction and interaction.type == 'Meeting') or request.form.get('type') == 'Meeting' %}selected{% endif %}>Meeting</option>
+                                <option value="Social Media" {% if (interaction and interaction.type == 'Social Media') or request.form.get('type') == 'Social Media' %}selected{% endif %}>Social Media</option>
+                                <option value="Other" {% if (interaction and interaction.type == 'Other') or request.form.get('type') == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                            <div class="invalid-feedback">Please select an interaction type.</div>
+                        </div>
+
+                        <!-- Date and time -->
+                        <div class="mb-4">
+                            <label for="timestamp" class="form-label">Date and Time</label>
+                            <input type="datetime-local" class="form-control" id="timestamp" name="timestamp" 
+                                value="{{ interaction.timestamp.strftime('%Y-%m-%dT%H:%M') if interaction else request.form.get('timestamp', '') }}" required>
+                            <div class="invalid-feedback">Please select a date and time.</div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="mb-4">
+                            <label for="summary" class="form-label">Summary</label>
+                            <textarea class="form-control" id="summary" name="summary" rows="3" required>{{ interaction.summary if interaction else request.form.get('summary', '') }}</textarea>
+                            <div class="invalid-feedback">Please provide a summary.</div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-4">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="5">{{ interaction.notes if interaction else request.form.get('notes', '') }}</textarea>
+                        </div>
+
+                        <!-- Follow-up date -->
+                        <div class="mb-4">
+                            <label for="follow_up_date" class="form-label">Follow-up Date</label>
+                            <input type="date" class="form-control" id="follow_up_date" name="follow_up_date" 
+                                value="{{ interaction.follow_up_date.strftime('%Y-%m-%d') if interaction and interaction.follow_up_date else request.form.get('follow_up_date', '') }}">
+                        </div>
+
+                        <!-- Follow-up notes -->
+                        <div class="mb-4">
+                            <label for="follow_up_notes" class="form-label">Follow-up Notes</label>
+                            <textarea class="form-control" id="follow_up_notes" name="follow_up_notes" rows="3">{{ interaction.follow_up_notes if interaction else request.form.get('follow_up_notes', '') }}</textarea>
+                        </div>
+
+                        <!-- Form actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('interactions.show') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Interaction</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %}
+{% endblock %} 
