@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Dashboard</h1>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Customers</h5>
+                            <p class="card-text">Manage your customer relationships</p>
+                            <a href="{{ url_for('customers.index') }}" class="btn btn-primary">View Customers</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Recent Activity</h5>
+                            <p class="card-text">View your recent customer interactions</p>
+                            <a href="#" class="btn btn-secondary">View Activity</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Quick Actions</h5>
+                            <div class="list-group">
+                                <a href="{{ url_for('customers.create') }}" class="list-group-item list-group-item-action">
+                                    Add New Customer
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    Create Interaction
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

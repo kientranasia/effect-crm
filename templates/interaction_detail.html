@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaction Detail - CRM App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard">CRM Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/customers">Customers</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Interaction with {{ customer.name }}</h5>
+                        <a href="/customer/{{ customer.id }}" class="btn btn-light btn-sm">Back to Customer</a>
+                    </div>
+                    <div class="card-body">
+                        {% if get_flashed_messages() %}
+                            {% for category, message in get_flashed_messages(with_categories=true) %}
+                                <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6>Interaction Details</h6>
+                                <table class="table">
+                                    <tr>
+                                        <th>Type:</th>
+                                        <td>{{ interaction.type }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Date:</th>
+                                        <td>{{ interaction.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Summary:</th>
+                                        <td>{{ interaction.summary }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Details</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ interaction.details or 'No details provided.' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if interaction.ai_analysis %}
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="mb-0">AI Analysis</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="ai-analysis">
+                                            {{ interaction.ai_analysis|safe }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if not interaction.ai_analysis %}
+                            <div class="col-12 mt-3">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Generate AI Analysis</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <form action="/interaction/{{ interaction.id }}/analyze" method="POST">
+                                            <div class="mb-3">
+                                                <label for="llm_provider" class="form-label">AI Provider</label>
+                                                <select class="form-select" id="llm_provider" name="llm_provider" required>
+                                                    <option value="claude">Analyze with Claude</option>
+                                                    <option value="openai">Analyze with OpenAI</option>
+                                                    <option value="demo">Demo Mode (No API Key Required)</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="analysis_type" class="form-label">Analysis Type</label>
+                                                <select class="form-select" id="analysis_type" name="analysis_type">
+                                                    <option value="general">General Analysis</option>
+                                                    <option value="sentiment">Sentiment Analysis</option>
+                                                    <option value="actionable">Actionable Insights</option>
+                                                    <option value="summary">Executive Summary</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="form-text mb-2">Select "Demo Mode" to see example AI analysis without an API key.</div>
+                                            
+                                            <div class="d-grid">
+                                                <button type="submit" class="btn btn-primary">Generate Analysis</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

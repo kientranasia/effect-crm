@@ -1,0 +1,7 @@
+-r base.txt
+
+# Production specific
+gunicorn==21.2.0
+supervisor==4.2.5
+sentry-sdk[flask]==1.40.6
+newrelic==9.9.0 
