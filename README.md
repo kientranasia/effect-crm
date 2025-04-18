@@ -7,6 +7,132 @@ A modern Customer Relationship Management system built with Flask, featuring AI-
 [![Flask](https://img.shields.io/badge/Flask-2.0%2B-green)](https://flask.palletsprojects.com/)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](CONTRIBUTING.md)
 
+## Features
+
+- Lead Management
+- Customer Management
+- Organization Management
+- Interaction Tracking
+- User Management
+- Email Notifications
+- Search and Filtering
+- Responsive Design
+
+## Prerequisites
+
+- Python 3.8+
+- PostgreSQL 13+
+- Docker and Docker Compose (optional)
+
+## Installation
+
+### Using Docker (Recommended)
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/effect-crm.git
+cd effect-crm
+```
+
+2. Create a .env file:
+```bash
+cp .env.example .env
+```
+
+3. Start the application:
+```bash
+docker-compose up -d
+```
+
+4. Initialize the database:
+```bash
+docker-compose exec web flask db upgrade
+docker-compose exec web flask seed
+```
+
+### Manual Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/effect-crm.git
+cd effect-crm
+```
+
+2. Create and activate a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+4. Create a .env file:
+```bash
+cp .env.example .env
+```
+
+5. Initialize the database:
+```bash
+flask db upgrade
+flask seed
+```
+
+6. Run the application:
+```bash
+flask run
+```
+
+## Configuration
+
+The application can be configured using environment variables in the .env file:
+
+- `FLASK_APP`: The Flask application instance
+- `FLASK_ENV`: The environment (development/production)
+- `SECRET_KEY`: The secret key for session management
+- `DATABASE_URL`: The PostgreSQL database URL
+- `MAIL_SERVER`: SMTP server for email notifications
+- `MAIL_PORT`: SMTP server port
+- `MAIL_USE_TLS`: Whether to use TLS for SMTP
+- `MAIL_USERNAME`: SMTP username
+- `MAIL_PASSWORD`: SMTP password
+- `MAIL_DEFAULT_SENDER`: Default sender email address
+
+## Development
+
+### Running Tests
+
+```bash
+pytest
+```
+
+### Code Style
+
+The project uses Black for code formatting and Flake8 for linting:
+
+```bash
+black .
+flake8
+```
+
+### Database Migrations
+
+Create a new migration:
+```bash
+flask db migrate -m "Description of changes"
+```
+
+Apply migrations:
+```bash
+flask db upgrade
+```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
 ## 🌟 Features
 
 - **User Authentication & Authorization**

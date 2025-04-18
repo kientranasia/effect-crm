@@ -22,28 +22,36 @@ wheels/
 
 # Virtual Environment
 venv/
-env/
 ENV/
+env/
+.env
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
-
-# Flask
-instance/
-.webassets-cache
-*.db
-
-# Environment variables
-.env
-.env.*
+.DS_Store
 
 # Logs
-*.log
 logs/
+*.log
 
-# OS
+# Database
+*.db
+*.sqlite3
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Coverage
+.coverage
+htmlcov/
+
+# Misc
 .DS_Store
-Thumbs.db 
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local 
