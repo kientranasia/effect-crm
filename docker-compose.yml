@@ -8,21 +8,8 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./instance:/app/instance
-    environment:
-      - FLASK_APP=app
-      - FLASK_ENV=production
-      - FLASK_DEBUG=0
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/effect_crm
-      - SECRET_KEY=your-secret-key-here
-      - MAIL_SERVER=smtp.gmail.com
-      - MAIL_PORT=587
-      - MAIL_USE_TLS=True
-      - MAIL_USERNAME=your-email@gmail.com
-      - MAIL_PASSWORD=your-app-password
-      - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER:-your-email@gmail.com}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-your-anthropic-key}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-your-openai-key}
-      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
@@ -68,12 +55,8 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./instance:/app/instance
-    environment:
-      - FLASK_APP=app
-      - FLASK_ENV=production
-      - FLASK_DEBUG=0
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/effect_crm
-      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
     depends_on:
       - redis
       - db
