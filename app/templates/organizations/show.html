@@ -2,258 +2,574 @@
 
 {% block title %}{{ organization.name }} - Effect CRM{% endblock %}
 
+{% block styles %}
+<style>
+    :root {
+        --primary-color: #0d6efd;
+        --primary-light: rgba(13, 110, 253, 0.1);
+        --danger-color: #dc3545;
+        --danger-light: rgba(220, 53, 69, 0.1);
+        --text-primary: #111827;
+        --text-secondary: #6b7280;
+        --border-color: #e5e7eb;
+        --bg-light: #f8f9fa;
+    }
+
+    .container-wrapper {
+        max-width: 1618px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    /* Header Styles */
+    .page-header {
+        background: white;
+        padding: 24px;
+        margin-bottom: 24px;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .breadcrumb {
+        margin-bottom: 16px;
+    }
+
+    .breadcrumb-item a {
+        color: var(--text-secondary);
+        text-decoration: none;
+    }
+
+    .breadcrumb-item.active {
+        color: var(--text-primary);
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .org-info {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .org-logo {
+        width: 72px;
+        height: 72px;
+        border-radius: 12px;
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: 600;
+    }
+
+    .org-details h1 {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+
+    .org-meta {
+        display: flex;
+        gap: 16px;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .org-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .org-meta-item i {
+        color: var(--primary-color);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* Button Styles */
+    .btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        height: 40px;
+    }
+
+    .btn i {
+        font-size: 16px;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+        border-color: #0b5ed7;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-danger {
+        color: var(--text-secondary);
+        border-color: var(--border-color);
+        background-color: white;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: var(--danger-light);
+        color: var(--danger-color);
+        border-color: var(--danger-color);
+        transform: translateY(-1px);
+    }
+
+    /* Card Styles */
+    .card {
+        background: white;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 24px;
+    }
+
+    .card-header {
+        padding: 20px 24px;
+        background: transparent;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .card-body {
+        padding: 24px;
+    }
+
+    /* Content Sections */
+    .content-section {
+        margin-bottom: 24px;
+    }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 24px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .info-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-size: 14px;
+        color: var(--text-primary);
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        background-color: var(--bg-light);
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 14px;
+        padding: 16px 24px;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .table td {
+        padding: 16px 24px;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Badge Styles */
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 12px;
+    }
+
+    .badge-primary {
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border: none;
+        border-radius: 12px;
+    }
+
+    .modal-header {
+        border-bottom: none;
+        padding: 24px;
+    }
+
+    .modal-body {
+        padding: 0 24px 24px;
+    }
+
+    .modal-footer {
+        border-top: none;
+        padding: 24px;
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .btn-close {
+        background-size: 14px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid h-100 py-3">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-1">{{ organization.name }}</h1>
-            {% if organization.industry %}
-            <p class="text-muted mb-0">{{ organization.industry }}</p>
-            {% endif %}
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ url_for('organizations.edit', id=organization.id) }}" class="btn btn-primary">
-                <i class="bi bi-pencil"></i> Edit
-            </a>
-            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                <i class="bi bi-trash"></i> Delete
-            </button>
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- Organization Details -->
-        <div class="col-lg-8">
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <div class="row g-4">
-                        <!-- Basic Information -->
-                        <div class="col-md-6">
-                            <h6 class="text-muted mb-3">Basic Information</h6>
-                            <dl class="row mb-0">
-                                <dt class="col-sm-4">Website</dt>
-                                <dd class="col-sm-8">
-                                    {% if organization.website %}
-                                    <a href="{{ organization.website }}" target="_blank" class="text-decoration-none">
-                                        {{ organization.website.replace('https://', '').replace('http://', '') }}
-                                        <i class="bi bi-box-arrow-up-right ms-1"></i>
-                                    </a>
-                                    {% else %}
-                                    <span class="text-muted">Not available</span>
-                                    {% endif %}
-                                </dd>
-
-                                <dt class="col-sm-4">Created</dt>
-                                <dd class="col-sm-8">{{ organization.created_at.strftime('%Y-%m-%d') }}</dd>
-                            </dl>
+<div class="container-wrapper">
+    <!-- Page Header -->
+    <div class="page-header">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('organizations.index') }}">Organizations</a></li>
+                <li class="breadcrumb-item active">{{ organization.name }}</li>
+            </ol>
+        </nav>
+        
+        <div class="header-content">
+            <div class="org-info">
+                <div class="org-logo">
+                    {{ organization.name[0] }}
+                </div>
+                <div class="org-details">
+                    <h1>{{ organization.name }}</h1>
+                    <div class="org-meta">
+                        {% if organization.industry %}
+                        <div class="org-meta-item">
+                            <i class="bi bi-briefcase-fill"></i>
+                            {{ organization.industry }}
                         </div>
-
-                        <!-- Statistics -->
-                        <div class="col-md-6">
-                            <h6 class="text-muted mb-3">Statistics</h6>
-                            <dl class="row mb-0">
-                                <dt class="col-sm-4">Leads</dt>
-                                <dd class="col-sm-8">
-                                    <a href="{{ url_for('contacts.index', organization_id=organization.id, stage='lead') }}" class="text-decoration-none">
-                                        {{ organization.leads|length }} leads
-                                    </a>
-                                </dd>
-
-                                <dt class="col-sm-4">Customers</dt>
-                                <dd class="col-sm-8">
-                                    <a href="{{ url_for('customers.index', organization_id=organization.id) }}" class="text-decoration-none">
-                                        {{ organization.customers|length }} customers
-                                    </a>
-                                </dd>
-                            </dl>
+                        {% endif %}
+                        <div class="org-meta-item">
+                            <i class="bi bi-people-fill"></i>
+                            {{ organization.contacts_count }} Contacts
                         </div>
-
-                        {% if organization.description %}
-                        <!-- Description -->
-                        <div class="col-12">
-                            <h6 class="text-muted mb-3">Description</h6>
-                            <p class="mb-0">{{ organization.description }}</p>
+                        {% if organization.size %}
+                        <div class="org-meta-item">
+                            <i class="bi bi-building"></i>
+                            {{ organization.size_display }}
                         </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
+            <div class="header-actions">
+                <a href="{{ url_for('organizations.edit', id=organization.id) }}" class="btn btn-primary">
+                    <i class="bi bi-pencil-square"></i>
+                    Edit Details
+                </a>
+                <form action="{{ url_for('organizations.delete', id=organization.id) }}" method="POST" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to delete this organization? This action cannot be undone.')">
+                        <i class="bi bi-trash"></i>
+                        Delete Organization
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-            <!-- Related Leads -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Related Leads</h5>
-                    <span class="badge bg-primary rounded-pill">{{ organization.leads|length }}</span>
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Overview -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Company Overview</h5>
                 </div>
-                <div class="card-body p-0">
-                    {% if organization.leads %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="border-bottom-0">Name</th>
-                                    <th class="border-bottom-0">Email</th>
-                                    <th class="border-bottom-0">Status</th>
-                                    <th class="border-bottom-0">Created</th>
-                                    <th class="border-bottom-0 text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="border-top-0">
-                                {% for contact in organization.leads %}
-                                <tr>
-                                    <td class="align-middle">
-                                        <div>
-                                            <a href="{{ url_for('contacts.show', id=contact.id) }}" class="text-decoration-none fw-medium">
-                                                {{ contact.full_name }}
-                                            </a>
-                                            <div class="small text-muted">{{ contact.job_title }}</div>
-                                        </div>
-                                    </td>
-                                    <td class="align-middle">{{ contact.email }}</td>
-                                    <td class="align-middle">
-                                        <span class="badge rounded-pill bg-{{ {
-                                            'new': 'primary',
-                                            'contacted': 'info',
-                                            'qualified': 'success',
-                                            'unqualified': 'danger'
-                                        }[contact.status] }} bg-opacity-10 text-{{ {
-                                            'new': 'primary',
-                                            'contacted': 'info',
-                                            'qualified': 'success',
-                                            'unqualified': 'danger'
-                                        }[contact.status] }}">
-                                            {{ contact.status|title }}
-                                        </span>
-                                    </td>
-                                    <td class="align-middle">{{ contact.created_at.strftime('%Y-%m-%d') }}</td>
-                                    <td class="align-middle text-end">
-                                        <a href="{{ url_for('contacts.show', id=contact.id) }}" class="btn btn-sm btn-outline-secondary">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <div class="card-body">
+                    <p class="mb-4">{{ organization.description or 'No description available.' }}</p>
+                    
+                    <div class="content-section">
+                        <h6 class="section-title">Basic Information</h6>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Industry</span>
+                                <span class="info-value">{{ organization.industry or 'Not specified' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Company Size</span>
+                                <span class="info-value">{{ organization.size_display or 'Not specified' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Founded</span>
+                                <span class="info-value">{{ organization.founded_year or 'Unknown' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Created By</span>
+                                <span class="info-value">{{ organization.created_by.full_name }}</span>
+                            </div>
+                        </div>
                     </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <div class="text-muted">No leads found for this organization</div>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
 
-            <!-- Related Customers -->
-            <div class="card shadow-sm">
+            <!-- News Card -->
+            <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Related Customers</h5>
-                    <span class="badge bg-primary rounded-pill">{{ organization.customers|length }}</span>
+                    <h5 class="card-title">News & Updates</h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" title="Sync from website">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </button>
+                        <a href="#" class="btn btn-sm btn-primary" title="Add News">
+                            <i class="bi bi-plus-lg"></i>
+                        </a>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    {% if organization.customers %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="border-bottom-0">Name</th>
-                                    <th class="border-bottom-0">Email</th>
-                                    <th class="border-bottom-0">Status</th>
-                                    <th class="border-bottom-0">Created</th>
-                                    <th class="border-bottom-0 text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="border-top-0">
-                                {% for customer in organization.customers %}
-                                <tr>
-                                    <td class="align-middle">
-                                        <div>
-                                            <a href="{{ url_for('customers.show', id=customer.id) }}" class="text-decoration-none fw-medium">
-                                                {{ customer.full_name }}
-                                            </a>
-                                            <div class="small text-muted">{{ customer.job_title }}</div>
-                                        </div>
-                                    </td>
-                                    <td class="align-middle">{{ customer.email }}</td>
-                                    <td class="align-middle">
-                                        <span class="badge rounded-pill bg-success bg-opacity-10 text-success">
-                                            Active
-                                        </span>
-                                    </td>
-                                    <td class="align-middle">{{ customer.created_at.strftime('%Y-%m-%d') }}</td>
-                                    <td class="align-middle text-end">
-                                        <a href="{{ url_for('customers.show', id=customer.id) }}" class="btn btn-sm btn-outline-secondary">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <div class="card-body">
+                    <div class="news-list">
+                        <!-- Dummy news items with source information -->
+                        <div class="news-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">New Product Launch: {{ organization.name }} Enterprise Suite</h6>
+                                    <span class="badge bg-info bg-opacity-10 text-info">Website</span>
+                                </div>
+                                <small class="text-muted">Today</small>
+                            </div>
+                            <p class="mb-0 text-secondary small">We're excited to announce the launch of our new enterprise suite designed to streamline business operations and boost productivity.</p>
+                        </div>
+
+                        <div class="news-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">Partnership with TechCorp Announced</h6>
+                                    <span class="badge bg-success bg-opacity-10 text-success">LinkedIn</span>
+                                </div>
+                                <small class="text-muted">2 days ago</small>
+                            </div>
+                            <p class="mb-0 text-secondary small">We're thrilled to announce our strategic partnership with TechCorp to deliver innovative solutions to our customers.</p>
+                        </div>
+
+                        <div class="news-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">Customer Success Story: How {{ organization.name }} Helped XYZ Corp</h6>
+                                    <span class="badge bg-warning bg-opacity-10 text-warning">Blog</span>
+                                </div>
+                                <small class="text-muted">1 week ago</small>
+                            </div>
+                            <p class="mb-0 text-secondary small">Learn how XYZ Corp achieved 40% growth in customer satisfaction after implementing our solutions.</p>
+                        </div>
+
+                        <div class="news-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">Join us at Tech Conference 2023</h6>
+                                    <span class="badge bg-danger bg-opacity-10 text-danger">Twitter</span>
+                                </div>
+                                <small class="text-muted">2 weeks ago</small>
+                            </div>
+                            <p class="mb-0 text-secondary small">We'll be showcasing our latest innovations at Tech Conference 2023. Visit our booth to learn more!</p>
+                        </div>
+
+                        <div class="news-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">New Office Opening in San Francisco</h6>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">Press Release</span>
+                                </div>
+                                <small class="text-muted">1 month ago</small>
+                            </div>
+                            <p class="mb-0 text-secondary small">{{ organization.name }} expands operations with a new office in San Francisco to better serve our West Coast customers.</p>
+                        </div>
                     </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <div class="text-muted">No customers found for this organization</div>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- Sidebar -->
         <div class="col-lg-4">
-            <!-- Recent Activity -->
-            <div class="card shadow-sm mb-4">
+            <!-- Quick Stats -->
+            <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Recent Activity</h5>
+                    <h5 class="card-title">Quick Stats</h5>
                 </div>
                 <div class="card-body">
-                    <div class="text-center py-4">
-                        <div class="text-muted">No recent activity</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Total Contacts</span>
+                            <span class="info-value">{{ organization.contacts_count }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Customers</span>
+                            <span class="info-value">{{ organization.contacts.filter_by(stage='customer').count() }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Leads</span>
+                            <span class="info-value">{{ organization.contacts.filter_by(stage='lead').count() }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Delete Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Delete Organization</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <!-- Related Contacts -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title">Related Contacts</h5>
+                    <span class="badge badge-primary">{{ organization.contacts_count }}</span>
                 </div>
-                <div class="modal-body text-center">
-                    <p class="mb-0">Are you sure you want to delete <strong>{{ organization.name }}</strong>?</p>
-                    <small class="text-muted">This action cannot be undone.</small>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Contact</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contact in organization.contacts.all() %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('contacts.show', id=contact.id) }}" class="text-decoration-none">
+                                            {{ contact.full_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ contact.job_title or "-" }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if contact.stage == 'customer' else 'primary' }} bg-opacity-10 text-{{ 'success' if contact.stage == 'customer' else 'primary' }}">
+                                            {{ contact.stage|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if contact.email %}
+                                        <a href="mailto:{{ contact.email }}" class="text-decoration-none text-secondary">
+                                            <i class="bi bi-envelope me-1"></i>{{ contact.email }}
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form action="{{ url_for('organizations.delete', id=organization.id) }}" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                    </form>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Additional Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Website</span>
+                            <span class="info-value">
+                                {% if organization.website %}
+                                <a href="{{ organization.website }}" target="_blank" class="text-decoration-none">
+                                    {{ organization.website }}
+                                </a>
+                                {% else %}
+                                Not specified
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Created Date</span>
+                            <span class="info-value">{{ organization.created_at.strftime('%B %d, %Y') }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-{% block styles %}
-<style>
-    .table > :not(caption) > * > * {
-        padding: 0.75rem 1rem;
-    }
-    
-    .btn-group .btn {
-        padding: 0.25rem 0.5rem;
-    }
-    
-    .badge {
-        font-weight: 500;
-    }
-</style>
-{% endblock %}
-
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove Organization</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+                </div>
+                <p class="mb-1">Are you sure you want to remove <strong>{{ organization.name }}</strong>?</p>
+                <p class="text-muted small mb-0">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('organizations.delete', id=organization.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash3"></i>
+                        Remove
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %} 
