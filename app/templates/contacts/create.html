@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}New Contact - Effect CRM{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">New Contact</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{{ url_for('contacts.index') }}">Contacts</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">New Contact</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('contacts.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Contacts
+                    </a>
+                    <button type="submit" form="contactForm" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Create Contact
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="contactForm" method="POST" class="needs-validation" novalidate>
+        {{ form.csrf_token }}
+        
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <div class="form-section-header">
+                        <h5 class="mb-0">Contact Information</h5>
+                    </div>
+                    <div class="form-section-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="first_name" class="form-label required-field">First Name</label>
+                                {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else "")) }}
+                                {% if form.first_name.errors %}
+                                <div class="invalid-feedback">{{ form.first_name.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="last_name" class="form-label required-field">Last Name</label>
+                                {{ form.last_name(class="form-control" + (" is-invalid" if form.last_name.errors else "")) }}
+                                {% if form.last_name.errors %}
+                                <div class="invalid-feedback">{{ form.last_name.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label required-field">Email</label>
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                {% if form.email.errors %}
+                                <div class="invalid-feedback">{{ form.email.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone</label>
+                                {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
+                                {% if form.phone.errors %}
+                                <div class="invalid-feedback">{{ form.phone.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="job_title" class="form-label">Job Title</label>
+                                {{ form.job_title(class="form-control" + (" is-invalid" if form.job_title.errors else "")) }}
+                                {% if form.job_title.errors %}
+                                <div class="invalid-feedback">{{ form.job_title.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Details -->
+                <div class="form-section">
+                    <div class="form-section-header">
+                        <h5 class="mb-0">Contact Details</h5>
+                    </div>
+                    <div class="form-section-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="source" class="form-label">Source</label>
+                                {{ form.source(class="form-select" + (" is-invalid" if form.source.errors else "")) }}
+                                {% if form.source.errors %}
+                                <div class="invalid-feedback">{{ form.source.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="stage" class="form-label">Stage</label>
+                                {{ form.stage(class="form-select" + (" is-invalid" if form.stage.errors else "")) }}
+                                {% if form.stage.errors %}
+                                <div class="invalid-feedback">{{ form.stage.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="source_origin" class="form-label">Source Origin</label>
+                                {{ form.source_origin(class="form-control" + (" is-invalid" if form.source_origin.errors else "")) }}
+                                {% if form.source_origin.errors %}
+                                <div class="invalid-feedback">{{ form.source_origin.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="source_channel" class="form-label">Source Channel</label>
+                                {{ form.source_channel(class="form-control" + (" is-invalid" if form.source_channel.errors else "")) }}
+                                {% if form.source_channel.errors %}
+                                <div class="invalid-feedback">{{ form.source_channel.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="deal_value" class="form-label">Deal Value</label>
+                                {{ form.deal_value(class="form-control" + (" is-invalid" if form.deal_value.errors else "")) }}
+                                {% if form.deal_value.errors %}
+                                <div class="invalid-feedback">{{ form.deal_value.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="probability" class="form-label">Probability (%)</label>
+                                {{ form.probability(class="form-control" + (" is-invalid" if form.probability.errors else "")) }}
+                                {% if form.probability.errors %}
+                                <div class="invalid-feedback">{{ form.probability.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12">
+                                <label for="interested_in" class="form-label">Interested In</label>
+                                {{ form.interested_in(class="form-control" + (" is-invalid" if form.interested_in.errors else ""), rows="3") }}
+                                {% if form.interested_in.errors %}
+                                <div class="invalid-feedback">{{ form.interested_in.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12">
+                                <label for="requirements" class="form-label">Requirements</label>
+                                {{ form.requirements(class="form-control" + (" is-invalid" if form.requirements.errors else ""), rows="3") }}
+                                {% if form.requirements.errors %}
+                                <div class="invalid-feedback">{{ form.requirements.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="budget" class="form-label">Budget</label>
+                                {{ form.budget(class="form-control" + (" is-invalid" if form.budget.errors else "")) }}
+                                {% if form.budget.errors %}
+                                <div class="invalid-feedback">{{ form.budget.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="next_follow_up" class="form-label">Next Follow-up</label>
+                                {{ form.next_follow_up(class="form-control" + (" is-invalid" if form.next_follow_up.errors else ""), type="date") }}
+                                {% if form.next_follow_up.errors %}
+                                <div class="invalid-feedback">{{ form.next_follow_up.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Organization -->
+                <div class="form-section">
+                    <div class="form-section-header">
+                        <h5 class="mb-0">Organization</h5>
+                    </div>
+                    <div class="form-section-body">
+                        <div class="mb-3">
+                            <label for="organization_id" class="form-label required-field">Organization</label>
+                            {{ form.organization_id(class="form-select" + (" is-invalid" if form.organization_id.errors else "")) }}
+                            {% if form.organization_id.errors %}
+                            <div class="invalid-feedback">{{ form.organization_id.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Media Links -->
+                <div class="form-section">
+                    <div class="form-section-header">
+                        <h5 class="mb-0">Social Media Links</h5>
+                    </div>
+                    <div class="form-section-body">
+                        <div class="mb-3">
+                            <label for="linkedin" class="form-label">LinkedIn</label>
+                            <div class="social-media-input">
+                                <i class="bi bi-linkedin"></i>
+                                {{ form.linkedin(class="form-control" + (" is-invalid" if form.linkedin.errors else "")) }}
+                            </div>
+                            {% if form.linkedin.errors %}
+                            <div class="invalid-feedback">{{ form.linkedin.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="twitter" class="form-label">Twitter</label>
+                            <div class="social-media-input">
+                                <i class="bi bi-twitter"></i>
+                                {{ form.twitter(class="form-control" + (" is-invalid" if form.twitter.errors else "")) }}
+                            </div>
+                            {% if form.twitter.errors %}
+                            <div class="invalid-feedback">{{ form.twitter.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="facebook" class="form-label">Facebook</label>
+                            <div class="social-media-input">
+                                <i class="bi bi-facebook"></i>
+                                {{ form.facebook(class="form-control" + (" is-invalid" if form.facebook.errors else "")) }}
+                            </div>
+                            {% if form.facebook.errors %}
+                            <div class="invalid-feedback">{{ form.facebook.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="instagram" class="form-label">Instagram</label>
+                            <div class="social-media-input">
+                                <i class="bi bi-instagram"></i>
+                                {{ form.instagram(class="form-control" + (" is-invalid" if form.instagram.errors else "")) }}
+                            </div>
+                            {% if form.instagram.errors %}
+                            <div class="invalid-feedback">{{ form.instagram.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="github" class="form-label">GitHub</label>
+                            <div class="social-media-input">
+                                <i class="bi bi-github"></i>
+                                {{ form.github(class="form-control" + (" is-invalid" if form.github.errors else "")) }}
+                            </div>
+                            {% if form.github.errors %}
+                            <div class="invalid-feedback">{{ form.github.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %} 

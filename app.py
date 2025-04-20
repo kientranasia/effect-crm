@@ -1,6 +1,8 @@
 # app.py - Main Flask application
 from app import create_app, db
-from app.models import User, Customer, Interaction
+from app.models import User, Contact, Interaction
+from flask import render_template, redirect, url_for
+from flask_login import current_user
 import os
 from datetime import datetime
 import anthropic
@@ -145,8 +147,8 @@ def get_demo_analysis(text, analysis_type="general"):
 @app.route('/')
 def index():
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
-    return redirect(url_for('auth.login'))
+        return redirect(url_for('main.dashboard'))
+    return render_template('landing.html')
 
 # Add other routes as needed
 

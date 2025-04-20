@@ -1,32 +1,34 @@
 from datetime import datetime
 
 def timeago(date):
-    """Convert a datetime to a relative time string (e.g., '2 hours ago')"""
+    """Convert a datetime to a human readable string like '2 days ago'"""
     if not date:
         return ''
         
     now = datetime.utcnow()
     diff = now - date
-    
+
     seconds = diff.total_seconds()
-    
+    minutes = seconds / 60
+    hours = minutes / 60
+    days = diff.days
+
     if seconds < 60:
         return 'just now'
-    elif seconds < 3600:
-        minutes = int(seconds / 60)
-        return f'{minutes} minute{"s" if minutes != 1 else ""} ago'
-    elif seconds < 86400:
-        hours = int(seconds / 3600)
-        return f'{hours} hour{"s" if hours != 1 else ""} ago'
-    elif seconds < 604800:
-        days = int(seconds / 86400)
-        return f'{days} day{"s" if days != 1 else ""} ago'
-    elif seconds < 2592000:
-        weeks = int(seconds / 604800)
-        return f'{weeks} week{"s" if weeks != 1 else ""} ago'
-    elif seconds < 31536000:
-        months = int(seconds / 2592000)
-        return f'{months} month{"s" if months != 1 else ""} ago'
+    elif minutes < 60:
+        return f'{int(minutes)} minutes ago'
+    elif hours < 24:
+        return f'{int(hours)} hours ago'
+    elif days == 1:
+        return 'yesterday'
+    elif days < 7:
+        return f'{days} days ago'
+    elif days < 30:
+        weeks = days // 7
+        return f'{weeks} weeks ago'
+    elif days < 365:
+        months = days // 30
+        return f'{months} months ago'
     else:
-        years = int(seconds / 31536000)
-        return f'{years} year{"s" if years != 1 else ""} ago' 
+        years = days // 365
+        return f'{years} years ago' 

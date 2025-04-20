@@ -22,36 +22,39 @@ wheels/
 
 # Virtual Environment
 venv/
-ENV/
 env/
+ENV/
+crm-env/
 .env
+.venv
+.env.*
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
-.DS_Store
-
-# Logs
-logs/
-*.log
+*~
 
 # Database
 *.db
 *.sqlite3
+instance/
+
+# Logs
+*.log
+logs/
+log/
 
 # Docker
 .docker/
-docker-compose.override.yml
 
-# Coverage
+# Testing
 .coverage
 htmlcov/
+.pytest_cache/
+.tox/
 
-# Misc
+# OS
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local 
+Thumbs.db 

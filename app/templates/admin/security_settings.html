@@ -1,0 +1,158 @@
+{% extends "admin/base_admin.html" %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">Security</li>
+<li class="breadcrumb-item active">Security Settings</li>
+{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Security Settings</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="securitySettingsForm">
+                        <!-- Password Policy Section -->
+                        <h5 class="card-title mb-3">Password Policy</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Minimum Password Length</label>
+                                <input type="number" class="form-control" name="password_min_length" 
+                                       value="{{ settings.password_min_length }}" min="8" max="32">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Password Expiry (Days)</label>
+                                <input type="number" class="form-control" name="password_expiry_days" 
+                                       value="{{ settings.password_expiry_days }}" min="0">
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="password_require_uppercase" 
+                                           {% if settings.password_require_uppercase %}checked{% endif %}>
+                                    <label class="form-check-label">Require Uppercase</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="password_require_lowercase" 
+                                           {% if settings.password_require_lowercase %}checked{% endif %}>
+                                    <label class="form-check-label">Require Lowercase</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="password_require_number" 
+                                           {% if settings.password_require_number %}checked{% endif %}>
+                                    <label class="form-check-label">Require Number</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="password_require_special" 
+                                           {% if settings.password_require_special %}checked{% endif %}>
+                                    <label class="form-check-label">Require Special Character</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Lockout Section -->
+                        <h5 class="card-title mb-3">Account Lockout</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="account_lockout_enabled" 
+                                           {% if settings.account_lockout_enabled %}checked{% endif %}>
+                                    <label class="form-check-label">Enable Account Lockout</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Failed Login Attempts Before Lockout</label>
+                                <input type="number" class="form-control" name="account_lockout_attempts" 
+                                       value="{{ settings.account_lockout_attempts }}" min="1">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Lockout Duration (Minutes)</label>
+                                <input type="number" class="form-control" name="account_lockout_duration" 
+                                       value="{{ settings.account_lockout_duration }}" min="1">
+                            </div>
+                        </div>
+
+                        <!-- Session Security -->
+                        <h5 class="card-title mb-3">Session Security</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Session Timeout (Minutes)</label>
+                                <input type="number" class="form-control" name="session_timeout" 
+                                       value="{{ settings.session_timeout }}" min="5">
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="require_2fa" 
+                                           {% if settings.require_2fa %}checked{% endif %}>
+                                    <label class="form-check-label">Require Two-Factor Authentication</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- IP Security -->
+                        <h5 class="card-title mb-3">IP Security</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label">Allowed IP Ranges (One per line)</label>
+                                <textarea class="form-control" name="allowed_ip_ranges" rows="3" 
+                                          placeholder="e.g. 192.168.1.0/24">{{ settings.allowed_ip_ranges }}</textarea>
+                                <div class="form-text">Leave empty to allow all IPs</div>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.getElementById('securitySettingsForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Convert checkbox values to boolean
+    ['password_require_uppercase', 'password_require_lowercase', 'password_require_number',
+     'password_require_special', 'account_lockout_enabled', 'require_2fa'].forEach(key => {
+        data[key] = formData.has(key);
+    });
+    
+    try {
+        const response = await fetch('{{ url_for("admin.update_settings") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            toastr.success('Security settings updated successfully');
+        } else {
+            toastr.error(result.message || 'Failed to update security settings');
+        }
+    } catch (error) {
+        toastr.error('An error occurred while updating security settings');
+    }
+});</script>
+{% endblock %} 

@@ -1,0 +1,134 @@
+<!-- Contact Information Card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+        <h6 class="card-title mb-0">
+            <i class="fas fa-user-circle text-primary me-2"></i>Contact Information
+        </h6>
+    </div>
+    <div class="card-body">
+        <!-- Basic Info -->
+        <div class="info-section mb-4">
+            <label class="text-uppercase small text-muted mb-2">Basic Info</label>
+            <div class="mb-3">
+                <div class="d-flex align-items-center text-muted mb-1">
+                    <i class="fas fa-envelope me-2"></i>Email
+                </div>
+                <a href="mailto:{{ contact.email }}" class="text-decoration-none ps-4">
+                    {{ contact.email }}
+                </a>
+                {% if contact.alternate_email %}
+                <div class="text-muted small ps-4 mt-1">
+                    Alternate: <a href="mailto:{{ contact.alternate_email }}" class="text-decoration-none">{{ contact.alternate_email }}</a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <div class="d-flex align-items-center text-muted mb-1">
+                    <i class="fas fa-phone me-2"></i>Phone
+                </div>
+                <div class="ps-4">
+                    {% if contact.phone %}
+                    <a href="tel:{{ contact.phone }}" class="text-decoration-none d-block">{{ contact.phone }}</a>
+                    {% endif %}
+                    {% if contact.mobile %}
+                    <a href="tel:{{ contact.mobile }}" class="text-decoration-none d-block text-muted small">Mobile: {{ contact.mobile }}</a>
+                    {% endif %}
+                    {% if contact.work_phone %}
+                    <a href="tel:{{ contact.work_phone }}" class="text-decoration-none d-block text-muted small">Work: {{ contact.work_phone }}</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% if contact.department %}
+            <div class="mb-3">
+                <div class="d-flex align-items-center text-muted mb-1">
+                    <i class="fas fa-building me-2"></i>Department
+                </div>
+                <span class="ps-4">{{ contact.department }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Personal Information -->
+        <div class="info-section mb-4">
+            <label class="text-uppercase small text-muted mb-2">Personal Info</label>
+            {% if contact.middle_name %}
+            <div class="mb-2 ps-4">
+                <span class="text-muted">Middle Name:</span> {{ contact.middle_name }}
+            </div>
+            {% endif %}
+            {% if contact.nickname %}
+            <div class="mb-2 ps-4">
+                <span class="text-muted">Nickname:</span> {{ contact.nickname }}
+            </div>
+            {% endif %}
+            {% if contact.birthday %}
+            <div class="mb-2 ps-4">
+                <span class="text-muted">Birthday:</span> {{ contact.birthday.strftime('%B %d, %Y') }}
+            </div>
+            {% endif %}
+            {% if contact.gender %}
+            <div class="mb-2 ps-4">
+                <span class="text-muted">Gender:</span> {{ contact.gender|title }}
+            </div>
+            {% endif %}
+            {% if contact.marital_status %}
+            <div class="mb-2 ps-4">
+                <span class="text-muted">Marital Status:</span> {{ contact.marital_status|title }}
+            </div>
+            {% endif %}
+            {% if contact.language %}
+            <div class="mb-2 ps-4">
+                <span class="text-muted">Language:</span> {{ contact.language|upper }}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Address Information -->
+        <div class="info-section mb-4">
+            <label class="text-uppercase small text-muted mb-2">Address</label>
+            <address class="ps-4 mb-0">
+                {% if contact.address_line1 %}{{ contact.address_line1 }}<br>{% endif %}
+                {% if contact.address_line2 %}{{ contact.address_line2 }}<br>{% endif %}
+                {% if contact.city %}{{ contact.city }}{% endif %}
+                {% if contact.state %}, {{ contact.state }}{% endif %}
+                {% if contact.postal_code %} {{ contact.postal_code }}{% endif %}
+                {% if contact.country %}<br>{{ contact.country }}{% endif %}
+            </address>
+        </div>
+
+        <!-- Social Profiles -->
+        <div class="info-section">
+            <label class="text-uppercase small text-muted mb-2">Social Profiles</label>
+            <div class="social-links ps-4">
+                {% if contact.linkedin %}
+                <a href="{{ contact.linkedin }}" target="_blank" class="d-flex align-items-center text-decoration-none mb-2">
+                    <i class="fab fa-linkedin text-primary me-2"></i>LinkedIn Profile
+                </a>
+                {% endif %}
+                {% if contact.twitter %}
+                <a href="{{ contact.twitter }}" target="_blank" class="d-flex align-items-center text-decoration-none mb-2">
+                    <i class="fab fa-twitter text-info me-2"></i>Twitter Profile
+                </a>
+                {% endif %}
+                {% if contact.facebook %}
+                <a href="{{ contact.facebook }}" target="_blank" class="d-flex align-items-center text-decoration-none mb-2">
+                    <i class="fab fa-facebook text-primary me-2"></i>Facebook Profile
+                </a>
+                {% endif %}
+                {% if contact.instagram %}
+                <a href="{{ contact.instagram }}" target="_blank" class="d-flex align-items-center text-decoration-none mb-2">
+                    <i class="fab fa-instagram text-danger me-2"></i>Instagram Profile
+                </a>
+                {% endif %}
+                {% if contact.github %}
+                <a href="{{ contact.github }}" target="_blank" class="d-flex align-items-center text-decoration-none mb-2">
+                    <i class="fab fa-github text-dark me-2"></i>GitHub Profile
+                </a>
+                {% endif %}
+                {% if not contact.linkedin and not contact.twitter and not contact.facebook and not contact.instagram and not contact.github %}
+                <span class="text-muted">No social profiles added</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div> 

@@ -1,62 +1,87 @@
-from flask import Blueprint, redirect, url_for, render_template
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from app.models import Customer, Interaction
-from datetime import datetime
+from app.models import Contact, Organization, User, Interaction
+from collections import defaultdict
 
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    """Show landing page for non-authenticated users, redirect to dashboard for authenticated users"""
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
-    return render_template('landing.html', now=datetime.utcnow())
+    return render_template('landing.html')
 
 @main_bp.route('/dashboard')
 @login_required
 def dashboard():
-    """Show the dashboard with summary statistics"""
-    # Get all customers for the current user
-    customers = Customer.query.filter_by(assigned_to_id=current_user.id).all()
+    # Get all contacts for the current user
+    contacts = Contact.query.filter_by(created_by_id=current_user.id).all()
     
-    # Calculate customer statistics
-    total_customers = len(customers)
-    active_customers = sum(1 for c in customers if c.status == 'Active')
-    lead_customers = sum(1 for c in customers if c.status == 'Lead')
-    lost_customers = sum(1 for c in customers if c.status == 'Lost')
+    # Calculate contact statistics
+    total_contacts = len(contacts)
+    total_customers = sum(1 for c in contacts if c.stage == 'customer')
+    total_leads = sum(1 for c in contacts if c.stage == 'lead')
+    active_customers = sum(1 for c in contacts if c.stage == 'customer' and c.is_active)
+    active_leads = sum(1 for c in contacts if c.stage == 'lead' and c.is_active)
     
-    # Get recent customers (last 5)
-    recent_customers = Customer.query.filter_by(assigned_to_id=current_user.id).order_by(Customer.created_at.desc()).limit(5).all()
+    # Get recent activities (combining contacts and interactions)
+    recent_activities = []
     
-    # Get all interactions for the current user's customers
-    customer_ids = [c.id for c in customers]
-    recent_interactions = Interaction.query.filter(Interaction.customer_id.in_(customer_ids)).order_by(Interaction.created_at.desc()).limit(5).all()
+    # Add recent contacts
+    recent_contacts = Contact.query.filter_by(
+        created_by_id=current_user.id
+    ).order_by(Contact.created_at.desc()).limit(5).all()
+    recent_activities.extend(recent_contacts)
     
-    # Get customer status distribution
-    status_distribution = {}
-    for customer in customers:
-        status = customer.status
-        if status in status_distribution:
-            status_distribution[status] += 1
-        else:
-            status_distribution[status] = 1
+    # Add recent interactions
+    contact_ids = [c.id for c in contacts]
+    recent_interactions = Interaction.query.filter(
+        Interaction.contact_id.in_(contact_ids)
+    ).order_by(Interaction.created_at.desc()).limit(5).all()
+    recent_activities.extend(recent_interactions)
+    
+    # Sort activities by creation date
+    recent_activities.sort(key=lambda x: x.created_at, reverse=True)
+    recent_activities = recent_activities[:10]  # Keep only the 10 most recent
+    
+    # Get contact stage distribution
+    stage_distribution = defaultdict(int)
+    for contact in contacts:
+        stage = contact.stage or 'unknown'
+        stage_distribution[stage] += 1
     
     # Get interactions by type
-    interaction_types = {}
-    for interaction in Interaction.query.filter(Interaction.customer_id.in_(customer_ids)).all():
-        interaction_type = interaction.type
-        if interaction_type in interaction_types:
-            interaction_types[interaction_type] += 1
-        else:
-            interaction_types[interaction_type] = 1
+    interaction_types = defaultdict(int)
+    for interaction in Interaction.query.filter(
+        Interaction.contact_id.in_(contact_ids)
+    ).all():
+        interaction_type = interaction.type or 'unknown'
+        interaction_types[interaction_type] += 1
     
-    return render_template('main/dashboard.html',
-                          customers=customers,
-                          total_customers=total_customers,
-                          active_customers=active_customers,
-                          lead_customers=lead_customers,
-                          lost_customers=lost_customers,
-                          recent_customers=recent_customers,
-                          recent_interactions=recent_interactions,
-                          status_distribution=status_distribution,
-                          interaction_types=interaction_types) 
+    # Get contacts by month
+    contacts_by_month = defaultdict(int)
+    for contact in contacts:
+        month = contact.created_at.strftime('%Y-%m')
+        contacts_by_month[month] += 1
+    
+    # Sort months chronologically
+    sorted_months = sorted(contacts_by_month.keys())
+    
+    # Get contacts by source
+    contacts_by_source = {}
+    sources = ['website', 'referral', 'social', 'email', 'other']
+    for source in sources:
+        contacts_by_source[source] = sum(1 for c in contacts if c.source == source)
+    
+    return render_template('dashboard.html',
+                         total_contacts=total_contacts,
+                         total_customers=total_customers,
+                         total_leads=total_leads,
+                         active_customers=active_customers,
+                         active_leads=active_leads,
+                         recent_activities=recent_activities,
+                         stage_distribution=dict(stage_distribution),
+                         interaction_types=dict(interaction_types),
+                         contacts_by_month=contacts_by_month,
+                         sorted_months=sorted_months,
+                         contacts_by_source=contacts_by_source) 

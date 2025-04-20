@@ -1,0 +1,35 @@
+{% if contact.organization %}
+<!-- Organization Card -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-transparent border-0">
+        <h6 class="card-title mb-0">
+            <i class="fas fa-building text-primary me-2"></i>Organization
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="organization-logo rounded bg-light d-flex align-items-center justify-content-center" 
+                 style="width: 48px; height: 48px;">
+                <i class="fas fa-building text-primary"></i>
+            </div>
+            <div>
+                <h6 class="mb-1">{{ contact.organization.name }}</h6>
+                <span class="badge bg-light text-secondary">{{ contact.organization.industry }}</span>
+            </div>
+        </div>
+        {% if contact.organization.website %}
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <i class="fas fa-globe text-muted"></i>
+            <a href="{{ contact.organization.website }}" target="_blank" class="text-decoration-none">
+                {{ contact.organization.website }}
+                <i class="fas fa-external-link-alt ms-1 small"></i>
+            </a>
+        </div>
+        {% endif %}
+        <a href="{{ url_for('organizations.show', id=contact.organization.id) }}" 
+           class="btn btn-outline-primary btn-sm w-100">
+            <i class="fas fa-building me-2"></i>View Organization Details
+        </a>
+    </div>
+</div>
+{% endif %} 

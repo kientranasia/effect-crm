@@ -1,0 +1,320 @@
+<!-- Tabs Navigation -->
+<ul class="nav nav-tabs nav-tabs-modern mb-4" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active d-flex align-items-center gap-2" data-bs-toggle="tab" data-bs-target="#overview">
+            <i class="fas fa-home"></i>
+            <span>Overview</span>
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link d-flex align-items-center gap-2" data-bs-toggle="tab" data-bs-target="#professional">
+            <i class="fas fa-briefcase"></i>
+            <span>Professional</span>
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link d-flex align-items-center gap-2" data-bs-toggle="tab" data-bs-target="#pipeline">
+            <i class="fas fa-project-diagram"></i>
+            <span>Pipeline</span>
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link d-flex align-items-center gap-2" data-bs-toggle="tab" data-bs-target="#interactions">
+            <i class="fas fa-history"></i>
+            <span>Interactions</span>
+            <span class="badge rounded-pill bg-primary-subtle text-primary">{{ interaction_counts['total'] }}</span>
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content">
+    <!-- Overview Tab -->
+    <div class="tab-pane fade show active" id="overview">
+        <div class="row g-4">
+            <!-- Stats -->
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-sm-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle bg-primary-subtle text-primary me-3">
+                                        <i class="fas fa-phone"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted">Calls</div>
+                                        <div class="h4 mb-0">{{ interaction_counts.get('call', 0) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle bg-success-subtle text-success me-3">
+                                        <i class="fas fa-handshake"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted">Meetings</div>
+                                        <div class="h4 mb-0">{{ interaction_counts.get('meeting', 0) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle bg-info-subtle text-info me-3">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted">Emails</div>
+                                        <div class="h4 mb-0">{{ interaction_counts.get('email', 0) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title mb-0">Quick Actions</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ url_for('interactions.create', contact_id=contact.id, type='call') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-phone me-2"></i>Log Call
+                            </a>
+                            <a href="{{ url_for('interactions.create', contact_id=contact.id, type='meeting') }}" class="btn btn-outline-success">
+                                <i class="fas fa-calendar me-2"></i>Schedule Meeting
+                            </a>
+                            <a href="{{ url_for('interactions.create', contact_id=contact.id, type='email') }}" class="btn btn-outline-info">
+                                <i class="fas fa-envelope me-2"></i>Send Email
+                            </a>
+                            <a href="{{ url_for('interactions.create', contact_id=contact.id, type='task') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-tasks me-2"></i>Add Task
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="card-title mb-0">Recent Activity</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="activity-list">
+                            {% if contact.interactions %}
+                                {% for interaction in contact.interactions[:5] %}
+                                <div class="activity-item p-3 border-bottom">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="icon-circle bg-{{ interaction.type_color }}-subtle text-{{ interaction.type_color }}">
+                                            <i class="fas fa-{{ interaction.type_icon }}"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ interaction.title }}</h6>
+                                            <p class="text-muted small mb-0">
+                                                {{ interaction.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <p class="text-muted mb-0">No recent activity</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional Tab -->
+    <div class="tab-pane fade" id="professional">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="row g-4">
+                    {% if contact.company_name %}
+                    <div class="col-md-6">
+                        <label class="text-uppercase small text-muted mb-2">Company</label>
+                        <div class="mb-3">{{ contact.company_name }}</div>
+                    </div>
+                    {% endif %}
+                    {% if contact.company_size %}
+                    <div class="col-md-6">
+                        <label class="text-uppercase small text-muted mb-2">Company Size</label>
+                        <div class="mb-3">{{ contact.company_size }}</div>
+                    </div>
+                    {% endif %}
+                    {% if contact.industry %}
+                    <div class="col-md-6">
+                        <label class="text-uppercase small text-muted mb-2">Industry</label>
+                        <div class="mb-3">{{ contact.industry }}</div>
+                    </div>
+                    {% endif %}
+                    {% if contact.website %}
+                    <div class="col-md-6">
+                        <label class="text-uppercase small text-muted mb-2">Website</label>
+                        <div class="mb-3">
+                            <a href="{{ contact.website }}" target="_blank" class="text-decoration-none">
+                                {{ contact.website }}
+                                <i class="fas fa-external-link-alt ms-1 small"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if contact.bio %}
+                    <div class="col-12">
+                        <label class="text-uppercase small text-muted mb-2">Bio</label>
+                        <div class="mb-3">{{ contact.bio }}</div>
+                    </div>
+                    {% endif %}
+                    {% if contact.skills %}
+                    <div class="col-12">
+                        <label class="text-uppercase small text-muted mb-2">Skills</label>
+                        <div class="mb-3">
+                            {% for skill in contact.skills.split(',') %}
+                            <span class="badge bg-light text-dark me-1">{{ skill.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if contact.interests %}
+                    <div class="col-12">
+                        <label class="text-uppercase small text-muted mb-2">Interests</label>
+                        <div class="mb-3">
+                            {% for interest in contact.interests.split(',') %}
+                            <span class="badge bg-light text-dark me-1">{{ interest.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pipeline Tab -->
+    <div class="tab-pane fade" id="pipeline">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="text-uppercase small text-muted mb-2">Stage</label>
+                        <div class="mb-3">
+                            <span class="badge bg-{{ contact.stage_color }}-subtle text-{{ contact.stage_color }}">
+                                {{ contact.stage_display }}
+                            </span>
+                        </div>
+                    </div>
+                    {% if contact.deal_value %}
+                    <div class="col-md-6">
+                        <label class="text-uppercase small text-muted mb-2">Deal Value</label>
+                        <div class="mb-3">${{ "%.2f"|format(contact.deal_value) }}</div>
+                    </div>
+                    {% endif %}
+                    {% if contact.probability %}
+                    <div class="col-md-6">
+                        <label class="text-uppercase small text-muted mb-2">Probability</label>
+                        <div class="mb-3">{{ contact.probability }}%</div>
+                    </div>
+                    {% endif %}
+                    {% if contact.expected_close_date %}
+                    <div class="col-md-6">
+                        <label class="text-uppercase small text-muted mb-2">Expected Close Date</label>
+                        <div class="mb-3">{{ contact.expected_close_date.strftime('%B %d, %Y') }}</div>
+                    </div>
+                    {% endif %}
+                    {% if contact.source %}
+                    <div class="col-md-6">
+                        <label class="text-uppercase small text-muted mb-2">Source</label>
+                        <div class="mb-3">{{ contact.source }}</div>
+                    </div>
+                    {% endif %}
+                    {% if contact.source_channel %}
+                    <div class="col-md-6">
+                        <label class="text-uppercase small text-muted mb-2">Source Channel</label>
+                        <div class="mb-3">{{ contact.source_channel }}</div>
+                    </div>
+                    {% endif %}
+                    {% if contact.requirements %}
+                    <div class="col-12">
+                        <label class="text-uppercase small text-muted mb-2">Requirements</label>
+                        <div class="mb-3">{{ contact.requirements }}</div>
+                    </div>
+                    {% endif %}
+                    {% if contact.interested_in %}
+                    <div class="col-12">
+                        <label class="text-uppercase small text-muted mb-2">Interested In</label>
+                        <div class="mb-3">{{ contact.interested_in }}</div>
+                    </div>
+                    {% endif %}
+                    {% if contact.budget %}
+                    <div class="col-12">
+                        <label class="text-uppercase small text-muted mb-2">Budget</label>
+                        <div class="mb-3">{{ contact.budget }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactions Tab -->
+    <div class="tab-pane fade" id="interactions">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="card-title mb-0">Interaction History</h6>
+                <a href="{{ url_for('interactions.create', contact_id=contact.id) }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-2"></i>New Interaction
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="interaction-list">
+                    {% if contact.interactions %}
+                        {% for interaction in contact.interactions %}
+                        <div class="interaction-item p-3 border-bottom">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="icon-circle bg-{{ interaction.type_color }}-subtle text-{{ interaction.type_color }}">
+                                    <i class="fas fa-{{ interaction.type_icon }}"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h6 class="mb-1">{{ interaction.title }}</h6>
+                                        <span class="badge bg-{{ interaction.status_color }}-subtle text-{{ interaction.status_color }}">
+                                            {{ interaction.status_display }}
+                                        </span>
+                                    </div>
+                                    <p class="text-muted small mb-2">
+                                        {{ interaction.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                    </p>
+                                    {% if interaction.description %}
+                                    <p class="mb-2">{{ interaction.description }}</p>
+                                    {% endif %}
+                                    {% if interaction.outcome %}
+                                    <div class="bg-light p-2 rounded">
+                                        <small class="text-muted">Outcome:</small>
+                                        <p class="mb-0">{{ interaction.outcome }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">No interactions recorded</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

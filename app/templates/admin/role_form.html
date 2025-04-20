@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}{% if role %}Edit Role{% else %}Create New Role{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">{% if role %}Edit Role{% else %}Create New Role{% endif %}</h1>
+        <a href="{{ url_for('admin.roles') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Roles
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Role Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ role.name if role else '' }}" required maxlength="64">
+                            <div class="form-text">Maximum 64 characters</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="3">{{ role.description if role else '' }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Permissions</label>
+                            <div class="accordion" id="permissionsAccordion">
+                                <!-- User Management -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#userManagement">
+                                            <i class="bi bi-people me-2"></i> User Management
+                                        </button>
+                                    </h2>
+                                    <div id="userManagement" class="accordion-collapse collapse show" data-bs-parent="#permissionsAccordion">
+                                        <div class="accordion-body">
+                                            {% for permission in permissions %}
+                                                {% if permission.name.startswith('user_') %}
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" 
+                                                               name="permissions" value="{{ permission.id }}" 
+                                                               id="perm{{ permission.id }}"
+                                                               {% if role and permission in role.permissions %}checked{% endif %}>
+                                                        <label class="form-check-label" for="perm{{ permission.id }}">
+                                                            <strong>{{ permission.name | replace('user_', '') | title }}</strong>
+                                                            <small class="text-muted d-block">{{ permission.description }}</small>
+                                                        </label>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Role Management -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#roleManagement">
+                                            <i class="bi bi-shield-lock me-2"></i> Role Management
+                                        </button>
+                                    </h2>
+                                    <div id="roleManagement" class="accordion-collapse collapse" data-bs-parent="#permissionsAccordion">
+                                        <div class="accordion-body">
+                                            {% for permission in permissions %}
+                                                {% if permission.name.startswith('role_') %}
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" 
+                                                               name="permissions" value="{{ permission.id }}" 
+                                                               id="perm{{ permission.id }}"
+                                                               {% if role and permission in role.permissions %}checked{% endif %}>
+                                                        <label class="form-check-label" for="perm{{ permission.id }}">
+                                                            <strong>{{ permission.name | replace('role_', '') | title }}</strong>
+                                                            <small class="text-muted d-block">{{ permission.description }}</small>
+                                                        </label>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Contact Management -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#contactManagement">
+                                            <i class="bi bi-person-lines-fill me-2"></i> Contact Management
+                                        </button>
+                                    </h2>
+                                    <div id="contactManagement" class="accordion-collapse collapse" data-bs-parent="#permissionsAccordion">
+                                        <div class="accordion-body">
+                                            {% for permission in permissions %}
+                                                {% if permission.name.startswith('contact_') %}
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" 
+                                                               name="permissions" value="{{ permission.id }}" 
+                                                               id="perm{{ permission.id }}"
+                                                               {% if role and permission in role.permissions %}checked{% endif %}>
+                                                        <label class="form-check-label" for="perm{{ permission.id }}">
+                                                            <strong>{{ permission.name | replace('contact_', '') | title }}</strong>
+                                                            <small class="text-muted d-block">{{ permission.description }}</small>
+                                                        </label>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Organization Management -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#orgManagement">
+                                            <i class="bi bi-building me-2"></i> Organization Management
+                                        </button>
+                                    </h2>
+                                    <div id="orgManagement" class="accordion-collapse collapse" data-bs-parent="#permissionsAccordion">
+                                        <div class="accordion-body">
+                                            {% for permission in permissions %}
+                                                {% if permission.name.startswith('org_') %}
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" 
+                                                               name="permissions" value="{{ permission.id }}" 
+                                                               id="perm{{ permission.id }}"
+                                                               {% if role and permission in role.permissions %}checked{% endif %}>
+                                                        <label class="form-check-label" for="perm{{ permission.id }}">
+                                                            <strong>{{ permission.name | replace('org_', '') | title }}</strong>
+                                                            <small class="text-muted d-block">{{ permission.description }}</small>
+                                                        </label>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Project Management -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#projectManagement">
+                                            <i class="bi bi-kanban me-2"></i> Project Management
+                                        </button>
+                                    </h2>
+                                    <div id="projectManagement" class="accordion-collapse collapse" data-bs-parent="#permissionsAccordion">
+                                        <div class="accordion-body">
+                                            {% for permission in permissions %}
+                                                {% if permission.name.startswith('project_') %}
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" 
+                                                               name="permissions" value="{{ permission.id }}" 
+                                                               id="perm{{ permission.id }}"
+                                                               {% if role and permission in role.permissions %}checked{% endif %}>
+                                                        <label class="form-check-label" for="perm{{ permission.id }}">
+                                                            <strong>{{ permission.name | replace('project_', '') | title }}</strong>
+                                                            <small class="text-muted d-block">{{ permission.description }}</small>
+                                                        </label>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Interaction Management -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#interactionManagement">
+                                            <i class="bi bi-chat-dots me-2"></i> Interaction Management
+                                        </button>
+                                    </h2>
+                                    <div id="interactionManagement" class="accordion-collapse collapse" data-bs-parent="#permissionsAccordion">
+                                        <div class="accordion-body">
+                                            {% for permission in permissions %}
+                                                {% if permission.name.startswith('interaction_') %}
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" 
+                                                               name="permissions" value="{{ permission.id }}" 
+                                                               id="perm{{ permission.id }}"
+                                                               {% if role and permission in role.permissions %}checked{% endif %}>
+                                                        <label class="form-check-label" for="perm{{ permission.id }}">
+                                                            <strong>{{ permission.name | replace('interaction_', '') | title }}</strong>
+                                                            <small class="text-muted d-block">{{ permission.description }}</small>
+                                                        </label>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- System Settings -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#settingsManagement">
+                                            <i class="bi bi-gear me-2"></i> System Settings
+                                        </button>
+                                    </h2>
+                                    <div id="settingsManagement" class="accordion-collapse collapse" data-bs-parent="#permissionsAccordion">
+                                        <div class="accordion-body">
+                                            {% for permission in permissions %}
+                                                {% if permission.name.startswith('settings_') %}
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" 
+                                                               name="permissions" value="{{ permission.id }}" 
+                                                               id="perm{{ permission.id }}"
+                                                               {% if role and permission in role.permissions %}checked{% endif %}>
+                                                        <label class="form-check-label" for="perm{{ permission.id }}">
+                                                            <strong>{{ permission.name | replace('settings_', '') | title }}</strong>
+                                                            <small class="text-muted d-block">{{ permission.description }}</small>
+                                                        </label>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admin.roles') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                {% if role %}Save Changes{% else %}Create Role{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Help</h5>
+                    <p class="card-text">
+                        <strong>Role Name:</strong> Choose a unique name that clearly identifies the role's purpose.
+                    </p>
+                    <p class="card-text">
+                        <strong>Description:</strong> Provide a brief explanation of what this role is used for and its level of access.
+                    </p>
+                    <p class="card-text">
+                        <strong>Permissions:</strong> Select the permissions that users with this role will have access to. Permissions are grouped by category for easier management.
+                    </p>
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Click on each category to expand/collapse the permission list.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

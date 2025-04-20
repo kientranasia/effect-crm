@@ -1,0 +1,41 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Anderson;Sarah;Marie;Dr.;PhD
+FN:Dr. Sarah Marie Anderson
+EMAIL;TYPE=INTERNET:sarah.anderson@university.edu
+TEL;TYPE=WORK,VOICE:+1-555-678-9012
+TEL;TYPE=CELL:+1-555-432-1098
+ADR;TYPE=WORK:;;100 Academic Way;Cambridge;MA;02138;USA
+TITLE:Professor
+ORG:University of Technology
+URL:https://www.linkedin.com/in/sarahanderson
+NOTE:Expert in artificial intelligence and machine learning
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+N:Garcia;Carlos;Miguel;;
+FN:Carlos Miguel Garcia
+EMAIL;TYPE=INTERNET:carlos.garcia@healthcare.org
+TEL;TYPE=WORK,VOICE:+1-555-789-0123
+TEL;TYPE=CELL:+1-555-321-0987
+ADR;TYPE=WORK:;;200 Medical Center Dr;Houston;TX;77030;USA
+TITLE:Chief Medical Officer
+ORG:HealthCare Solutions
+URL:https://www.linkedin.com/in/carlosgarcia
+NOTE:Specializes in telemedicine and digital health
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+N:Kim;Jennifer;Soo;;
+FN:Jennifer Soo Kim
+EMAIL;TYPE=INTERNET:jennifer.kim@finance.com
+TEL;TYPE=WORK,VOICE:+1-555-890-1234
+TEL;TYPE=CELL:+1-555-210-9876
+ADR;TYPE=WORK:;;300 Wall Street;New York;NY;10005;USA
+TITLE:Investment Banker
+ORG:Global Finance Group
+URL:https://www.linkedin.com/in/jenniferkim
+NOTE:Focus on sustainable investments and ESG
+END:VCARD 

@@ -6,26 +6,32 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - .:/app
+      - ./logs:/app/logs
+      - ./instance:/app/instance
     environment:
       - FLASK_APP=app
-      - FLASK_ENV=development
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/effect_crm
-      - SECRET_KEY=your-secret-key-here
-      - MAIL_SERVER=smtp.gmail.com
-      - MAIL_PORT=587
-      - MAIL_USE_TLS=True
-      - MAIL_USERNAME=your-email@gmail.com
-      - MAIL_PASSWORD=your-app-password
-      - MAIL_DEFAULT_SENDER=your-email@gmail.com
-      - SEED_DATA=true
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-here}
+      - MAIL_SERVER=${MAIL_SERVER:-smtp.gmail.com}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USE_TLS=${MAIL_USE_TLS:-True}
+      - MAIL_USERNAME=${MAIL_USERNAME:-your-email@gmail.com}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-your-app-password}
+      - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER:-your-email@gmail.com}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-your-anthropic-key}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-your-openai-key}
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
     command: >
       sh -c "flask db upgrade &&
-             flask seed &&
-             gunicorn --bind 0.0.0.0:5000 app:create_app()"
+             gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 app:create_app()"
 
   db:
     image: postgres:13
@@ -42,6 +48,38 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  celery:
+    build: .
+    volumes:
+      - ./logs:/app/logs
+      - ./instance:/app/instance
+    environment:
+      - FLASK_APP=app
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/effect_crm
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
+    command: celery -A app.celery worker --loglevel=info
 
 volumes:
-  postgres_data: 
+  postgres_data:
+  redis_data: 

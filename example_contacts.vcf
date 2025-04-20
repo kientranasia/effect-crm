@@ -1,0 +1,65 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:John Smith
+N:Smith;John;;;
+EMAIL;TYPE=WORK:john.smith@example.com
+TEL;TYPE=WORK,VOICE:+1-555-123-4567
+TEL;TYPE=CELL:+1-555-987-6543
+TEL;TYPE=HOME:+1-555-111-2222
+ADR;TYPE=WORK:;;123 Business Ave;New York;NY;10001;USA
+TITLE:Senior Manager
+ORG:Acme Corporation
+URL:https://www.linkedin.com/in/johnsmith
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Jane Doe
+N:Doe;Jane;;;
+EMAIL;TYPE=WORK:jane.doe@example.com
+TEL;TYPE=WORK,VOICE:+1-555-234-5678
+TEL;TYPE=CELL:+1-555-876-5432
+ADR;TYPE=WORK:;;456 Corporate Blvd;San Francisco;CA;94105;USA
+TITLE:Marketing Director
+ORG:TechStart Inc
+URL:https://www.linkedin.com/in/janedoe
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Robert Johnson
+N:Johnson;Robert;;;
+EMAIL;TYPE=WORK:robert.johnson@example.com
+TEL;TYPE=WORK,VOICE:+1-555-345-6789
+TEL;TYPE=CELL:+1-555-765-4321
+ADR;TYPE=WORK:;;789 Enterprise St;Chicago;IL;60601;USA
+TITLE:CEO
+ORG:Global Solutions
+URL:https://www.linkedin.com/in/robertjohnson
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Emily Wilson
+N:Wilson;Emily;;;
+EMAIL;TYPE=WORK:emily.wilson@example.com
+TEL;TYPE=WORK,VOICE:+1-555-456-7890
+TEL;TYPE=CELL:+1-555-654-3210
+ADR;TYPE=WORK:;;321 Innovation Dr;Boston;MA;02108;USA
+TITLE:Product Manager
+ORG:Future Tech
+URL:https://www.linkedin.com/in/emilywilson
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Michael Brown
+N:Brown;Michael;;;
+EMAIL;TYPE=WORK:michael.brown@example.com
+TEL;TYPE=WORK,VOICE:+1-555-567-8901
+TEL;TYPE=CELL:+1-555-543-2109
+ADR;TYPE=WORK:;;654 Startup Lane;Austin;TX;78701;USA
+TITLE:CTO
+ORG:Innovate Labs
+URL:https://www.linkedin.com/in/michaelbrown
+END:VCARD 

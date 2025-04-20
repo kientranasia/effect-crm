@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <h1>Lead Details</h1>
+        <div>
+            <a href="{{ url_for('leads.edit', id=lead.id) }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{{ url_for('leads.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-user me-1"></i>
+            Basic Information
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Name</dt>
+                        <dd class="col-sm-8">{{ lead.name }}</dd>
+
+                        <dt class="col-sm-4">Company</dt>
+                        <dd class="col-sm-8">{{ lead.company or 'N/A' }}</dd>
+
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">
+                            <a href="mailto:{{ lead.email }}">{{ lead.email }}</a>
+                        </dd>
+
+                        <dt class="col-sm-4">Phone</dt>
+                        <dd class="col-sm-8">{{ lead.phone or 'N/A' }}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-{{ {
+                                'New': 'info',
+                                'Contacted': 'primary',
+                                'Qualified': 'success',
+                                'Proposal': 'warning',
+                                'Negotiation': 'warning',
+                                'Closed Won': 'success',
+                                'Closed Lost': 'danger'
+                            }[lead.status] }}">
+                                {{ lead.status }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4">Source</dt>
+                        <dd class="col-sm-8">{{ lead.source or 'N/A' }}</dd>
+
+                        <dt class="col-sm-4">Created</dt>
+                        <dd class="col-sm-8">{{ lead.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+
+                        <dt class="col-sm-4">Last Updated</dt>
+                        <dd class="col-sm-8">{{ lead.updated_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-sticky-note me-1"></i>
+            Notes
+        </div>
+        <div class="card-body">
+            {% if lead.notes %}
+                <p class="mb-0">{{ lead.notes }}</p>
+            {% else %}
+                <p class="text-muted mb-0">No notes available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

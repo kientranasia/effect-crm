@@ -1,5 +1,5 @@
 from datetime import datetime
-from app import db
+from app.extensions import db
 from app.models.mixins import TimestampMixin
 
 class Activity(db.Model, TimestampMixin):
@@ -12,20 +12,20 @@ class Activity(db.Model, TimestampMixin):
     description = db.Column(db.Text, nullable=False)
     
     # Relationships
-    lead_id = db.Column(db.Integer, db.ForeignKey('leads.id', ondelete='CASCADE'), nullable=False)
-    lead = db.relationship('Lead', backref=db.backref('activities', lazy='dynamic', cascade='all, delete-orphan'))
+    contact_id = db.Column(db.Integer, db.ForeignKey('contacts.id', ondelete='CASCADE'), nullable=False)
+    contact = db.relationship('Contact', backref=db.backref('activities', lazy='dynamic', cascade='all, delete-orphan'))
     
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('activities', lazy='dynamic'))
     
     def __repr__(self):
-        return f'<Activity {self.type} for Lead {self.lead_id}>'
+        return f'<Activity {self.type} for Contact {self.contact_id}>'
     
     @classmethod
-    def create(cls, lead_id, user_id, activity_type, description):
-        """Create a new activity and update the lead's last contact date"""
+    def create(cls, contact_id, user_id, activity_type, description):
+        """Create a new activity and update the contact's last contact date"""
         activity = cls(
-            lead_id=lead_id,
+            contact_id=contact_id,
             user_id=user_id,
             type=activity_type,
             description=description
@@ -33,11 +33,11 @@ class Activity(db.Model, TimestampMixin):
         
         db.session.add(activity)
         
-        # Update lead's last contact date
-        from app.models.lead import Lead
-        lead = Lead.query.get(lead_id)
-        if lead:
-            lead.last_contact_date = datetime.utcnow()
+        # Update contact's last contact date
+        from app.models.contact import Contact
+        contact = Contact.query.get(contact_id)
+        if contact:
+            contact.last_contact_date = datetime.utcnow()
         
         db.session.commit()
         return activity 

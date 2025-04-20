@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from . import bp
-from app.models import Customer, Interaction, Workspace
+from app.models import Customer, Interaction
 from datetime import datetime, timedelta
 from collections import defaultdict
 
@@ -13,21 +13,10 @@ def index():
 @bp.route('/main/dashboard')
 @login_required
 def dashboard():
-    # Get user's workspaces
-    workspaces = current_user.workspaces
-    if not workspaces:
-        flash('Please join or create a workspace first.', 'warning')
-        return redirect(url_for('workspace.create'))
-        
-    # Use the first workspace for now
-    current_workspace = workspaces[0]
-    
-    # Get all customers for the current workspace where user is assigned or is workspace owner
+    # Get all customers where user is assigned
     customers = Customer.query.filter(
-        (Customer.workspace_id == current_workspace.id) &
-        ((Customer.assigned_user_id == current_user.id) | 
-         (Workspace.owner_id == current_user.id))
-    ).join(Workspace).all()
+        Customer.assigned_user_id == current_user.id
+    ).all()
     
     # Calculate customer statistics
     total_customers = len(customers)
@@ -37,10 +26,8 @@ def dashboard():
     
     # Get recent customers
     recent_customers = Customer.query.filter(
-        (Customer.workspace_id == current_workspace.id) &
-        ((Customer.assigned_user_id == current_user.id) | 
-         (Workspace.owner_id == current_user.id))
-    ).join(Workspace).order_by(Customer.created_at.desc()).limit(5).all()
+        Customer.assigned_user_id == current_user.id
+    ).order_by(Customer.created_at.desc()).limit(5).all()
     
     # Get recent interactions
     recent_interactions = Interaction.query.filter(
@@ -67,8 +54,7 @@ def dashboard():
                          recent_customers=recent_customers,
                          recent_interactions=recent_interactions,
                          customers_by_month=customers_by_month,
-                         sorted_months=sorted_months,
-                         current_workspace=current_workspace)
+                         sorted_months=sorted_months)
 
 @bp.route('/privacy-policy')
 def privacy_policy():

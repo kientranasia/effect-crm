@@ -1,0 +1,963 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Contact - {{ contact.full_name }}{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --primary-color: #0d6efd;
+        --primary-light: rgba(13, 110, 253, 0.1);
+        --border-color: #e5e7eb;
+        --text-primary: #111827;
+        --text-secondary: #6b7280;
+        --bg-hover: #f3f4f6;
+    }
+
+    .container-wrapper {
+        max-width: 1618px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 1.5rem 0;
+    }
+
+    .page-header {
+        background: #fff;
+        padding: 1.5rem;
+        margin: 0 1.5rem 2rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        max-width: calc(1618px - 3rem);
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .contact-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .contact-avatar-wrapper {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .contact-avatar {
+        width: 4rem;
+        height: 4rem;
+        background: #0d6efd;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 1.5rem;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+
+    .contact-avatar:hover {
+        transform: scale(1.05);
+    }
+
+    .avatar-edit-btn {
+        position: absolute;
+        bottom: -0.25rem;
+        right: -0.25rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 2px solid #fff;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .avatar-edit-btn:hover {
+        background: #0b5ed7;
+        transform: scale(1.1);
+    }
+
+    .avatar-preview {
+        margin-bottom: 1.5rem;
+    }
+
+    .avatar-lg {
+        width: 6rem;
+        height: 6rem;
+        font-size: 2rem;
+    }
+
+    .contact-info {
+        flex: 1;
+        min-width: 0; /* Prevent flex item from overflowing */
+    }
+
+    .contact-name {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .contact-name h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .status-badge {
+        background: #dcfce7;
+        color: #15803d;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        white-space: nowrap;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .contact-details {
+        display: flex;
+        gap: 1.5rem;
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .contact-detail {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0;
+    }
+
+    .contact-detail i {
+        color: #9ca3af;
+        font-size: 0.875rem;
+        width: 1rem;
+        text-align: center;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-left: auto;
+        padding-left: 1rem;
+    }
+
+    .btn-save {
+        background: #0d6efd;
+        border: none;
+        color: white;
+        padding: 0.625rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-save:hover {
+        background: #0b5ed7;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-cancel {
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        padding: 0.625rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+        background: #e5e7eb;
+        color: #111827;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+    .last-interaction {
+        color: #6b7280;
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .last-interaction i {
+        color: #9ca3af;
+        font-size: 0.75rem;
+    }
+
+    /* Tabs */
+    .nav-tabs {
+        border: none;
+        margin-bottom: 1.5rem;
+        gap: 0.5rem;
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        padding: 0.75rem 1.25rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+    }
+
+    .nav-tabs .nav-link:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    .nav-tabs .nav-link.active {
+        background: var(--primary-light);
+        color: var(--primary-color);
+    }
+
+    /* Cards */
+    .card {
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        background: white;
+    }
+
+    .card-header {
+        background: white;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 1.25rem;
+        border-radius: 0.75rem 0.75rem 0 0;
+    }
+
+    .card-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    /* Form Controls */
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px var(--primary-light);
+    }
+
+    .form-control::placeholder {
+        color: #9ca3af;
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+    }
+
+    /* Buttons */
+    .btn {
+        font-weight: 500;
+        padding: 0.625rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: #0b5ed7;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-secondary {
+        border-color: var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .btn-outline-secondary:hover {
+        background: var(--bg-hover);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .btn i {
+        font-size: 1rem;
+    }
+
+    /* Section Headers */
+    .section-header {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    /* Helper Text */
+    .text-muted {
+        font-size: 0.75rem;
+        color: var(--text-secondary) !important;
+    }
+
+    /* Grid Spacing */
+    .row {
+        margin: -0.75rem;
+    }
+
+    .row > * {
+        padding: 0.75rem;
+    }
+
+    /* Animations */
+    .tab-pane {
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Social Media Inputs */
+    .social-input {
+        position: relative;
+    }
+
+    .social-input i {
+        position: absolute;
+        left: 0.875rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 1rem;
+    }
+
+    .social-input .form-control {
+        padding-left: 2.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid g-0">
+    <div class="container-wrapper">
+        <h1 class="page-title">Edit Contact</h1>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="contact-header">
+            <div class="contact-avatar-wrapper">
+                <div class="contact-avatar">
+                    {{ contact.first_name[0] }}{{ contact.last_name[0] }}
+                </div>
+                <button type="button" class="avatar-edit-btn" data-bs-toggle="modal" data-bs-target="#avatarModal">
+                    <i class="fas fa-camera"></i>
+                </button>
+            </div>
+            <div class="contact-info">
+                <div class="contact-name">
+                    <h2>{{ contact.full_name }}</h2>
+                    <span class="status-badge">Active</span>
+                </div>
+                <div class="contact-details">
+                    <div class="contact-detail">
+                        <i class="fas fa-phone"></i>
+                        {{ contact.phone or 'No phone number' }}
+                    </div>
+                    <div class="contact-detail">
+                        <i class="fas fa-envelope"></i>
+                        {{ contact.email }}
+                    </div>
+                </div>
+                {% if contact.last_interaction %}
+                <div class="last-interaction">
+                    <i class="fas fa-clock"></i>
+                    Last interaction: {{ contact.last_interaction.strftime('%B %d, %Y') }}
+                </div>
+                {% endif %}
+            </div>
+            <div class="header-actions">
+                <button type="submit" form="contact-form" class="btn-save">
+                    <i class="fas fa-save"></i>
+                    Save Changes
+                </button>
+                <a href="{{ url_for('contacts.show', id=contact.id) }}" class="btn-cancel">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avatar Edit Modal -->
+    <div class="modal fade" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="avatarModalLabel">Edit Profile Picture</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <div class="avatar-preview">
+                            <div class="contact-avatar avatar-lg">
+                                {{ contact.first_name[0] }}{{ contact.last_name[0] }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="avatarUpload" class="form-label">Upload New Picture</label>
+                        <input type="file" class="form-control" id="avatarUpload" accept="image/*">
+                    </div>
+                    <div class="text-muted small">
+                        Supported formats: JPG, PNG, GIF<br>
+                        Maximum file size: 5MB
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveAvatar">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-wrapper">
+        <form id="contact-form" method="POST" class="needs-validation" novalidate>
+            {{ form.csrf_token }}
+            
+            <div class="row">
+                <div class="col-lg-9">
+                    <!-- Tabs Navigation -->
+                    <ul class="nav nav-tabs" id="contactTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">
+                                <i class="fas fa-user me-2"></i>Basic Information
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">
+                                <i class="fas fa-map-marker-alt me-2"></i>Details & Address
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="professional-tab" data-bs-toggle="tab" data-bs-target="#professional" type="button" role="tab">
+                                <i class="fas fa-briefcase me-2"></i>Professional
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="social-tab" data-bs-toggle="tab" data-bs-target="#social" type="button" role="tab">
+                                <i class="fas fa-share-alt me-2"></i>Social & Notes
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tabs Content -->
+                    <div class="tab-content" id="contactTabsContent">
+                        <!-- Basic Information Tab -->
+                        <div class="tab-pane fade show active" id="basic" role="tabpanel">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {{ form.first_name.label(class="form-label") }}
+                                            {{ form.first_name(class="form-control", placeholder="Enter first name") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.last_name.label(class="form-label") }}
+                                            {{ form.last_name(class="form-control", placeholder="Enter last name") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.email.label(class="form-label") }}
+                                            {{ form.email(class="form-control", placeholder="Enter email address") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.phone.label(class="form-label") }}
+                                            {{ form.phone(class="form-control", placeholder="Enter phone number") }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Professional Tab -->
+                        <div class="tab-pane fade" id="professional" role="tabpanel">
+                            <!-- Organization Card -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-3">Organization</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {{ form.organization_id.label(class="form-label") }}
+                                            <div class="d-flex gap-2 align-items-start">
+                                                {{ form.organization_id(class="form-select") }}
+                                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createOrgModal">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="organization-details" class="mt-3" style="display: none;">
+                                        <h6 class="card-subtitle mb-3">Organization Details</h6>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p class="mb-2"><strong>Name:</strong> <span id="org-name"></span></p>
+                                                <p class="mb-2"><strong>Website:</strong> <a href="#" id="org-website" target="_blank"></a></p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p class="mb-2"><strong>Industry:</strong> <span id="org-industry"></span></p>
+                                                <p class="mb-2"><strong>Size:</strong> <span id="org-size"></span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Professional Details Card -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {{ form.company_name.label(class="form-label") }}
+                                            {{ form.company_name(class="form-control", placeholder="Enter company name") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.title.label(class="form-label") }}
+                                            {{ form.title(class="form-control", placeholder="Enter job title") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.department.label(class="form-label") }}
+                                            {{ form.department(class="form-control", placeholder="Enter department") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.company_size.label(class="form-label") }}
+                                            {{ form.company_size(class="form-select") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.industry.label(class="form-label") }}
+                                            {{ form.industry(class="form-control", placeholder="Enter industry") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.website.label(class="form-label") }}
+                                            {{ form.website(class="form-control", placeholder="Enter website") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.work_phone.label(class="form-label") }}
+                                            {{ form.work_phone(class="form-control", placeholder="Enter work phone") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.alternate_email.label(class="form-label", text="Work Email") }}
+                                            {{ form.alternate_email(class="form-control", placeholder="Enter work email") }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Create Organization Modal -->
+                        <div class="modal fade" id="createOrgModal" tabindex="-1" aria-labelledby="createOrgModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="createOrgModalLabel">Create Organization</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="createOrgForm">
+                                            <div class="mb-3">
+                                                <label for="orgName" class="form-label">Organization Name</label>
+                                                <input type="text" class="form-control" id="orgName" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="orgWebsite" class="form-label">Website</label>
+                                                <input type="url" class="form-control" id="orgWebsite">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="orgIndustry" class="form-label">Industry</label>
+                                                <input type="text" class="form-control" id="orgIndustry">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="orgSize" class="form-label">Size</label>
+                                                <select class="form-select" id="orgSize">
+                                                    <option value="">Select Size</option>
+                                                    <option value="1-10">1-10 employees</option>
+                                                    <option value="11-50">11-50 employees</option>
+                                                    <option value="51-200">51-200 employees</option>
+                                                    <option value="201-500">201-500 employees</option>
+                                                    <option value="501-1000">501-1000 employees</option>
+                                                    <option value="1000+">1000+ employees</option>
+                                                </select>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-primary" id="saveOrgButton">Create Organization</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Details & Address Tab -->
+                        <div class="tab-pane fade" id="details" role="tabpanel">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-3">Address Information</h6>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            {{ form.address_line1.label(class="form-label") }}
+                                            {{ form.address_line1(class="form-control", placeholder="Enter street address") }}
+                                        </div>
+                                        <div class="col-12">
+                                            {{ form.address_line2.label(class="form-label") }}
+                                            {{ form.address_line2(class="form-control", placeholder="Apartment, suite, unit, etc.") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.city.label(class="form-label") }}
+                                            {{ form.city(class="form-control", placeholder="Enter city") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.state.label(class="form-label") }}
+                                            {{ form.state(class="form-control", placeholder="Enter state/province") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.postal_code.label(class="form-label") }}
+                                            {{ form.postal_code(class="form-control", placeholder="Enter postal code") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.country.label(class="form-label") }}
+                                            {{ form.country(class="form-select") }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Social & Notes Tab -->
+                        <div class="tab-pane fade" id="social" role="tabpanel">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-3">Social Media Profiles</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label d-flex align-items-center gap-2">
+                                                    <i class="fab fa-linkedin text-primary"></i>
+                                                    LinkedIn
+                                                </label>
+                                                {{ form.linkedin(class="form-control", placeholder="LinkedIn URL") }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label d-flex align-items-center gap-2">
+                                                    <i class="fab fa-twitter text-info"></i>
+                                                    Twitter
+                                                </label>
+                                                {{ form.twitter(class="form-control", placeholder="Twitter URL") }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label d-flex align-items-center gap-2">
+                                                    <i class="fab fa-facebook text-primary"></i>
+                                                    Facebook
+                                                </label>
+                                                {{ form.facebook(class="form-control", placeholder="Facebook URL") }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label d-flex align-items-center gap-2">
+                                                    <i class="fab fa-github text-dark"></i>
+                                                    GitHub
+                                                </label>
+                                                {{ form.github(class="form-control", placeholder="GitHub URL") }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h6 class="card-subtitle mb-3 mt-4">Notes</h6>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            {{ form.notes.label(class="form-label") }}
+                                            {{ form.notes(class="form-control", rows="4", placeholder="Enter notes") }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Actions -->
+                <div class="col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-3">Actions</h6>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('contacts.show', id=contact.id) }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-eye me-2"></i>View Contact
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pipeline Information Card -->
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-3">Pipeline Information</h6>
+                            <div class="mb-3">
+                                {{ form.source.label(class="form-label") }}
+                                {{ form.source(class="form-select") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.stage.label(class="form-label") }}
+                                {{ form.stage(class="form-select") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.deal_value.label(class="form-label") }}
+                                {{ form.deal_value(class="form-control", placeholder="Enter deal value") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.probability.label(class="form-label") }}
+                                {{ form.probability(class="form-control", placeholder="Enter probability") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle organization selection
+    const organizationSelect = document.getElementById('organization_id');
+    const organizationDetails = document.getElementById('organization-details');
+    
+    organizationSelect.addEventListener('change', function() {
+        if (this.value && this.value != '0') {
+            // Fetch organization details
+            fetch(`/api/organizations/${this.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('org-name').textContent = data.name || 'N/A';
+                    const websiteLink = document.getElementById('org-website');
+                    if (data.website) {
+                        websiteLink.href = data.website;
+                        websiteLink.textContent = data.website;
+                    } else {
+                        websiteLink.href = '#';
+                        websiteLink.textContent = 'N/A';
+                    }
+                    document.getElementById('org-industry').textContent = data.industry || 'N/A';
+                    document.getElementById('org-size').textContent = data.size || 'N/A';
+                    organizationDetails.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching organization details:', error);
+                    organizationDetails.style.display = 'none';
+                });
+        } else {
+            organizationDetails.style.display = 'none';
+        }
+    });
+
+    // Handle organization creation
+    const saveOrgButton = document.getElementById('saveOrgButton');
+    const createOrgForm = document.getElementById('createOrgForm');
+    const createOrgModal = document.getElementById('createOrgModal');
+    const modal = new bootstrap.Modal(createOrgModal);
+
+    saveOrgButton.addEventListener('click', function() {
+        const formData = {
+            name: document.getElementById('orgName').value,
+            website: document.getElementById('orgWebsite').value,
+            industry: document.getElementById('orgIndustry').value,
+            size: document.getElementById('orgSize').value
+        };
+
+        fetch('/api/organizations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add new organization to select options
+                const option = new Option(data.organization.name, data.organization.id);
+                organizationSelect.add(option);
+                organizationSelect.value = data.organization.id;
+                
+                // Trigger change event to show organization details
+                organizationSelect.dispatchEvent(new Event('change'));
+                
+                // Close modal and reset form
+                modal.hide();
+                createOrgForm.reset();
+                
+                // Show success message
+                const toast = new bootstrap.Toast(document.createElement('div'));
+                toast.show();
+            } else {
+                alert('Error creating organization: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error creating organization. Please try again.');
+        });
+    });
+
+    // Trigger change event if organization is pre-selected
+    if (organizationSelect.value && organizationSelect.value != '0') {
+        organizationSelect.dispatchEvent(new Event('change'));
+    }
+
+    // Preview uploaded image
+    const avatarUpload = document.getElementById('avatarUpload');
+    const avatarPreview = document.querySelector('.avatar-preview');
+
+    avatarUpload.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarPreview.innerHTML = `
+                    <img src="${e.target.result}" class="rounded" style="width: 6rem; height: 6rem; object-fit: cover;">
+                `;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Handle avatar save
+    document.getElementById('saveAvatar').addEventListener('click', function() {
+        const formData = new FormData();
+        const file = avatarUpload.files[0];
+        if (file) {
+            formData.append('avatar', file);
+            
+            fetch(`/api/contacts/${contactId}/avatar`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading avatar:', error);
+            });
+        }
+    });
+
+    const form = document.getElementById('contact-form');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrf_token')
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = "{{ url_for('contacts.show', id=contact.id) }}";
+            } else {
+                response.json().then(data => {
+                    alert(data.error || 'An error occurred while updating the contact');
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the contact');
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %} 

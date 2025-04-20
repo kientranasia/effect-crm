@@ -1,0 +1,34 @@
+{% macro permission_required(permission) %}
+    {% if current_user.has_permission(permission) %}
+        {{ caller() }}
+    {% endif %}
+{% endmacro %}
+
+{% macro permission_required_any(permissions) %}
+    {% if current_user.has_any_permission(permissions) %}
+        {{ caller() }}
+    {% endif %}
+{% endmacro %}
+
+{% macro permission_required_all(permissions) %}
+    {% if current_user.has_all_permissions(permissions) %}
+        {{ caller() }}
+    {% endif %}
+{% endmacro %}
+
+{% macro permission_button(permission, url, text, icon=None, class='btn-primary') %}
+    {% if current_user.has_permission(permission) %}
+        <a href="{{ url }}" class="btn {{ class }}">
+            {% if icon %}
+                <i class="{{ icon }}"></i>
+            {% endif %}
+            {{ text }}
+        </a>
+    {% endif %}
+{% endmacro %}
+
+{% macro permission_link(permission, url, text, class='') %}
+    {% if current_user.has_permission(permission) %}
+        <a href="{{ url }}" class="{{ class }}">{{ text }}</a>
+    {% endif %}
+{% endmacro %} 

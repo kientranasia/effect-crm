@@ -57,12 +57,16 @@
             padding: 2rem 0;
         }
     </style>
+    
+    {% block styles %}{% endblock %}
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light">
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('main.index') }}">Effect CRM</a>
+            <a class="navbar-brand fw-bold" href="{{ url_for('main.index') }}">
+                <i class="fas fa-bolt text-primary me-2"></i>Effect CRM
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -75,7 +79,7 @@
                         <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link btn btn-primary text-white px-3" href="{{ url_for('auth.register') }}">Register</a>
+                        <a class="nav-link btn btn-primary text-white px-3 ms-2" href="{{ url_for('auth.register') }}">Register</a>
                     </li>
                 </ul>
             </div>
@@ -98,27 +102,33 @@
                 <div class="col-md-3">
                     <h5>Links</h5>
                     <ul class="list-unstyled">
-                        <li><a href="#features" class="text-white">Features</a></li>
-                        <li><a href="{{ url_for('auth.login') }}" class="text-white">Login</a></li>
-                        <li><a href="{{ url_for('auth.register') }}" class="text-white">Register</a></li>
+                        <li><a href="{{ url_for('main.index') }}" class="text-white-50">Home</a></li>
+                        <li><a href="#features" class="text-white-50">Features</a></li>
+                        <li><a href="{{ url_for('auth.login') }}" class="text-white-50">Login</a></li>
+                        <li><a href="{{ url_for('auth.register') }}" class="text-white-50">Register</a></li>
                     </ul>
                 </div>
                 <div class="col-md-3">
                     <h5>Contact</h5>
                     <ul class="list-unstyled">
-                        <li><a href="mailto:here@kien.vc" class="text-white">here@kien.vc</a></li>
-                        <li><a href="https://github.com/kientranasia/effect-crm" class="text-white" target="_blank"><i class="fab fa-github"></i> GitHub</a></li>
+                        <li><i class="fas fa-envelope me-2"></i> support@effectcrm.com</li>
+                        <li><i class="fas fa-phone me-2"></i> +1 (555) 123-4567</li>
                     </ul>
                 </div>
             </div>
-            <hr class="my-4">
+            <hr class="my-4 bg-light">
             <div class="text-center">
-                <p>&copy; {{ now.year }} Effect CRM. All rights reserved.</p>
+                <p class="mb-0">&copy; {{ now().year }} Effect CRM. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
+    <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    {% block scripts %}{% endblock %}
 </body>
 </html> 

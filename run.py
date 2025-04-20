@@ -2,7 +2,7 @@ import os
 from app import create_app, db
 from config import config
 
-app = create_app(config['default'])
+app = create_app('default')
 
 if __name__ == '__main__':
     # Ensure instance directory exists
@@ -14,4 +14,4 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     
-    app.run(debug=True) 
+    app.run(debug=True, port=5000) 

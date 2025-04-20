@@ -1,88 +1,93 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
-from flask_migrate import Migrate
-from flask_wtf.csrf import CSRFProtect
-from config import Config
+"""
+Flask application factory module.
+"""
 import os
+from flask import Flask
+from config import config
+from app.extensions import db, migrate, login_manager, csrf, mail
 from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_login import LoginManager
+from .utils.filters import timeago
 
-db = SQLAlchemy()
-login_manager = LoginManager()
-migrate = Migrate()
-csrf = CSRFProtect()
-login_manager.login_view = 'auth.login'
-login_manager.login_message = 'Please log in to access this page.'
-login_manager.login_message_category = 'info'
-
-def create_app(config_class=Config):
-    app = Flask(__name__)
+def create_app(config_name='default'):
+    """Create and configure the Flask application.
     
-    # Handle both string config names and config class objects
-    if isinstance(config_class, str):
-        from config import config
-        app.config.from_object(config[config_class])
-    else:
-        app.config.from_object(config_class)
-
+    Args:
+        config_name: The name of the configuration to use. Defaults to 'default'.
+        
+    Returns:
+        The configured Flask application instance.
+    """
+    app = Flask(__name__)
+    app.config.from_object(config[config_name])
+    
+    # Initialize extensions with app
     db.init_app(app)
-    login_manager.init_app(app)
     migrate.init_app(app, db)
+    login_manager.init_app(app)
     csrf.init_app(app)
-
-    from app.routes.auth import auth_bp
-    from app.routes.admin import admin_bp
-    from app.routes.main import main_bp
-    from app.routes.leads import leads_bp
-    from app.routes.organizations import organizations_bp
-    from app.routes.customers import customers_bp
-    from app.modules import interactions
-
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(main_bp)
-    app.register_blueprint(leads_bp)
-    app.register_blueprint(organizations_bp)
-    app.register_blueprint(customers_bp)
-    app.register_blueprint(interactions.bp, url_prefix='/interactions')
-
-    @login_manager.user_loader
-    def load_user(id):
-        return User.query.get(int(id))
-
-    # Custom Jinja2 filters
-    @app.template_filter('timeago')
-    def timeago(date):
-        """Convert a datetime to a human-readable time ago string."""
-        if not date:
+    mail.init_app(app)
+    
+    # Configure login
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message = 'Please log in to access this page.'
+    login_manager.login_message_category = 'info'
+    login_manager.session_protection = 'strong'
+    login_manager.refresh_view = 'auth.login'
+    login_manager.needs_refresh_message = 'Please login again to confirm your identity.'
+    login_manager.needs_refresh_message_category = 'info'
+    
+    # Register Jinja filters
+    app.jinja_env.filters['timeago'] = timeago
+    
+    # Register blueprints
+    from app.routes import main, auth, admin, organizations, contacts, interactions
+    app.register_blueprint(main.main_bp)
+    app.register_blueprint(auth.auth_bp)
+    app.register_blueprint(admin.admin_bp)
+    app.register_blueprint(organizations.organizations_bp)
+    app.register_blueprint(contacts.contacts_bp)
+    app.register_blueprint(interactions.interactions_bp)
+    
+    # Import models to ensure they are registered with SQLAlchemy
+    from app.models import (
+        User, Contact, Organization, Interaction, Activity,
+        AuditLog, Permission, Role, Setting, SecuritySetting,
+        Project
+    )
+    
+    # Register CLI commands
+    from app.cli import register_commands
+    register_commands(app)
+    
+    # Add datetime filter
+    @app.template_filter('datetime')
+    def format_datetime(value):
+        if value is None:
             return ""
+        return value.strftime('%Y-%m-%d %H:%M')
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        """Load a user given the ID.
+        
+        Args:
+            user_id: The ID of the user to load.
             
-        now = datetime.utcnow()
-        diff = now - date
-        
-        seconds = diff.total_seconds()
-        
-        if seconds < 60:
-            return "just now"
-        elif seconds < 3600:
-            minutes = int(seconds / 60)
-            return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
-        elif seconds < 86400:
-            hours = int(seconds / 3600)
-            return f"{hours} hour{'s' if hours != 1 else ''} ago"
-        elif seconds < 604800:
-            days = int(seconds / 86400)
-            return f"{days} day{'s' if days != 1 else ''} ago"
-        elif seconds < 2592000:
-            weeks = int(seconds / 604800)
-            return f"{weeks} week{'s' if weeks != 1 else ''} ago"
-        elif seconds < 31536000:
-            months = int(seconds / 2592000)
-            return f"{months} month{'s' if months != 1 else ''} ago"
-        else:
-            years = int(seconds / 31536000)
-            return f"{years} year{'s' if years != 1 else ''} ago"
-
-    return app
-
-from app.models import User 
+        Returns:
+            The user object if found, None otherwise.
+        """
+        return User.query.get(int(user_id))
+    
+    # Add context processor for menu and datetime
+    from app.utils.menu import get_user_menu
+    @app.context_processor
+    def inject_utils():
+        return {
+            'get_user_menu': get_user_menu,
+            'now': datetime.now
+        }
+    
+    return app 

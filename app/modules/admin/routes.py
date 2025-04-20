@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
-from flask_login import login_required, current_user
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session
+from flask_login import login_required, current_user, login_user, logout_user
 from app import db
 from app.models import User, Role
 from datetime import datetime
@@ -168,4 +168,85 @@ def delete_user(user_id):
         db.session.rollback()
         flash('Error deleting user', 'danger')
     
-    return redirect(url_for('admin.users')) 
+    return redirect(url_for('admin.users'))
+
+@bp.route('/update-account-settings', methods=['GET', 'POST'])
+@login_required
+def update_account_settings():
+    if request.method == 'POST':
+        # Get form data
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        email = request.form.get('email')
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        # Update basic info
+        current_user.first_name = first_name
+        current_user.last_name = last_name
+        
+        # Check if email is being changed
+        if email != current_user.email:
+            # Check if email is already taken
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user and existing_user.id != current_user.id:
+                flash('Email address is already in use', 'danger')
+                return redirect(url_for('admin.update_account_settings'))
+            current_user.email = email
+        
+        # Handle password change if requested
+        if current_password and new_password:
+            if not current_user.check_password(current_password):
+                flash('Current password is incorrect', 'danger')
+                return redirect(url_for('admin.update_account_settings'))
+            
+            if new_password != confirm_password:
+                flash('New passwords do not match', 'danger')
+                return redirect(url_for('admin.update_account_settings'))
+            
+            # Store user info before password change
+            user_id = current_user.id
+            user_email = current_user.email
+            
+            # Update password
+            current_user.set_password(new_password)
+            
+            try:
+                db.session.commit()
+                
+                # Logout and login with new credentials
+                logout_user()
+                user = User.query.get(user_id)
+                login_user(user)
+                
+                flash('Password updated successfully. Please login with your new password.', 'success')
+                return redirect(url_for('auth.login'))
+            except Exception as e:
+                db.session.rollback()
+                flash('Error updating password', 'danger')
+                return redirect(url_for('admin.update_account_settings'))
+        
+        # Update preferences
+        current_user.language = request.form.get('language', 'en')
+        current_user.timezone = request.form.get('timezone', 'UTC')
+        current_user.theme = request.form.get('theme', 'light')
+        current_user.email_notifications = request.form.get('email_notifications') == 'on'
+        current_user.push_notifications = request.form.get('push_notifications') == 'on'
+        
+        try:
+            db.session.commit()
+            flash('Account settings updated successfully', 'success')
+            return redirect(url_for('admin.update_account_settings'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Error updating account settings', 'danger')
+            return redirect(url_for('admin.update_account_settings'))
+    
+    return render_template('admin/account_settings.html')
+
+@bp.route('/profile')
+@login_required
+def profile():
+    """User profile page"""
+    return render_template('admin/profile.html') 

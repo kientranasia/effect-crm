@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Journey - {{ contact.full_name }} - Effect CRM{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('contacts.show', id=contact.id) }}">{{ contact.full_name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Journey Timeline</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Contact Journey</h1>
+            <p class="text-muted mb-0">{{ contact.full_name }} - {{ contact.company_name }}</p>
+        </div>
+        <div class="btn-group">
+            <a href="{{ url_for('interactions.create', contact_id=contact.id) }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> New Interaction
+            </a>
+            <a href="{{ url_for('interactions.index', contact_id=contact.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-list"></i> List View
+            </a>
+        </div>
+    </div>
+
+    <!-- Contact Status Timeline -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="contact-journey-timeline">
+                <div class="journey-step {% if contact.status == 'Contact' %}active{% endif %}">
+                    <div class="journey-icon">
+                        <i class="bi bi-person-plus"></i>
+                    </div>
+                    <div class="journey-content">
+                        <h5>New Contact</h5>
+                        <p class="text-muted mb-0">Initial contact information collected</p>
+                    </div>
+                </div>
+                <div class="journey-connector {% if contact.status in ['Lead', 'Customer'] %}active{% endif %}"></div>
+                <div class="journey-step {% if contact.status == 'Lead' %}active{% endif %}">
+                    <div class="journey-icon">
+                        <i class="bi bi-lightbulb"></i>
+                    </div>
+                    <div class="journey-content">
+                        <h5>Lead</h5>
+                        <p class="text-muted mb-0">Qualified as potential customer</p>
+                    </div>
+                </div>
+                <div class="journey-connector {% if contact.status == 'Customer' %}active{% endif %}"></div>
+                <div class="journey-step {% if contact.status == 'Customer' %}active{% endif %}">
+                    <div class="journey-icon">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                    <div class="journey-content">
+                        <h5>Customer</h5>
+                        <p class="text-muted mb-0">Converted to paying customer</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interaction Timeline -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="card-title mb-0">Interaction History</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if interactions %}
+            <div class="interaction-timeline">
+                {% for interaction in interactions %}
+                <div class="timeline-item">
+                    <div class="timeline-marker bg-{{ interaction.type_color }}">
+                        <i class="bi bi-{{ 'telephone' if interaction.type == 'Call' else 'envelope' if interaction.type == 'Email' else 'calendar-check' if interaction.type == 'Meeting' else 'chat-dots' }}"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="timeline-header">
+                            <h5 class="mb-1">{{ interaction.title }}</h5>
+                            <div class="timeline-meta">
+                                <span class="badge bg-{{ interaction.type_color }}">{{ interaction.type }}</span>
+                                <span class="badge bg-{{ interaction.status_color }}">{{ interaction.status }}</span>
+                                <span class="text-muted">{{ interaction.date.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                            </div>
+                        </div>
+                        <div class="timeline-body">
+                            {% if interaction.description %}
+                            <p>{{ interaction.description }}</p>
+                            {% endif %}
+                            
+                            {% if interaction.outcome %}
+                            <div class="mt-2">
+                                <strong>Outcome:</strong> {{ interaction.outcome }}
+                            </div>
+                            {% endif %}
+                            
+                            {% if interaction.next_steps %}
+                            <div class="mt-2">
+                                <strong>Next Steps:</strong> {{ interaction.next_steps }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="timeline-footer">
+                            <div class="btn-group">
+                                <a href="{{ url_for('interactions.show', interaction_id=interaction.id) }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <a href="{{ url_for('interactions.edit', interaction_id=interaction.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteModal{{ interaction.id }}">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </div>
+                            
+                            {% if interaction.ai_analysis %}
+                            <button class="btn btn-sm btn-link" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#aiAnalysis{{ interaction.id }}" aria-expanded="false">
+                                <i class="bi bi-robot"></i> AI Analysis
+                            </button>
+                            <div class="collapse mt-2" id="aiAnalysis{{ interaction.id }}">
+                                <div class="card card-body bg-light">
+                                    {{ interaction.ai_analysis }}
+                                </div>
+                            </div>
+                            {% else %}
+                            <form action="{{ url_for('interactions.analyze', interaction_id=interaction.id) }}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-link">
+                                    <i class="bi bi-robot"></i> Generate AI Analysis
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-chat-dots display-1 text-muted"></i>
+                <h3 class="mt-3">No Interactions Yet</h3>
+                <p class="text-muted">Start tracking your interactions with this contact.</p>
+                <a href="{{ url_for('interactions.create', contact_id=contact.id) }}" class="btn btn-primary mt-3">
+                    + New Interaction
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Delete Modals -->
+    {% for interaction in interactions %}
+    <div class="modal fade" id="deleteModal{{ interaction.id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Interaction</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">Are you sure you want to delete this interaction? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">Cancel</button>
+                    <form action="{{ url_for('interactions.delete', interaction_id=interaction.id) }}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% block styles %}
+<style>
+    /* Contact Journey Timeline */
+    .contact-journey-timeline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 0;
+    }
+    
+    .journey-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        flex: 1;
+    }
+    
+    .journey-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        color: #6c757d;
+    }
+    
+    .journey-step.active .journey-icon {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .journey-content h5 {
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
+    }
+    
+    .journey-connector {
+        height: 2px;
+        background-color: #e9ecef;
+        flex: 1;
+        margin: 0 1rem;
+        position: relative;
+        top: -30px;
+    }
+    
+    .journey-connector.active {
+        background-color: #0d6efd;
+    }
+    
+    /* Interaction Timeline */
+    .interaction-timeline {
+        position: relative;
+        padding: 2rem 0;
+    }
+    
+    .interaction-timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 30px;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-left: 70px;
+        padding-bottom: 2rem;
+    }
+    
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: 20px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.75rem;
+    }
+    
+    .timeline-content {
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .timeline-header {
+        margin-bottom: 1rem;
+    }
+    
+    .timeline-meta {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .timeline-body {
+        margin-bottom: 1rem;
+    }
+    
+    .timeline-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+</style>
+{% endblock %}
+{% endblock %} 
