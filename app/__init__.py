@@ -10,6 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from .utils.filters import timeago
+from app.routes.interactions import interactions as interactions_blueprint
 
 def create_app(config_name='default'):
     """Create and configure the Flask application.
@@ -43,19 +44,23 @@ def create_app(config_name='default'):
     app.jinja_env.filters['timeago'] = timeago
     
     # Register blueprints
-    from app.routes import main, auth, admin, organizations, contacts, interactions
+    from app.routes import main, auth, admin, organizations, contacts, interactions, projects, tasks
+    from app.modules.analytics import analytics_bp
     app.register_blueprint(main.main_bp)
     app.register_blueprint(auth.auth_bp)
     app.register_blueprint(admin.admin_bp)
     app.register_blueprint(organizations.organizations_bp)
     app.register_blueprint(contacts.contacts_bp)
-    app.register_blueprint(interactions.interactions_bp)
+    app.register_blueprint(interactions_blueprint)
+    app.register_blueprint(projects.bp)
+    app.register_blueprint(tasks.bp)
+    app.register_blueprint(analytics_bp)
     
     # Import models to ensure they are registered with SQLAlchemy
     from app.models import (
         User, Contact, Organization, Interaction, Activity,
         AuditLog, Permission, Role, Setting, SecuritySetting,
-        Project
+        Project, Task
     )
     
     # Register CLI commands
@@ -68,6 +73,12 @@ def create_app(config_name='default'):
         if value is None:
             return ""
         return value.strftime('%Y-%m-%d %H:%M')
+    
+    @app.template_filter('date')
+    def format_date(value):
+        if value is None:
+            return ""
+        return value.strftime('%Y-%m-%d')
     
     @login_manager.user_loader
     def load_user(user_id):

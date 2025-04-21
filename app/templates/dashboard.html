@@ -9,6 +9,7 @@
     border-radius: 12px;
     transition: all 0.2s;
     background: white;
+    height: 100%;
 }
 
 .stat-card:hover {
@@ -16,112 +17,168 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.quick-actions {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.quick-action {
-    padding: 1.5rem;
+.stat-icon {
+    width: 48px;
+    height: 48px;
     border-radius: 12px;
-    background: white;
-    border: 1px solid rgba(0,0,0,0.1);
-    text-align: center;
-    transition: all 0.2s;
-    cursor: pointer;
-}
-
-.quick-action:hover {
-    border-color: var(--primary-color);
-    background-color: rgba(13, 110, 253, 0.02);
-}
-
-.quick-action i {
-    font-size: 1.5rem;
-    margin-bottom: 0.75rem;
-    color: var(--primary-color);
-}
-
-.ai-features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.ai-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    border: 1px solid rgba(0,0,0,0.1);
-}
-
-.ai-card-header {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    justify-content: center;
+    font-size: 1.5rem;
     margin-bottom: 1rem;
 }
 
-.ai-card-header i {
-    font-size: 1.25rem;
-    color: var(--primary-color);
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
-.contact-list {
+.stat-label {
+    color: var(--secondary-color);
+    font-size: 0.875rem;
+}
+
+.recent-activity {
     background: white;
     border-radius: 12px;
     border: 1px solid rgba(0,0,0,0.1);
+    height: 100%;
 }
 
-.contact-item {
-    display: flex;
-    align-items: center;
+.activity-item {
     padding: 1rem;
     border-bottom: 1px solid rgba(0,0,0,0.1);
     transition: all 0.2s;
 }
 
-.contact-item:last-child {
+.activity-item:last-child {
     border-bottom: none;
 }
 
-.contact-item:hover {
+.activity-item:hover {
     background-color: rgba(13, 110, 253, 0.02);
 }
 
-.contact-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    color: white;
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-size: 1rem;
     margin-right: 1rem;
 }
 
-.contact-info {
-    flex-grow: 1;
+.activity-content {
+    flex: 1;
 }
 
-.contact-name {
+.activity-title {
     font-weight: 500;
     margin-bottom: 0.25rem;
 }
 
-.contact-meta {
+.activity-meta {
     font-size: 0.875rem;
     color: var(--secondary-color);
 }
 
-.contact-actions {
+.upcoming-tasks {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    height: 100%;
+}
+
+.task-item {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    transition: all 0.2s;
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+.task-item:hover {
+    background-color: rgba(13, 110, 253, 0.02);
+}
+
+.task-priority {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+}
+
+.task-content {
+    flex: 1;
+}
+
+.task-title {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.task-meta {
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+}
+
+.recent-interactions {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    height: 100%;
+}
+
+.interaction-item {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    transition: all 0.2s;
+}
+
+.interaction-item:last-child {
+    border-bottom: none;
+}
+
+.interaction-item:hover {
+    background-color: rgba(13, 110, 253, 0.02);
+}
+
+.interaction-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     display: flex;
-    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    margin-right: 1rem;
+}
+
+.interaction-content {
+    flex: 1;
+}
+
+.interaction-title {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.interaction-meta {
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+}
+
+.chart-container {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    height: 100%;
 }
 
 .section-header {
@@ -138,42 +195,15 @@
     margin: 0;
 }
 
-.chart-container {
-    min-height: 300px;
-    position: relative;
+.view-all {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
-.modal-body .card {
-    height: 100%;
-}
-
-.upload-zone {
-    border: 2px dashed #dee2e6;
-    transition: all 0.3s ease;
-}
-
-.upload-zone:hover, .upload-zone.border-primary {
-    border-color: var(--primary-color);
-    background-color: var(--primary-subtle);
-}
-
-.upload-zone i {
-    display: block;
-    margin-bottom: 1rem;
-}
-
-.selected-files-list {
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.file-item {
-    background-color: #f8f9fa;
-    transition: all 0.2s ease;
-}
-
-.file-item:hover {
-    background-color: #e9ecef;
+.view-all:hover {
+    text-decoration: underline;
 }
 </style>
 {% endblock %}
@@ -182,585 +212,291 @@
 <div class="container-fluid">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">Dashboard</h1>
-        <div class="d-flex gap-2">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#importVCardModal">
-                <i class="fas fa-file-import me-2"></i>Import vCard
-            </button>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addContactModal">
-                <i class="fas fa-plus me-2"></i>Add Contact
-            </button>
-        </div>
-    </div>
-
-    <!-- Welcome Section -->
-    <div class="section-header">
         <div>
             <h1 class="h3 mb-2">Welcome back, {{ current_user.first_name }}!</h1>
-            <p class="text-muted">Here's what's happening with your contacts today.</p>
+            <p class="text-muted">Here's what's happening with your CRM today.</p>
         </div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addContactModal">
-            <i class="fas fa-plus me-2"></i>Add New Contact
-        </button>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-        <div class="quick-action" data-bs-toggle="modal" data-bs-target="#importContactsModal">
-            <i class="fas fa-file-import"></i>
-            <h5>Import Contacts</h5>
-            <p class="text-muted mb-0">Import from CSV or Excel</p>
-        </div>
-        <div class="quick-action" data-bs-toggle="modal" data-bs-target="#scheduleModal">
-            <i class="fas fa-calendar-plus"></i>
-            <h5>Schedule Meeting</h5>
-            <p class="text-muted mb-0">Set up a new meeting</p>
-        </div>
-        <div class="quick-action" data-bs-toggle="modal" data-bs-target="#emailCampaignModal">
-            <i class="fas fa-envelope"></i>
-            <h5>Email Campaign</h5>
-            <p class="text-muted mb-0">Create a new campaign</p>
-        </div>
-        <div class="quick-action" data-bs-toggle="modal" data-bs-target="#analyticsModal">
-            <i class="fas fa-chart-line"></i>
-            <h5>Analytics</h5>
-            <p class="text-muted mb-0">View insights & reports</p>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInteractionModal">
+                <i class="fas fa-plus me-2"></i>New Interaction
+            </button>
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                <i class="fas fa-tasks me-2"></i>New Task
+            </button>
         </div>
     </div>
 
-    <!-- AI Features -->
-    <h2 class="section-title mb-3">AI Assistant</h2>
-    <div class="ai-features">
-        <div class="ai-card">
-            <div class="ai-card-header">
-                <i class="fas fa-robot"></i>
-                <h5 class="mb-0">Smart Follow-ups</h5>
-            </div>
-            <p class="text-muted">AI-powered suggestions for when to follow up with contacts</p>
-            <div class="mt-3">
-                <button class="btn btn-outline-primary btn-sm">View Suggestions</button>
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-primary-subtle text-primary">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value">{{ total_contacts }}</div>
+                <div class="stat-label">Total Contacts</div>
             </div>
         </div>
-        <div class="ai-card">
-            <div class="ai-card-header">
-                <i class="fas fa-magic"></i>
-                <h5 class="mb-0">Email Assistant</h5>
-            </div>
-            <p class="text-muted">Generate personalized email drafts with AI</p>
-            <div class="mt-3">
-                <button class="btn btn-outline-primary btn-sm">Create Email</button>
+        <div class="col-md-3">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-success-subtle text-success">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="stat-value">{{ total_interactions }}</div>
+                <div class="stat-label">Total Interactions</div>
             </div>
         </div>
-        <div class="ai-card">
-            <div class="ai-card-header">
-                <i class="fas fa-brain"></i>
-                <h5 class="mb-0">Contact Insights</h5>
+        <div class="col-md-3">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-warning-subtle text-warning">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="stat-value">{{ pending_tasks }}</div>
+                <div class="stat-label">Pending Tasks</div>
             </div>
-            <p class="text-muted">AI analysis of contact interactions and sentiment</p>
-            <div class="mt-3">
-                <button class="btn btn-outline-primary btn-sm">View Insights</button>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card p-4">
+                <div class="stat-icon bg-info-subtle text-info">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <div class="stat-value">{{ active_projects }}</div>
+                <div class="stat-label">Active Projects</div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Contacts -->
-    <div class="row">
-        <div class="col-md-8">
-            <div class="section-header">
-                <h2 class="section-title">Recent Contacts</h2>
-                <a href="{{ url_for('contacts.index') }}" class="btn btn-link text-primary">View All</a>
-            </div>
-            <div class="contact-list">
-                {% if recent_contacts %}
-                    {% for contact in recent_contacts %}
-                        <div class="contact-item">
-                            <div class="contact-avatar">
-                                {{ contact.first_name[0] }}{{ contact.last_name[0] }}
-                            </div>
-                            <div class="contact-info">
-                                <div class="contact-name">{{ contact.first_name }} {{ contact.last_name }}</div>
-                                <div class="contact-meta">
-                                    <span class="me-3"><i class="fas fa-envelope me-1"></i>{{ contact.email }}</span>
-                                    {% if contact.last_contact %}
-                                        <span><i class="fas fa-clock me-1"></i>Last contacted {{ contact.last_contact|timeago }}</span>
-                                    {% else %}
-                                        <span><i class="fas fa-clock me-1"></i>No previous contact</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="contact-actions">
-                                <a href="{{ url_for('contacts.show', id=contact.id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-user"></i>
-                                </a>
-                                <button class="btn btn-sm btn-outline-primary" onclick="scheduleFollowUp({{ contact.id }})">
-                                    <i class="fas fa-calendar-plus"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-primary" onclick="sendEmail({{ contact.id }})">
-                                    <i class="fas fa-envelope"></i>
-                                </button>
+    <!-- Main Content -->
+    <div class="row g-4">
+        <!-- Recent Activity -->
+        <div class="col-md-6">
+            <div class="recent-activity">
+                <div class="p-4 border-bottom">
+                    <div class="section-header">
+                        <h2 class="section-title">Recent Activity</h2>
+                    </div>
+                </div>
+                <div class="p-0">
+                    {% for activity in recent_activities %}
+                    <div class="activity-item d-flex align-items-start">
+                        <div class="activity-icon bg-primary-subtle text-primary">
+                            <i class="fas fa-{{ activity.icon }}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">{{ activity.title }}</div>
+                            <div class="activity-meta">
+                                <span>{{ activity.description }}</span>
+                                <span class="ms-2">{{ activity.created_at|timeago }}</span>
                             </div>
                         </div>
+                    </div>
                     {% endfor %}
-                {% else %}
-                    <div class="text-center py-5">
-                        <img src="{{ url_for('static', filename='images/empty-contacts.svg') }}" alt="No contacts" style="width: 120px; margin-bottom: 1rem;">
-                        <h5 class="text-muted">No Recent Contacts</h5>
-                        <p class="text-muted mb-3">Start by adding your first contact</p>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addContactModal">
-                            <i class="fas fa-plus me-2"></i>Add Contact
-                        </button>
-                    </div>
-                {% endif %}
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <!-- Stats Cards -->
-            <div class="section-header">
-                <h2 class="section-title">Overview</h2>
-            </div>
-            <div class="card stat-card mb-3">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-2">Total Contacts</h6>
-                            <h3 class="mb-0">{{ total_contacts }}</h3>
-                        </div>
-                        <div class="text-primary">
-                            <i class="fas fa-users fa-2x"></i>
-                        </div>
+
+        <!-- Upcoming Tasks -->
+        <div class="col-md-6">
+            <div class="upcoming-tasks">
+                <div class="p-4 border-bottom">
+                    <div class="section-header">
+                        <h2 class="section-title">Upcoming Tasks</h2>
+                        <a href="{{ url_for('projects.index') }}" class="view-all">View All</a>
                     </div>
                 </div>
-            </div>
-            <div class="card stat-card mb-3">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-2">Follow-ups Due</h6>
-                            <h3 class="mb-0">{{ followups_due|default(0) }}</h3>
-                        </div>
-                        <div class="text-warning">
-                            <i class="fas fa-clock fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card stat-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-2">Active Deals</h6>
-                            <h3 class="mb-0">{{ active_deals|default(0) }}</h3>
-                        </div>
-                        <div class="text-success">
-                            <i class="fas fa-handshake fa-2x"></i>
+                <div class="p-0">
+                    {% for task in upcoming_tasks %}
+                    <div class="task-item d-flex align-items-center">
+                        <div class="task-priority bg-{{ task.priority_color }}"></div>
+                        <div class="task-content">
+                            <div class="task-title">{{ task.title }}</div>
+                            <div class="task-meta">
+                                <span>Due {{ task.due_date|date }}</span>
+                                {% if task.assigned_to %}
+                                <span class="ms-2">Assigned to {{ task.assigned_to.full_name }}</span>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
+            </div>
+        </div>
+
+        <!-- Recent Interactions -->
+        <div class="col-md-6">
+            <div class="recent-interactions">
+                <div class="p-4 border-bottom">
+                    <div class="section-header">
+                        <h2 class="section-title">Recent Interactions</h2>
+                        <a href="{{ url_for('interactions.index') }}" class="view-all">View All</a>
+                    </div>
+                </div>
+                <div class="p-0">
+                    {% for interaction in recent_interactions %}
+                    <div class="interaction-item d-flex align-items-start">
+                        <div class="interaction-icon bg-{{ interaction.type_color }}-subtle text-{{ interaction.type_color }}">
+                            <i class="fas fa-{{ interaction.type_icon }}"></i>
+                        </div>
+                        <div class="interaction-content">
+                            <div class="interaction-title">{{ interaction.title }}</div>
+                            <div class="interaction-meta">
+                                <span>With {{ interaction.contact.full_name }}</span>
+                                <span class="ms-2">{{ interaction.created_at|timeago }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Interaction Chart -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="section-header">
+                    <h2 class="section-title">Interaction Trends</h2>
+                </div>
+                <canvas id="interactionChart" height="300"></canvas>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Add Contact Modal -->
-<div class="modal fade" id="addContactModal" tabindex="-1">
+<!-- Add Interaction Modal -->
+<div class="modal fade" id="addInteractionModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add New Contact</h5>
+                <h5 class="modal-title">New Interaction</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="addContactForm" action="{{ url_for('contacts.new') }}" method="POST">
-                    {{ form.csrf_token if form }}
+                <form id="interactionForm" method="POST" action="{{ url_for('interactions.create') }}">
                     <div class="mb-3">
-                        <label class="form-label">First Name</label>
-                        <input type="text" class="form-control" name="first_name" required>
+                        <label class="form-label">Type</label>
+                        <select class="form-select" name="type" required>
+                            <option value="email">Email</option>
+                            <option value="call">Call</option>
+                            <option value="meeting">Meeting</option>
+                            <option value="note">Note</option>
+                        </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Last Name</label>
-                        <input type="text" class="form-control" name="last_name" required>
+                        <label class="form-label">Contact</label>
+                        <select class="form-select" name="contact_id" required>
+                            {% for contact in contacts %}
+                            <option value="{{ contact.id }}">{{ contact.full_name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Phone</label>
-                        <input type="tel" class="form-control" name="phone">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Company</label>
-                        <input type="text" class="form-control" name="company">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="addContactForm" class="btn btn-primary">Save Contact</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Import Contacts Modal -->
-<div class="modal fade" id="importContactsModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Import Contacts</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="importForm">
-                    <div class="mb-3">
-                        <label class="form-label">Choose File</label>
-                        <input type="file" class="form-control" accept=".csv,.xlsx">
-                        <div class="form-text">Supported formats: CSV, Excel</div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Import Options</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="skipHeader">
-                            <label class="form-check-label" for="skipHeader">Skip header row</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="updateExisting">
-                            <label class="form-check-label" for="updateExisting">Update existing contacts</label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="importContacts()">Import</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Schedule Modal -->
-<div class="modal fade" id="scheduleModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Schedule Meeting</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="scheduleForm">
                     <div class="mb-3">
                         <label class="form-label">Title</label>
-                        <input type="text" class="form-control" required>
+                        <input type="text" class="form-control" name="title" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Date & Time</label>
-                        <input type="datetime-local" class="form-control" required>
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Duration</label>
-                        <select class="form-select">
-                            <option value="30">30 minutes</option>
-                            <option value="60">1 hour</option>
-                            <option value="90">1.5 hours</option>
-                            <option value="120">2 hours</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Participants</label>
-                        <select class="form-select" multiple>
-                            {% if contacts %}
-                                {% for contact in contacts %}
-                                    <option value="{{ contact.id }}">{{ contact.full_name }}</option>
-                                {% endfor %}
-                            {% endif %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Notes</label>
-                        <textarea class="form-control" rows="3"></textarea>
+                        <label class="form-label">Date</label>
+                        <input type="datetime-local" class="form-control" name="date" required>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="scheduleMeeting()">Schedule</button>
+                <button type="submit" form="interactionForm" class="btn btn-primary">Create Interaction</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Email Campaign Modal -->
-<div class="modal fade" id="emailCampaignModal" tabindex="-1">
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Create Email Campaign</h5>
+                <h5 class="modal-title">New Task</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="campaignForm">
+                <form id="taskForm" method="POST" action="{{ url_for('tasks.create', project_id=1) }}">
                     <div class="mb-3">
-                        <label class="form-label">Campaign Name</label>
-                        <input type="text" class="form-control" required>
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-control" name="title" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Subject Line</label>
-                        <input type="text" class="form-control" required>
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Target Audience</label>
-                        <select class="form-select" multiple>
-                            <option value="all">All Contacts</option>
-                            <option value="leads">Leads</option>
-                            <option value="customers">Customers</option>
-                            <option value="inactive">Inactive Contacts</option>
+                        <label class="form-label">Priority</label>
+                        <select class="form-select" name="priority" required>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Email Content</label>
-                        <textarea class="form-control" rows="5"></textarea>
+                        <label class="form-label">Due Date</label>
+                        <input type="date" class="form-control" name="due_date" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Schedule</label>
-                        <input type="datetime-local" class="form-control">
+                        <label class="form-label">Assign To</label>
+                        <select class="form-select" name="assigned_to">
+                            <option value="">Unassigned</option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.full_name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="createCampaign()">Create Campaign</button>
+                <button type="submit" form="taskForm" class="btn btn-primary">Create Task</button>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Analytics Modal -->
-<div class="modal fade" id="analyticsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Analytics & Reports</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h6 class="card-title">Contact Growth</h6>
-                                <div class="chart-container">
-                                    <canvas id="contactGrowthChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h6 class="card-title">Interaction Statistics</h6>
-                                <div class="chart-container">
-                                    <canvas id="interactionChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title">Recent Activity Summary</h6>
-                                <div class="table-responsive">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Type</th>
-                                                <th>Count</th>
-                                                <th>Last 7 Days</th>
-                                                <th>Trend</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>New Contacts</td>
-                                                <td>{{ total_contacts }}</td>
-                                                <td>+{{ new_contacts_week|default(0) }}</td>
-                                                <td><i class="fas fa-arrow-up text-success"></i></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Interactions</td>
-                                                <td>{{ total_interactions|default(0) }}</td>
-                                                <td>+{{ new_interactions_week|default(0) }}</td>
-                                                <td><i class="fas fa-arrow-up text-success"></i></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Follow-ups</td>
-                                                <td>{{ followups_due|default(0) }}</td>
-                                                <td>{{ completed_followups_week|default(0) }} completed</td>
-                                                <td><i class="fas fa-minus text-warning"></i></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="downloadReport()">Download Report</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Import vCard Modal -->
-<div class="modal fade" id="importVCardModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-header border-0">
-                <h5 class="modal-title">Import vCard Contacts</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="import-vcard-form" action="{{ url_for('contacts.import_vcard') }}" method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    
-                    <!-- File Upload -->
-                    <div class="mb-4">
-                        <div class="upload-zone p-4 text-center border rounded-3" id="vcard-drop-zone">
-                            <i class="fas fa-file-upload fa-2x text-muted mb-3"></i>
-                            <h6>Drag & Drop vCard Files</h6>
-                            <p class="text-muted small mb-3">or</p>
-                            <label class="btn btn-light">
-                                <input type="file" id="vcard-file" name="vcard_files" multiple accept=".vcf,text/vcard" class="d-none">
-                                Browse Files
-                            </label>
-                            <div class="text-muted small mt-2">Supports .vcf files</div>
-                        </div>
-                    </div>
-
-                    <!-- Selected Files List -->
-                    <ul id="selected-files" class="list-unstyled mb-4"></ul>
-
-                    <!-- Import Options -->
-                    <div class="mb-4">
-                        <h6 class="mb-3">Import Options</h6>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="skip-duplicates" name="skip_duplicates" checked>
-                            <label class="form-check-label" for="skip-duplicates">
-                                Skip duplicate contacts (based on email)
-                            </label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="update-existing" name="update_existing">
-                            <label class="form-check-label" for="update-existing">
-                                Update existing contacts
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="import-photos" name="import_photos" checked>
-                            <label class="form-check-label" for="import-photos">
-                                Import contact photos (if available)
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Progress Bar -->
-                    <div class="progress mb-3" style="display: none;">
-                        <div id="import-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
-                    </div>
-                    <div id="progress-text" class="text-muted small mb-3"></div>
-
-                    <!-- Alert Container -->
-                    <div class="alert-container"></div>
-
-                    <div class="text-end">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Import Contacts</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Include the import.js script -->
-<script src="{{ url_for('static', filename='js/contacts/import.js') }}"></script>
-
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-function scheduleFollowUp(contactId) {
-    const modal = new bootstrap.Modal(document.getElementById('scheduleModal'));
-    modal.show();
-}
-
-function sendEmail(contactId) {
-    const modal = new bootstrap.Modal(document.getElementById('emailCampaignModal'));
-    modal.show();
-}
-
-function importContacts() {
-    // Implement import logic
-    alert('Import functionality will be implemented soon');
-}
-
-function scheduleMeeting() {
-    // Implement meeting scheduling
-    alert('Meeting scheduling will be implemented soon');
-}
-
-function createCampaign() {
-    // Implement campaign creation
-    alert('Campaign creation will be implemented soon');
-}
-
-function downloadReport() {
-    // Implement report download
-    alert('Report download will be implemented soon');
-}
-
-// Initialize charts when analytics modal is shown
-document.getElementById('analyticsModal').addEventListener('shown.bs.modal', function () {
-    // Contact Growth Chart
-    const contactGrowthCtx = document.getElementById('contactGrowthChart').getContext('2d');
-    new Chart(contactGrowthCtx, {
+document.addEventListener('DOMContentLoaded', function() {
+    // Interaction Chart
+    const ctx = document.getElementById('interactionChart').getContext('2d');
+    new Chart(ctx, {
         type: 'line',
         data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            labels: {{ interaction_dates|tojson }},
             datasets: [{
-                label: 'Contacts',
-                data: [30, 45, 60, 75, 90, 105],
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
+                label: 'Interactions',
+                data: {{ interaction_counts|tojson }},
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                tension: 0.4,
+                fill: true
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
-        }
-    });
-
-    // Interaction Chart
-    const interactionCtx = document.getElementById('interactionChart').getContext('2d');
-    new Chart(interactionCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Emails', 'Meetings', 'Calls', 'Other'],
-            datasets: [{
-                data: [30, 20, 25, 15],
-                backgroundColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(54, 162, 235)',
-                    'rgb(255, 205, 86)',
-                    'rgb(75, 192, 192)'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
         }
     });
 });
