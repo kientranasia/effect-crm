@@ -43,7 +43,6 @@ def upgrade():
                existing_nullable=True)
 
     with op.batch_alter_table('projects', schema=None) as batch_op:
-        batch_op.drop_constraint(None, type_='foreignkey')
         batch_op.drop_column('contact_id')
 
     # ### end Alembic commands ###

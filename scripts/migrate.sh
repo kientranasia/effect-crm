@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Effect CRM Database Migration Script
+# Partner OS Database Migration Script
 # This script helps with database migrations in Docker
 
 # Exit on error
@@ -14,7 +14,7 @@ MESSAGE=""
 
 # Display help
 function show_help {
-    echo "Effect CRM Database Migration Script"
+    echo "Partner OS Database Migration Script"
     echo ""
     echo "Usage: $0 [options]"
     echo ""

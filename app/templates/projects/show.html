@@ -1,0 +1,1058 @@
+{% extends "base.html" %}
+{% from "tasks/_card.html" import task_card %}
+{% from "components/_organization_selector.html" import organization_selector %}
+{% from "components/_team_member_selector.html" import team_member_selector %}
+
+{% block title %}{{ project.name }} - Partner OS{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Project Header -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+                <!-- Left Side -->
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Project Info -->
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <h1 class="h3 mb-0">{{ project.name }}</h1>
+                                <span class="badge bg-success">{{ project.status_display }}</span>
+                            </div>
+                            <div class="d-flex flex-column gap-1 text-muted">
+                                <!-- Organization and Timeline in same line -->
+                                <div class="d-flex align-items-center gap-4">
+                                    <!-- Organization -->
+                                    {% if project.organization %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fas fa-building"></i>
+                                        <a href="{{ url_for('organizations.show', id=project.organization.id) }}" class="text-primary text-decoration-none fw-medium">
+                                            {{ project.organization.name }}
+                                        </a>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-light btn-sm px-1" data-bs-toggle="modal" data-bs-target="#selectOrganizationModal" title="Change Organization">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </button>
+                                            <button class="btn btn-light btn-sm px-1 text-danger" onclick="unlinkOrganization()" title="Remove Organization">
+                                                <i class="fas fa-unlink"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fas fa-building text-muted"></i>
+                                        <span class="text-muted">No Organization</span>
+                                        <button type="button" class="btn btn-light btn-sm px-1" data-bs-toggle="modal" data-bs-target="#selectOrganizationModal" title="Link Organization">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Timeline -->
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>{% if project.start_date %}{{ project.start_date|parse_datetime|strftime('%b %d, %Y') }}{% else %}Not set{% endif %} - {% if project.end_date %}{{ project.end_date|parse_datetime|strftime('%b %d, %Y') }}{% else %}Not set{% endif %}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side -->
+                <div class="d-flex flex-column gap-2 align-items-end">
+                    <!-- First Row - Project Actions -->
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-light btn-sm" onclick="shareProject()" title="Share Project">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                        <a href="{{ url_for('projects.edit', id=project.id) }}" class="btn btn-light btn-sm" title="Edit Project">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button type="button" class="btn btn-light btn-sm text-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal" title="Delete Project">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+
+                    <!-- Second Row - Team Members -->
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center">
+                            <div class="d-flex">
+                                {% for member in project.team_members %}
+                                <div class="position-relative" style="margin-left: -4px;">
+                                    <div class="avatar-circle bg-primary text-white border border-2 border-white" 
+                                         style="width: 32px; height: 32px; font-size: 12px;"
+                                         data-bs-toggle="tooltip" title="{{ member.full_name }}">
+                                        {{ member.first_name[0] }}{{ member.last_name[0] }}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="btn-group ms-2">
+                                <button type="button" class="btn btn-light btn-sm" 
+                                        data-bs-toggle="modal" data-bs-target="#addTeamMemberModal"
+                                        title="Add Team Member">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kanban Board -->
+    <div class="card">
+        <div class="card-header border-bottom-0">
+            <!-- View Switcher and Actions Row -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <!-- Left: View Switcher -->
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-light active" data-view="board">
+                        <i class="fas fa-columns me-2"></i>Board
+                    </button>
+                    <button type="button" class="btn btn-light" data-view="list">
+                        <i class="fas fa-list me-2"></i>List
+                    </button>
+                </div>
+
+                <!-- Right: Actions -->
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Filter Button -->
+                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#filterTasksModal">
+                        <i class="fas fa-filter me-2"></i>Filter
+                    </button>
+                    
+                    <!-- Sort Button -->
+                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#sortTasksModal">
+                        <i class="fas fa-sort me-2"></i>Sort
+                    </button>
+
+                    <!-- Add Task Button -->
+                    <a href="{{ url_for('tasks.create', project_id=project.id) }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add Task
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Board View -->
+        <div id="board-view" class="card-body p-0">
+            <div class="kanban-board">
+                <div class="row g-0">
+                    <!-- To Do Column -->
+                    <div class="col-md-3 kanban-column">
+                        <div class="kanban-column-header bg-light p-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <span class="badge rounded-pill bg-secondary me-2">{{ tasks_by_status.todo|length }}</span>
+                                <h6 class="mb-0">To Do</h6>
+                            </div>
+                        </div>
+                        <div class="kanban-column-body p-2" data-status="todo">
+                            {% for task in tasks_by_status.todo %}
+                                {{ task_card(task) }}
+                            {% else %}
+                                <div class="text-center py-4 text-muted">
+                                    <div class="icon-circle bg-light text-muted mx-auto mb-2">
+                                        <i class="fas fa-tasks"></i>
+                                    </div>
+                                    <div>No tasks</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- In Progress Column -->
+                    <div class="col-md-3 kanban-column">
+                        <div class="kanban-column-header bg-light p-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <span class="badge rounded-pill bg-primary me-2">{{ tasks_by_status.in_progress|length }}</span>
+                                <h6 class="mb-0">Doing</h6>
+                            </div>
+                        </div>
+                        <div class="kanban-column-body p-2" data-status="in_progress">
+                            {% for task in tasks_by_status.in_progress %}
+                                {{ task_card(task) }}
+                            {% else %}
+                                <div class="text-center py-4 text-muted">
+                                    <div class="icon-circle bg-light text-muted mx-auto mb-2">
+                                        <i class="fas fa-tasks"></i>
+                                    </div>
+                                    <div>No tasks</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- In Review Column -->
+                    <div class="col-md-3 kanban-column">
+                        <div class="kanban-column-header bg-light p-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <span class="badge rounded-pill bg-warning me-2">{{ tasks_by_status.on_hold|length }}</span>
+                                <h6 class="mb-0">In Review</h6>
+                            </div>
+                        </div>
+                        <div class="kanban-column-body p-2" data-status="on_hold">
+                            {% for task in tasks_by_status.on_hold %}
+                                {{ task_card(task) }}
+                            {% else %}
+                                <div class="text-center py-4 text-muted">
+                                    <div class="icon-circle bg-light text-muted mx-auto mb-2">
+                                        <i class="fas fa-tasks"></i>
+                                    </div>
+                                    <div>No tasks</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Done Column -->
+                    <div class="col-md-3 kanban-column">
+                        <div class="kanban-column-header bg-light p-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <span class="badge rounded-pill bg-success me-2">{{ tasks_by_status.completed|length }}</span>
+                                <h6 class="mb-0">Done</h6>
+                            </div>
+                        </div>
+                        <div class="kanban-column-body p-2" data-status="completed">
+                            {% for task in tasks_by_status.completed %}
+                                {{ task_card(task) }}
+                            {% else %}
+                                <div class="text-center py-4 text-muted">
+                                    <div class="icon-circle bg-light text-muted mx-auto mb-2">
+                                        <i class="fas fa-tasks"></i>
+                                    </div>
+                                    <div>No tasks</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- List View (Initially Hidden) -->
+        <div id="list-view" class="card-body p-0" style="display: none;">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Due Date</th>
+                            <th>Assigned To</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for status, tasks in tasks_by_status.items() %}
+                            {% for task in tasks %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('tasks.edit', id=task.id) }}" class="text-decoration-none text-dark">
+                                        {{ task.title }}
+                                    </a>
+                                </td>
+                                <td><span class="badge bg-secondary">{{ task.status_display }}</span></td>
+                                <td><span class="badge bg-{{ task.priority_color }}">{{ task.priority_display }}</span></td>
+                                <td>
+                                    <span class="text-muted">{% if task.due_date %}{{ task.due_date|parse_datetime|strftime('%b %d') }}{% endif %}</span>
+                                </td>
+                                <td>
+                                    {% if task.assigned_to %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-circle bg-primary text-white" 
+                                             style="width: 24px; height: 24px; font-size: 10px;">
+                                            {{ task.assigned_to.first_name[0] }}{{ task.assigned_to.last_name[0] }}
+                                        </div>
+                                        <span class="small">{{ task.assigned_to.full_name }}</span>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('tasks.edit', id=task.id) }}" class="btn btn-light" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-light text-danger" 
+                                                onclick="deleteTask({{ task.id }})" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Project Modal -->
+<div class="modal fade" id="deleteProjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this project? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <form method="POST" action="{{ url_for('projects.delete', id=project.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete Project</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Import Organization Selector -->
+{{ organization_selector(organizations=organizations, 
+                       modal_id='selectOrganizationModal', 
+                       on_select_function='linkOrganization', 
+                       search_placeholder='Search organizations...',
+                       empty_state_action_url=url_for('organizations.create')) }}
+
+<!-- Select Contact Modal -->
+<div class="modal fade" id="selectContactModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Contact</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="contactSearch" placeholder="Search contacts...">
+                </div>
+                <div class="list-group">
+                    {% for contact in contacts %}
+                    <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3" 
+                            onclick="addContact({{ contact.id }})">
+                        <div class="avatar-circle bg-primary text-white" style="width: 40px; height: 40px;">
+                            {{ contact.first_name[0] }}{{ contact.last_name[0] }}
+                        </div>
+                        <div>
+                            <h6 class="mb-1">{{ contact.full_name }}</h6>
+                            <div class="small text-muted">{{ contact.email }}</div>
+                        </div>
+                    </button>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="icon-circle bg-light text-muted mx-auto mb-3">
+                            <i class="fas fa-address-book"></i>
+                        </div>
+                        <h6 class="text-muted">No Contacts Found</h6>
+                        <p class="text-muted small mb-3">Create a new contact to add to this project</p>
+                        <a href="{{ url_for('contacts.new') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-2"></i>Create Contact
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Import Team Member Selector -->
+{{ team_member_selector(users=users, 
+                       existing_members=project.team_members,
+                       modal_id='addTeamMemberModal',
+                       project=project) }}
+
+<!-- Filter Tasks Modal -->
+<div class="modal fade" id="filterTasksModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Filter Tasks</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="filterForm">
+                    <!-- Priority Filter -->
+                    <div class="mb-3">
+                        <label class="form-label">Priority</label>
+                        <div class="d-flex gap-2">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="priority-low" value="low" name="priority">
+                                <label class="form-check-label" for="priority-low">Low</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="priority-medium" value="medium" name="priority">
+                                <label class="form-check-label" for="priority-medium">Medium</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="priority-high" value="high" name="priority">
+                                <label class="form-check-label" for="priority-high">High</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="priority-urgent" value="urgent" name="priority">
+                                <label class="form-check-label" for="priority-urgent">Urgent</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assignee Filter -->
+                    <div class="mb-3">
+                        <label class="form-label">Assigned To</label>
+                        <select class="form-select" id="filter-assigned-to" multiple>
+                            <option value="">Unassigned</option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Due Date Filter -->
+                    <div class="mb-3">
+                        <label class="form-label">Due Date</label>
+                        <div class="d-flex gap-2">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="due-overdue" value="overdue" name="due">
+                                <label class="form-check-label" for="due-overdue">Overdue</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="due-today" value="today" name="due">
+                                <label class="form-check-label" for="due-today">Due Today</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="due-week" value="week" name="due">
+                                <label class="form-check-label" for="due-week">This Week</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" onclick="clearFilters()">Clear All</button>
+                <button type="button" class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sort Tasks Modal -->
+<div class="modal fade" id="sortTasksModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sort Tasks</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="sortForm">
+                    <div class="mb-3">
+                        <label class="form-label">Sort By</label>
+                        <select class="form-select" id="sort-field">
+                            <option value="priority">Priority</option>
+                            <option value="due_date">Due Date</option>
+                            <option value="title">Title</option>
+                            <option value="created_at">Created Date</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Order</label>
+                        <select class="form-select" id="sort-order">
+                            <option value="asc">Ascending</option>
+                            <option value="desc">Descending</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" onclick="resetSort()">Reset</button>
+                <button type="button" class="btn btn-primary" onclick="applySort()">Apply Sort</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .kanban-board {
+        min-height: 500px;
+        overflow-x: auto;
+    }
+    
+    .kanban-column {
+        min-width: 300px;
+        height: 100%;
+        border-right: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .kanban-column:last-child {
+        border-right: none;
+    }
+    
+    .kanban-column-body {
+        height: calc(100vh - 350px);
+        overflow-y: auto;
+    }
+    
+    .kanban-card {
+        cursor: pointer;
+    }
+    
+    .kanban-card .card {
+        transition: all 0.2s;
+    }
+    
+    .kanban-card .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+    }
+    
+    .kanban-card.dragging {
+        opacity: 0.5;
+    }
+    
+    .kanban-column-body.drag-over {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+    
+    .avatar-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        font-weight: 500;
+    }
+
+    .icon-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+    }
+
+    /* View Switcher Styles */
+    .btn-group .btn-light {
+        border-color: #dee2e6;
+    }
+
+    .btn-group .btn-light.active {
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+
+    /* Rounded Pills */
+    .badge.rounded-pill {
+        padding: 0.5em 0.8em;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View Switcher
+    const boardView = document.getElementById('board-view');
+    const listView = document.getElementById('list-view');
+    const viewButtons = document.querySelectorAll('[data-view]');
+
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const view = this.dataset.view;
+            
+            // Update active state
+            viewButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show/hide views
+            if (view === 'board') {
+                boardView.style.display = '';
+                listView.style.display = 'none';
+            } else {
+                boardView.style.display = 'none';
+                listView.style.display = '';
+            }
+        });
+    });
+
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Kanban drag and drop functionality
+    const kanbanCards = document.querySelectorAll('.kanban-card');
+    const kanbanColumns = document.querySelectorAll('.kanban-column-body');
+    
+    kanbanCards.forEach(card => {
+        card.addEventListener('dragstart', function(e) {
+            this.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', this.dataset.taskId);
+        });
+        
+        card.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+        });
+
+        // Prevent click when dragging
+        let isDragging = false;
+        card.addEventListener('mousedown', () => {
+            isDragging = false;
+        });
+        
+        card.addEventListener('mousemove', () => {
+            isDragging = true;
+        });
+        
+        card.addEventListener('mouseup', (e) => {
+            if (isDragging) {
+                e.preventDefault();
+            }
+            isDragging = false;
+        });
+    });
+    
+    kanbanColumns.forEach(column => {
+        column.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+        
+        column.addEventListener('dragleave', function() {
+            this.classList.remove('drag-over');
+        });
+        
+        column.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            const taskId = e.dataTransfer.getData('text/plain');
+            const newStatus = this.dataset.status;
+            
+            // Update task status via AJAX
+            fetch(`/tasks/${taskId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Move the card to the new column
+                    const card = document.querySelector(`.kanban-card[data-task-id="${taskId}"]`);
+                    this.appendChild(card);
+                    
+                    // Update counters
+                    updateColumnCounters();
+                } else {
+                    alert('Failed to update task status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the task');
+            });
+        });
+    });
+    
+    // Update column counters
+    function updateColumnCounters() {
+        const columns = document.querySelectorAll('.kanban-column');
+        columns.forEach(column => {
+            const counter = column.querySelector('.badge');
+            const cards = column.querySelectorAll('.kanban-card');
+            counter.textContent = cards.length;
+        });
+    }
+});
+
+// Link organization to project
+function linkOrganization(orgId) {
+    fetch(`/projects/{{ project.id }}/link-organization`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            organization_id: orgId
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            throw new Error(data.message || 'Failed to link organization');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert(error.message || 'An error occurred while linking the organization');
+    });
+}
+
+// Unlink organization from project
+function unlinkOrganization() {
+    if (confirm('Are you sure you want to unlink this organization from the project?')) {
+        fetch(`/projects/{{ project.id }}/unlink-organization`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Failed to unlink organization');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while unlinking the organization');
+        });
+    }
+}
+
+// Add contact to project
+function addContact(contactId) {
+    fetch(`/projects/{{ project.id }}/add-contact`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            contact_id: contactId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert('Failed to add contact');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while adding the contact');
+    });
+}
+
+// Remove contact from project
+function removeContact(contactId) {
+    if (confirm('Are you sure you want to remove this contact from the project?')) {
+        fetch(`/projects/{{ project.id }}/remove-contact/${contactId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Failed to remove contact');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while removing the contact');
+        });
+    }
+}
+
+// Share project
+function shareProject() {
+    // Get the current URL
+    const url = window.location.href;
+    
+    // Create a temporary input element
+    const tempInput = document.createElement('input');
+    tempInput.value = url;
+    document.body.appendChild(tempInput);
+    
+    // Select and copy the URL
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+    
+    // Show feedback
+    alert('Project link copied to clipboard!');
+}
+
+// Add team member to project
+function addTeamMember(userId) {
+    console.log('Adding team member with ID:', userId);
+    fetch(`/projects/{{ project.id }}/add_team_member`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ user_id: userId })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.message || 'Failed to add team member');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification(error.message || 'An error occurred while adding the team member.', 'error');
+        console.error('Error:', error);
+    });
+}
+
+// Remove team member from project
+function removeTeamMember(userId) {
+    if (confirm('Are you sure you want to remove this team member from the project?')) {
+        console.log('Removing team member with ID:', userId);
+        
+        // Show loading notification
+        showNotification('Removing team member...', 'info');
+        
+        // Disable the button to prevent multiple clicks
+        const button = document.querySelector(`[data-remove-member="${userId}"]`);
+        if (button) {
+            button.disabled = true;
+            button.classList.add('disabled');
+        }
+        
+        fetch(`/projects/{{ project.id }}/remove_team_member/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                // If not JSON, assume success and reload
+                window.location.reload();
+                return { success: true };
+            }
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                showNotification(data.message || 'Team member removed successfully', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showNotification(data.message || 'Failed to remove team member', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error details:', error);
+            showNotification('An error occurred while removing the team member.', 'error');
+        });
+    }
+}
+
+// Delete task function
+function deleteTask(taskId) {
+    if (confirm('Are you sure you want to delete this task?')) {
+        fetch(`/tasks/${taskId}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                throw new Error('Failed to delete task');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the task');
+        });
+    }
+}
+
+// Filter functionality
+function applyFilters() {
+    const priorities = Array.from(document.querySelectorAll('input[name="priority"]:checked')).map(cb => cb.value);
+    const assignees = Array.from(document.getElementById('filter-assigned-to').selectedOptions).map(opt => opt.value);
+    const dueDates = Array.from(document.querySelectorAll('input[name="due"]:checked')).map(cb => cb.value);
+
+    const tasks = document.querySelectorAll('.kanban-card, #list-view tbody tr');
+    tasks.forEach(task => {
+        let show = true;
+
+        // Priority filter
+        if (priorities.length > 0) {
+            const taskPriority = task.querySelector('.badge').textContent.toLowerCase();
+            show = show && priorities.includes(taskPriority);
+        }
+
+        // Assignee filter
+        if (assignees.length > 0) {
+            const assigneeElement = task.querySelector('[data-assignee-id]');
+            const assigneeId = assigneeElement ? assigneeElement.dataset.assigneeId : '';
+            show = show && (assignees.includes(assigneeId) || (assignees.includes('') && !assigneeId));
+        }
+
+        // Due date filter
+        if (dueDates.length > 0) {
+            const dueDate = task.querySelector('[data-due-date]');
+            if (dueDate) {
+                const date = new Date(dueDate.dataset.dueDate);
+                const today = new Date();
+                const isOverdue = date < today;
+                const isToday = date.toDateString() === today.toDateString();
+                const isThisWeek = date <= new Date(today.getTime() + (7 * 24 * 60 * 60 * 1000));
+
+                show = show && (
+                    (dueDates.includes('overdue') && isOverdue) ||
+                    (dueDates.includes('today') && isToday) ||
+                    (dueDates.includes('week') && isThisWeek)
+                );
+            } else {
+                show = false;
+            }
+        }
+
+        task.style.display = show ? '' : 'none';
+    });
+
+    updateColumnCounters();
+    bootstrap.Modal.getInstance(document.getElementById('filterTasksModal')).hide();
+}
+
+function clearFilters() {
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    document.getElementById('filter-assigned-to').selectedIndex = -1;
+    const tasks = document.querySelectorAll('.kanban-card, #list-view tbody tr');
+    tasks.forEach(task => task.style.display = '');
+    updateColumnCounters();
+}
+
+// Sort functionality
+function applySort() {
+    const field = document.getElementById('sort-field').value;
+    const order = document.getElementById('sort-order').value;
+    const isAsc = order === 'asc';
+
+    const sortTasks = (a, b) => {
+        let valueA, valueB;
+
+        switch (field) {
+            case 'priority':
+                const priorityOrder = { 'urgent': 0, 'high': 1, 'medium': 2, 'low': 3 };
+                valueA = priorityOrder[a.querySelector('.badge').textContent.toLowerCase()];
+                valueB = priorityOrder[b.querySelector('.badge').textContent.toLowerCase()];
+                break;
+            case 'due_date':
+                valueA = a.querySelector('[data-due-date]')?.dataset.dueDate || '9999-12-31';
+                valueB = b.querySelector('[data-due-date]')?.dataset.dueDate || '9999-12-31';
+                break;
+            case 'title':
+                valueA = a.querySelector('.card-title, td:first-child').textContent.toLowerCase();
+                valueB = b.querySelector('.card-title, td:first-child').textContent.toLowerCase();
+                break;
+            case 'created_at':
+                valueA = a.dataset.createdAt || '0';
+                valueB = b.dataset.createdAt || '0';
+                break;
+        }
+
+        if (valueA < valueB) return isAsc ? -1 : 1;
+        if (valueA > valueB) return isAsc ? 1 : -1;
+        return 0;
+    };
+
+    // Sort board view
+    document.querySelectorAll('.kanban-column-body').forEach(column => {
+        const tasks = Array.from(column.querySelectorAll('.kanban-card'));
+        tasks.sort(sortTasks).forEach(task => column.appendChild(task));
+    });
+
+    // Sort list view
+    const tbody = document.querySelector('#list-view tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort(sortTasks).forEach(row => tbody.appendChild(row));
+
+    bootstrap.Modal.getInstance(document.getElementById('sortTasksModal')).hide();
+}
+
+function resetSort() {
+    document.getElementById('sort-field').selectedIndex = 0;
+    document.getElementById('sort-order').selectedIndex = 0;
+    // Reload the page to reset to default order
+    window.location.reload();
+}
+
+// Update task card template to include data attributes
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing DOMContentLoaded code ...
+
+    // Add data attributes to task elements
+    document.querySelectorAll('.kanban-card, #list-view tbody tr').forEach(task => {
+        const dueDate = task.querySelector('.due-date');
+        if (dueDate) {
+            dueDate.setAttribute('data-due-date', dueDate.dataset.originalDate);
+        }
+
+        const assignee = task.querySelector('.avatar-circle');
+        if (assignee) {
+            assignee.setAttribute('data-assignee-id', assignee.dataset.userId);
+        }
+    });
+});
+</script>
+{% endblock %} 

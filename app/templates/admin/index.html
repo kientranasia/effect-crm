@@ -113,7 +113,7 @@
                     <tbody>
                         {% for log in recent_logs %}
                         <tr>
-                            <td class="text-muted">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td class="text-muted">{{ log.created_at|parse_datetime|strftime('%Y-%m-%d %H:%M:%S') }}</td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <img src="https://ui-avatars.com/api/?name={{ log.user.email if log.user else 'System' }}&size=32&background=random" 

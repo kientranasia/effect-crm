@@ -1,6 +1,6 @@
-# Effect CRM Deployment and Update Guide
+# Partner OS Deployment and Update Guide
 
-This guide provides comprehensive instructions for both initial deployment and platform updates of the Effect CRM system.
+This guide provides comprehensive instructions for both initial deployment and platform updates of the Partner OS system.
 
 ## Table of Contents
 1. [Initial Deployment](#initial-deployment)

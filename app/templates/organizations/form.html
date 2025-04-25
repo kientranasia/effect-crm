@@ -15,44 +15,183 @@
 
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">{{ 'Edit' if organization else 'New' }} Organization</h1>
+        <div>
+            <h1 class="h3 mb-0">{{ 'Edit' if organization else 'New' }} Organization</h1>
+            <p class="text-muted mb-0">Fill in the organization details below</p>
+        </div>
     </div>
 
     <!-- Form -->
-    <div class="card">
-        <div class="card-body">
-            <form method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label for="name" class="form-label">Organization Name *</label>
-                        <input type="text" class="form-control" id="name" name="name" value="{{ organization.name if organization else '' }}" required>
+    <form method="POST" class="needs-validation" novalidate>
+        {{ form.csrf_token }}
+        
+        <div class="row g-4">
+            <!-- Basic Information -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-transparent">
+                        <h5 class="card-title mb-0">Basic Information</h5>
                     </div>
-                    <div class="col-md-6">
-                        <label for="website" class="form-label">Website</label>
-                        <input type="url" class="form-control" id="website" name="website" value="{{ organization.website if organization else '' }}">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="country" class="form-label">Country</label>
-                        <input type="text" class="form-control" id="country" name="country" value="{{ organization.country if organization else '' }}">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="labels" class="form-label">Labels</label>
-                        <input type="text" class="form-control" id="labels" name="labels" value="{{ organization.labels if organization else '' }}" placeholder="Comma-separated labels">
-                        <div class="form-text">Enter labels separated by commas</div>
-                    </div>
-                    <div class="col-12">
-                        <label for="overview" class="form-label">Overview</label>
-                        <textarea class="form-control" id="overview" name="overview" rows="4">{{ organization.overview if organization else '' }}</textarea>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Organization Name *</label>
+                                {{ form.name(class="form-control", placeholder="Enter organization name") }}
+                                {% if form.name.errors %}
+                                    <div class="invalid-feedback">{{ form.name.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="industry" class="form-label">Industry</label>
+                                {{ form.industry(class="form-select") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="website" class="form-label">Website</label>
+                                {{ form.website(class="form-control", placeholder="https://example.com") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="status" class="form-label">Status</label>
+                                {{ form.status(class="form-select") }}
+                            </div>
+                            <div class="col-12">
+                                <label for="description" class="form-label">Description</label>
+                                {{ form.description(class="form-control", rows="3", placeholder="Brief description of the organization") }}
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary">Save Organization</button>
-                    <a href="{{ url_for('organizations.index') }}" class="btn btn-link">Cancel</a>
+            <!-- Company Details -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-transparent">
+                        <h5 class="card-title mb-0">Company Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="size" class="form-label">Company Size</label>
+                                {{ form.size(class="form-select") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="annual_revenue" class="form-label">Annual Revenue</label>
+                                {{ form.annual_revenue(class="form-control", placeholder="0.00") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="founded_year" class="form-label">Founded Year</label>
+                                {{ form.founded_year(class="form-control", placeholder="YYYY") }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </form>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-transparent">
+                        <h5 class="card-title mb-0">Contact Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="primary_email" class="form-label">Primary Email</label>
+                                {{ form.primary_email(class="form-control", placeholder="contact@example.com") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone</label>
+                                {{ form.phone(class="form-control", placeholder="+1 (555) 000-0000") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-transparent">
+                        <h5 class="card-title mb-0">Address Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="address_line1" class="form-label">Address Line 1</label>
+                                {{ form.address_line1(class="form-control", placeholder="Street address") }}
+                            </div>
+                            <div class="col-12">
+                                <label for="address_line2" class="form-label">Address Line 2</label>
+                                {{ form.address_line2(class="form-control", placeholder="Apartment, suite, unit, etc. (optional)") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="city" class="form-label">City</label>
+                                {{ form.city(class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="state" class="form-label">State/Province</label>
+                                {{ form.state(class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="postal_code" class="form-label">Postal Code</label>
+                                {{ form.postal_code(class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="country" class="form-label">Country</label>
+                                {{ form.country(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-transparent">
+                        <h5 class="card-title mb-0">Additional Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="segment_tags" class="form-label">Segment Tags</label>
+                                {{ form.segment_tags(class="form-control", placeholder="Enter tags separated by commas") }}
+                            </div>
+                            <div class="col-12">
+                                <label for="custom_fields" class="form-label">Custom Fields</label>
+                                {{ form.custom_fields(class="form-control", rows="3", placeholder="Enter any additional information") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Save Organization</button>
+                <a href="{{ url_for('organizations.index') }}" class="btn btn-secondary">Cancel</a>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
 {% endblock %} 

@@ -1,0 +1,116 @@
+{% macro organization_selector(organizations, modal_id='selectOrganizationModal', on_select_function='linkOrganization', search_placeholder='Search organizations...', empty_state_action_url=url_for('organizations.create')) %}
+<!-- Select Organization Modal -->
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fs-4">Select Organization</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <!-- Search Box -->
+                <div class="mb-4">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" 
+                               class="form-control border-start-0 ps-0" 
+                               id="{{ modal_id }}-search"
+                               placeholder="{{ search_placeholder }}"
+                               autocomplete="off">
+                    </div>
+                    <small class="text-muted mt-1">Search by name, website, or industry</small>
+                </div>
+
+                <!-- Organizations List -->
+                <div class="list-group list-group-flush" id="{{ modal_id }}-list">
+                    {% for org in organizations %}
+                    <button type="button" 
+                            class="list-group-item list-group-item-action organization-item p-3 mb-2 rounded border"
+                            data-org-name="{{ org.name|lower }}"
+                            data-org-website="{{ org.website|lower if org.website }}"
+                            data-org-industry="{{ org.industry|lower if org.industry }}"
+                            onclick="{{ on_select_function }}({{ org.id }})"
+                            data-bs-dismiss="modal">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="organization-logo rounded bg-light d-flex align-items-center justify-content-center flex-shrink-0" 
+                                 style="width: 56px; height: 56px;">
+                                {% if org.logo_url %}
+                                <img src="{{ org.logo_url }}" alt="{{ org.name }}" class="img-fluid rounded">
+                                {% else %}
+                                <i class="fas fa-building text-primary fa-2x"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-semibold">{{ org.name }}</h6>
+                                <div class="d-flex align-items-center gap-3 text-muted small">
+                                    {% if org.industry %}
+                                    <span><i class="fas fa-industry me-1"></i>{{ org.industry }}</span>
+                                    {% endif %}
+                                    {% if org.website %}
+                                    <span><i class="fas fa-globe me-1"></i>{{ org.website }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="text-muted">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </button>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="icon-circle bg-light text-muted mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-building fa-2x"></i>
+                        </div>
+                        <h6 class="text-muted mb-2">No Organizations Found</h6>
+                        <p class="text-muted small mb-4">Create a new organization to get started</p>
+                        <a href="{{ empty_state_action_url }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create Organization
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('{{ modal_id }}-search');
+    const organizationsList = document.getElementById('{{ modal_id }}-list');
+    
+    if (searchInput && organizationsList) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const organizations = organizationsList.querySelectorAll('.organization-item');
+            
+            organizations.forEach(org => {
+                const searchData = {
+                    name: org.dataset.orgName || '',
+                    website: org.dataset.orgWebsite || '',
+                    industry: org.dataset.orgIndustry || ''
+                };
+                
+                const matchesSearch = Object.values(searchData).some(value => 
+                    value.includes(searchTerm)
+                );
+                
+                org.style.display = matchesSearch || searchTerm === '' ? '' : 'none';
+            });
+            
+            // Show/hide empty state
+            const hasVisibleOrgs = Array.from(organizations).some(org => 
+                org.style.display !== 'none'
+            );
+            
+            const emptyState = organizationsList.querySelector('.text-center');
+            if (emptyState) {
+                emptyState.style.display = !hasVisibleOrgs && organizations.length > 0 ? '' : 'none';
+            }
+        });
+    }
+});
+</script>
+{% endmacro %} 

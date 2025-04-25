@@ -4,10 +4,50 @@
 
 {% block styles %}
 <style>
+    .interaction-type-icon-only {
+        font-size: 1.7rem;
+        width: 3rem;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 2px solid #dee2e6;
+        background: #fff;
+        margin: 0 0.25rem;
+        transition: border-color 0.2s, background 0.2s;
+        cursor: pointer;
+    }
+    .interaction-type-icon-only.selected {
+        border-color: var(--bs-primary);
+        background: var(--bs-primary-bg-subtle);
+        color: var(--bs-primary);
+    }
+    .interaction-type-icons-row {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 0.5rem;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .interaction-meta-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+    .interaction-meta-col {
+        flex: 1 1 200px;
+        min-width: 200px;
+    }
     .interaction-type-card {
         cursor: pointer;
         transition: all 0.2s;
         border: 2px solid #dee2e6;
+        min-width: 120px;
+        margin-right: 0.5rem;
+        margin-bottom: 0;
     }
     .interaction-type-card:hover {
         transform: translateY(-2px);
@@ -18,8 +58,30 @@
         background-color: var(--bs-primary-bg-subtle);
     }
     .interaction-type-icon {
-        font-size: 1.5rem;
-        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+    .interaction-type-scroll {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    .interaction-meta-box {
+        background: #f8f9fa;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-left: 1rem;
+        min-width: 260px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    @media (max-width: 991.98px) {
+        .interaction-meta-box {
+            margin-left: 0;
+            margin-top: 1rem;
+        }
     }
     .datetime-picker {
         position: relative;
@@ -33,6 +95,30 @@
         top: 50%;
         transform: translateY(-50%);
         color: #6c757d;
+    }
+    .sticky-action-bar {
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+        z-index: 10;
+        padding: 1rem 0 0 0;
+        border-top: 1px solid #eee;
+        margin-top: 2rem;
+    }
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        margin-top: 2rem;
+        color: #4f46e5;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .required-asterisk {
+        color: #dc3545;
+        font-size: 1rem;
+        margin-left: 2px;
     }
 </style>
 {% endblock %}
@@ -50,178 +136,123 @@
         </ol>
     </nav>
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-1">{{ 'Edit' if interaction else 'New' }} Interaction</h1>
-            {% if contact %}
-            <p class="text-muted mb-0">Creating interaction for {{ contact.full_name }}</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Form -->
     <div class="card shadow-sm">
         <div class="card-body">
-            <form method="POST" class="needs-validation" novalidate>
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="fas fa-{{ Interaction.TYPE_ICONS.get(interaction.type if interaction else form.type.data, 'question-circle') }} text-{{ Interaction.TYPE_COLORS.get(interaction.type if interaction else form.type.data, 'secondary') }}"></i>
+                        {{ 'Edit' if interaction else 'New' }} {{ interaction.type_display if interaction else 'Interaction' }}
+                        {% if contact %}for {{ contact.full_name }}{% endif %}
+                        {% if interaction %}<span class="badge bg-warning text-dark ms-2">Edit Mode</span>{% endif %}
+                    </h1>
+                    <p class="text-muted mb-0">{{ 'Update details for this interaction.' if interaction else 'Log a new interaction with this contact.' }}</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('contacts.show', id=contact.id) if contact else url_for('interactions.index') }}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+
+            <form method="POST" class="needs-validation" novalidate id="interactionForm">
                 {{ form.csrf_token }}
                 {{ form.contact_id }}
-                
-                <!-- Mark as done section -->
-                <div class="mark-as-done-section">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="mark_as_done" name="mark_as_done" 
-                               {% if interaction and interaction.status == 'completed' %}checked{% endif %}>
-                        <label class="form-check-label fw-bold" for="mark_as_done">
-                            <i class="bi bi-check-circle-fill text-success"></i> Mark as done
-                        </label>
-                    </div>
-                </div>
 
-                <!-- Interaction Type Selection -->
+                {% if contact %}
+                <div class="alert alert-info mb-4">
+                    <strong>Logging interaction for:</strong> {{ contact.full_name }}
+                </div>
+                {% endif %}
+
+                <!-- Section: Type & Title -->
+                <hr>
+                <div class="section-title"><i class="fas fa-info-circle"></i> Details</div>
                 <div class="mb-4">
-                    <label class="form-label">Interaction Type *</label>
-                    <div class="row g-3">
-                        {% for type_key, type_value in form.type.choices %}
-                        <div class="col-md-3 col-sm-6">
-                            <div class="card interaction-type-card h-100 {% if form.type.data == type_key %}selected{% endif %}" 
-                                 data-type="{{ type_key }}" 
-                                 onclick="selectInteractionType('{{ type_key }}')">
-                                <div class="card-body text-center p-3">
-                                    <div class="interaction-type-icon text-{{ Interaction.TYPE_COLORS.get(type_key, 'secondary') }}">
-                                        <i class="fas fa-{{ Interaction.TYPE_ICONS.get(type_key, 'question-circle') }}"></i>
-                                    </div>
-                                    <h6 class="mb-0">{{ type_value }}</h6>
+                    <div class="row align-items-end g-2">
+                        <div class="col-md-8 col-12">
+                            <label class="form-label" aria-label="Interaction Type">Interaction Type <span class="required-asterisk">*</span></label>
+                            <div class="interaction-type-icons-row mb-2">
+                                {% for type_key, type_value in form.type.choices %}
+                                <div class="interaction-type-icon-only text-{{ Interaction.TYPE_COLORS.get(type_key, 'secondary') }} {% if form.type.data == type_key %}selected{% endif %}"
+                                     data-type="{{ type_key }}"
+                                     onclick="selectInteractionType('{{ type_key }}')"
+                                     data-bs-toggle="tooltip" title="{{ type_value }}">
+                                    <i class="fas fa-{{ Interaction.TYPE_ICONS.get(type_key, 'question-circle') }}"></i>
                                 </div>
+                                {% endfor %}
                             </div>
+                            {{ form.type(id="selected_type", class="d-none") }}
+                            <div class="invalid-feedback">Please select an interaction type.</div>
                         </div>
-                        {% endfor %}
+                        <div class="col-md-4 col-12">
+                            <label for="priority" class="form-label" aria-label="Priority">Priority <span class="required-asterisk">*</span></label>
+                            <select class="form-select" id="priority" name="priority" required aria-describedby="priorityHelp">
+                                {% for value, label in form.priority.choices %}
+                                <option value="{{ value }}" {% if form.priority.data == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div id="priorityHelp" class="form-text">How urgent or important is this interaction?</div>
+                            <div class="invalid-feedback">Please select a priority level.</div>
+                        </div>
                     </div>
-                    {{ form.type(id="selected_type", class="d-none") }}
-                    <div class="invalid-feedback">Please select an interaction type.</div>
-                </div>
-
-                <!-- Title and Priority -->
-                <div class="row mb-3">
-                    <div class="col-md-8">
-                        <label for="title" class="form-label">Title *</label>
+                    <div class="mt-3">
+                        <label for="title" class="form-label" aria-label="Title">Title <span class="required-asterisk">*</span></label>
                         <input type="text" class="form-control" id="title" name="title" 
                                value="{{ form.title.data or '' }}" required
-                               placeholder="Brief title for this interaction">
+                               placeholder="Brief title for this interaction" aria-describedby="titleHelp">
+                        <div id="titleHelp" class="form-text">Give a short, descriptive title for this interaction.</div>
                         <div class="invalid-feedback">Please provide a title.</div>
                     </div>
-                    <div class="col-md-4">
-                        <label for="priority" class="form-label">Priority *</label>
-                        <select class="form-select" id="priority" name="priority" required>
-                            {% for value, label in form.priority.choices %}
-                            <option value="{{ value }}" {% if form.priority.data == value %}selected{% endif %}>
-                                {{ label }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <div class="invalid-feedback">Please select a priority level.</div>
+                    <div class="interaction-meta-row mt-3">
+                        <div class="interaction-meta-col">
+                            <label for="date" class="form-label" aria-label="Date">Date <span class="required-asterisk">*</span> <i class="fas fa-calendar text-muted"></i></label>
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="{{ form.date.data.strftime('%Y-%m-%d') if form.date.data else '' }}" required aria-describedby="dateHelp">
+                            <div id="dateHelp" class="form-text">When did this interaction occur?</div>
+                            <div class="invalid-feedback">Please select a date.</div>
+                        </div>
+                        <div class="interaction-meta-col">
+                            <label for="status" class="form-label" aria-label="Status">Status <span class="required-asterisk">*</span></label>
+                            <select class="form-select" id="status" name="status" required aria-describedby="statusHelp">
+                                {% for status_key, status_value in form.status.choices %}
+                                <option value="{{ status_key }}" {% if form.status.data == status_key %}selected{% endif %}>
+                                    {{ status_value }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div id="statusHelp" class="form-text">What is the current status of this interaction?</div>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Description -->
                 <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
+                    <label for="description" class="form-label" aria-label="Description">Description <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" title="Detailed description of the interaction."></i></label>
                     <textarea class="form-control" id="description" name="description" rows="3"
-                              placeholder="Detailed description of the interaction">{{ form.description.data or '' }}</textarea>
+                              placeholder="Detailed description of the interaction" aria-describedby="descHelp">{{ form.description.data or '' }}</textarea>
+                    <div id="descHelp" class="form-text">Add any relevant details or context for this interaction.</div>
                 </div>
 
-                <!-- Location -->
+                <!-- Section: Next Steps -->
+                <hr>
+                <div class="section-title"><i class="fas fa-sticky-note"></i> Next Steps</div>
                 <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label for="location" class="form-label">Location</label>
-                        <input type="text" class="form-control" id="location" name="location"
-                               value="{{ form.location.data or '' }}"
-                               placeholder="Meeting location or platform">
-                    </div>
-                </div>
-
-                <!-- Date and Time -->
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="start_date" class="form-label">Date *</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date" 
-                               value="{{ form.start_date.data.strftime('%Y-%m-%d') if form.start_date.data else '' }}" required>
-                        <div class="invalid-feedback">Please select a date.</div>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="start_time" class="form-label">Time *</label>
-                        <input type="time" class="form-control" id="start_time" name="start_time" 
-                               value="{{ form.start_time.data.strftime('%H:%M') if form.start_time.data else '' }}" required>
-                        <div class="invalid-feedback">Please select a time.</div>
-                    </div>
-                </div>
-
-                <!-- End Date and Time (for meetings) -->
-                <div class="row mb-3 meeting-fields" style="display: none;">
-                    <div class="col-md-6">
-                        <label for="end_date" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="end_date" name="end_date" 
-                               value="{{ form.end_date.data.strftime('%Y-%m-%d') if form.end_date.data else '' }}">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="end_time" class="form-label">End Time</label>
-                        <input type="time" class="form-control" id="end_time" name="end_time" 
-                               value="{{ form.end_time.data.strftime('%H:%M') if form.end_time.data else '' }}">
-                    </div>
-                </div>
-
-                <!-- Status and Assignment -->
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="status" class="form-label">Status *</label>
-                        <select class="form-select" id="status" name="status" required>
-                            {% for status_key, status_value in form.status.choices %}
-                            <option value="{{ status_key }}" {% if form.status.data == status_key %}selected{% endif %}>
-                                {{ status_value }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="assigned_to_id" class="form-label">Assign To</label>
-                        <select class="form-select" id="assigned_to_id" name="assigned_to_id">
-                            <option value="">Select user...</option>
-                            {% for user_id, user_name in form.assigned_to_id.choices %}
-                            <option value="{{ user_id }}" {% if form.assigned_to_id.data == user_id %}selected{% endif %}>
-                                {{ user_name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Notes -->
-                <div class="mb-3">
-                    <label for="notes" class="form-label">Notes</label>
-                    <textarea class="form-control" id="notes" name="notes" rows="2"
-                              placeholder="Additional notes about the interaction">{{ form.notes.data or '' }}</textarea>
-                </div>
-
-                <!-- Outcome and Next Steps -->
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="outcome" class="form-label">Outcome</label>
-                        <textarea class="form-control" id="outcome" name="outcome" rows="2"
-                                  placeholder="What was the result of this interaction?">{{ form.outcome.data or '' }}</textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="next_steps" class="form-label">Next Steps</label>
+                    <div class="col-md-12">
+                        <label for="next_steps" class="form-label" aria-label="Next Steps">Next Steps <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" title="What needs to be done next?"></i></label>
                         <textarea class="form-control" id="next_steps" name="next_steps" rows="2"
-                                  placeholder="What needs to be done next?">{{ form.next_steps.data or '' }}</textarea>
+                                  placeholder="What needs to be done next?" aria-describedby="nextStepsHelp">{{ form.next_steps.data or '' }}</textarea>
+                        <div id="nextStepsHelp" class="form-text">Describe any follow-up actions or next steps.</div>
                     </div>
                 </div>
 
-                <!-- Submit Buttons -->
-                <div class="d-flex justify-content-end gap-2">
+                <!-- Sticky Action Bar -->
+                <div class="sticky-action-bar d-flex flex-column flex-md-row justify-content-end gap-2">
                     <a href="{{ url_for('contacts.show', id=contact.id) if contact else url_for('interactions.index') }}" 
-                       class="btn btn-outline-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-lg"></i> Save Interaction
+                       class="btn btn-outline-secondary mb-2 mb-md-0" aria-label="Cancel"><i class="fas fa-times"></i> Cancel</a>
+                    <button type="submit" class="btn btn-primary" aria-label="Save Interaction">
+                        <i class="fas fa-save"></i> Save Interaction
                     </button>
                 </div>
             </form>
@@ -233,15 +264,15 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle interaction type selection
-    const typeCards = document.querySelectorAll('.interaction-type-card');
+    // Handle interaction type selection (icon-only version)
+    const typeIcons = document.querySelectorAll('.interaction-type-icon-only');
     const typeInput = document.getElementById('selected_type');
     
-    typeCards.forEach(card => {
-        card.addEventListener('click', function() {
-            // Remove selected class from all cards
-            typeCards.forEach(c => c.classList.remove('selected'));
-            // Add selected class to clicked card
+    typeIcons.forEach(icon => {
+        icon.addEventListener('click', function() {
+            // Remove selected class from all icons
+            typeIcons.forEach(i => i.classList.remove('selected'));
+            // Add selected class to clicked icon
             this.classList.add('selected');
             // Update hidden input
             typeInput.value = this.dataset.type;
@@ -251,20 +282,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set initial selection if editing
     const formTypeData = '{{ form.type.data|default("", true)|tojson|safe }}';
     if (formTypeData) {
-        const initialCard = document.querySelector(`.interaction-type-card[data-type="${formTypeData}"]`);
-        if (initialCard) {
-            initialCard.classList.add('selected');
+        const initialIcon = document.querySelector(`.interaction-type-icon-only[data-type="${formTypeData}"]`);
+        if (initialIcon) {
+            initialIcon.classList.add('selected');
             typeInput.value = formTypeData;
         }
     }
 
-    // Add mark as done functionality
-    document.getElementById('mark_as_done').addEventListener('change', function() {
-        if (this.checked) {
-            document.getElementById('status').value = 'completed';
-        } else {
-            document.getElementById('status').value = 'scheduled';
-        }
+    // Enable Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });
 </script>

@@ -12,58 +12,6 @@
             <li class="breadcrumb-item active" aria-current="page">New Interaction</li>
         </ol>
     </nav>
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">New Interaction</h1>
-    </div>
-
-    <!-- Form -->
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('interactions.create') }}">
-                <div class="mb-3">
-                    <label for="customer" class="form-label">Customer *</label>
-                    <select class="form-select" id="customer" name="customer_id" required>
-                        <option value="">Select a customer</option>
-                        {% for customer in customers %}
-                            <option value="{{ customer.id }}" {% if request.args.get('customer_id')|int == customer.id %}selected{% endif %}>
-                                {{ customer.full_name }} {% if customer.company_name %}({{ customer.company_name }}){% endif %}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label for="type" class="form-label">Interaction Type *</label>
-                    <select class="form-select" id="type" name="type" required>
-                        <option value="">Select type</option>
-                        <option value="Call">Call</option>
-                        <option value="Email">Email</option>
-                        <option value="Meeting">Meeting</option>
-                        <option value="Note">Note</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label for="summary" class="form-label">Summary *</label>
-                    <input type="text" class="form-control" id="summary" name="summary" required
-                           placeholder="Brief summary of the interaction">
-                </div>
-
-                <div class="mb-3">
-                    <label for="details" class="form-label">Details</label>
-                    <textarea class="form-control" id="details" name="details" rows="5"
-                              placeholder="Additional details about the interaction"></textarea>
-                </div>
-
-                <div class="d-flex justify-content-end gap-2">
-                    <a href="{{ url_for('interactions.index') }}" class="btn btn-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Create Interaction</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    {% include "interactions/form.html" %}
 </div>
 {% endblock %} 

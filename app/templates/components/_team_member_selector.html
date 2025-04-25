@@ -1,0 +1,95 @@
+{% macro team_member_selector(users, existing_members=None, modal_id='addTeamMemberModal', on_add_function='addTeamMember', on_remove_function='removeTeamMember', search_placeholder='Search team members...', project=None) %}
+<!-- Add Team Member Modal -->
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fs-4">Manage Team Members</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <!-- Search Box -->
+                <div class="mb-4">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" 
+                               class="form-control border-start-0 ps-0" 
+                               id="{{ modal_id }}-search"
+                               placeholder="{{ search_placeholder }}"
+                               autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- Team Members List -->
+                <div class="list-group list-group-flush" id="{{ modal_id }}-members-list">
+                    {% for user in users %}
+                    <div class="list-group-item d-flex align-items-center gap-3 p-2">
+                        <div class="avatar-circle bg-primary text-white" style="width: 40px; height: 40px;">
+                            {{ user.first_name[0] }}{{ user.last_name[0] }}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ user.full_name }}</h6>
+                            <div class="small text-muted">{{ user.email }}</div>
+                        </div>
+                        {% if existing_members and user.id in existing_members|map(attribute='id') %}
+                        <!-- Remove button for existing members -->
+                        <form method="POST" action="{{ url_for('projects.remove_team_member_form', id=project.id, user_id=user.id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-light btn-sm text-danger" title="Remove from team">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                        {% else %}
+                        <!-- Add button for available members -->
+                        <form method="POST" action="{{ url_for('projects.add_team_member_form', id=project.id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" class="btn btn-light btn-sm text-success" title="Add to team">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="icon-circle bg-light text-muted mx-auto mb-3">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h6 class="text-muted">No Users Available</h6>
+                        <p class="text-muted small mb-3">There are no users in the system</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('{{ modal_id }}-search');
+    const membersList = document.getElementById('{{ modal_id }}-members-list');
+    
+    if (searchInput && membersList) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const members = membersList.querySelectorAll('.list-group-item');
+            
+            members.forEach(member => {
+                const name = member.querySelector('h6').textContent.toLowerCase();
+                const email = member.querySelector('.text-muted').textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || email.includes(searchTerm)) {
+                    member.style.display = '';
+                } else {
+                    member.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
+{% endmacro %} 

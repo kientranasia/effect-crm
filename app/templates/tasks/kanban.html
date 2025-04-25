@@ -1,0 +1,571 @@
+{% extends "base.html" %}
+
+{% block title %}Kanban Board - {{ project.name }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.2/dragula.min.css">
+<style>
+.kanban-board {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    overflow-x: auto;
+    min-height: calc(100vh - 200px);
+}
+
+.kanban-column {
+    flex: 1;
+    min-width: 300px;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.kanban-column h3 {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.kanban-card {
+    background: white;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    cursor: move;
+}
+
+.kanban-card h4 {
+    margin: 0 0 0.5rem 0;
+}
+
+.kanban-card p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.kanban-card .badge {
+    margin-top: 0.5rem;
+}
+
+.gu-mirror {
+    position: fixed;
+    z-index: 1000;
+}
+
+.gu-hide {
+    display: none !important;
+}
+
+.gu-unselectable {
+    user-select: none;
+}
+
+.gu-transit {
+    opacity: 0.2;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">{{ project.name }} - Kanban Board</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('projects.show', id=project.id) }}">{{ project.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Kanban Board</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                <i class="fas fa-plus me-2"></i>Add Task
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="kanban-board">
+                <div class="row g-0">
+                    <!-- To Do Column -->
+                    <div class="col-md-3 kanban-column">
+                        <div class="kanban-column-header bg-light p-3 border-bottom">
+                            <h6 class="mb-0 d-flex align-items-center">
+                                <span class="badge bg-secondary me-2">{{ tasks_by_status.todo|length }}</span>
+                                To Do
+                            </h6>
+                        </div>
+                        <div class="kanban-column-body" data-status="todo">
+                            {% for task in tasks_by_status.todo %}
+                            <div class="kanban-card" data-task-id="{{ task.id }}" draggable="true">
+                                <div class="card task-card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ task.title }}</h6>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editTaskModal" data-task-id="{{ task.id }}">
+                                                        <i class="fas fa-edit me-2"></i>Edit
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#" onclick="deleteTask({{ task.id }})">
+                                                        <i class="fas fa-trash me-2"></i>Delete
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text small text-muted mb-2">{{ task.description|truncate(100) }}</p>
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="badge badge-priority-{{ task.priority }}">{{ task.priority_display }}</span>
+                                            {% if task.due_date %}
+                                            <span class="badge {% if task.is_overdue %}bg-danger-subtle text-danger{% else %}bg-light text-secondary{% endif %}">
+                                                <i class="fas fa-calendar-alt me-1"></i>{{ task.due_date.strftime('%b %d') }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        {% if task.assigned_to %}
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-circle">
+                                                {{ task.assigned_to.first_name[0] }}{{ task.assigned_to.last_name[0] }}
+                                            </div>
+                                            <span class="text-muted small">{{ task.assigned_to.full_name }}</span>
+                                        </div>
+                                        {% else %}
+                                        <div class="text-muted small">Unassigned</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-tasks fa-2x mb-2"></i>
+                                <p class="mb-0">No tasks</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- In Progress Column -->
+                    <div class="col-md-3 kanban-column">
+                        <div class="kanban-column-header bg-light p-3 border-bottom">
+                            <h6 class="mb-0 d-flex align-items-center">
+                                <span class="badge bg-primary me-2">{{ tasks_by_status.in_progress|length }}</span>
+                                In Progress
+                            </h6>
+                        </div>
+                        <div class="kanban-column-body" data-status="in_progress">
+                            {% for task in tasks_by_status.in_progress %}
+                            <div class="kanban-card" data-task-id="{{ task.id }}" draggable="true">
+                                <div class="card task-card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ task.title }}</h6>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editTaskModal" data-task-id="{{ task.id }}">
+                                                        <i class="fas fa-edit me-2"></i>Edit
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#" onclick="deleteTask({{ task.id }})">
+                                                        <i class="fas fa-trash me-2"></i>Delete
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text small text-muted mb-2">{{ task.description|truncate(100) }}</p>
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="badge badge-priority-{{ task.priority }}">{{ task.priority_display }}</span>
+                                            {% if task.due_date %}
+                                            <span class="badge {% if task.is_overdue %}bg-danger-subtle text-danger{% else %}bg-light text-secondary{% endif %}">
+                                                <i class="fas fa-calendar-alt me-1"></i>{{ task.due_date.strftime('%b %d') }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        {% if task.assigned_to %}
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-circle">
+                                                {{ task.assigned_to.first_name[0] }}{{ task.assigned_to.last_name[0] }}
+                                            </div>
+                                            <span class="text-muted small">{{ task.assigned_to.full_name }}</span>
+                                        </div>
+                                        {% else %}
+                                        <div class="text-muted small">Unassigned</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-tasks fa-2x mb-2"></i>
+                                <p class="mb-0">No tasks</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- On Hold Column -->
+                    <div class="col-md-3 kanban-column">
+                        <div class="kanban-column-header bg-light p-3 border-bottom">
+                            <h6 class="mb-0 d-flex align-items-center">
+                                <span class="badge bg-warning me-2">{{ tasks_by_status.on_hold|length }}</span>
+                                On Hold
+                            </h6>
+                        </div>
+                        <div class="kanban-column-body" data-status="on_hold">
+                            {% for task in tasks_by_status.on_hold %}
+                            <div class="kanban-card" data-task-id="{{ task.id }}" draggable="true">
+                                <div class="card task-card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ task.title }}</h6>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editTaskModal" data-task-id="{{ task.id }}">
+                                                        <i class="fas fa-edit me-2"></i>Edit
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#" onclick="deleteTask({{ task.id }})">
+                                                        <i class="fas fa-trash me-2"></i>Delete
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text small text-muted mb-2">{{ task.description|truncate(100) }}</p>
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="badge badge-priority-{{ task.priority }}">{{ task.priority_display }}</span>
+                                            {% if task.due_date %}
+                                            <span class="badge {% if task.is_overdue %}bg-danger-subtle text-danger{% else %}bg-light text-secondary{% endif %}">
+                                                <i class="fas fa-calendar-alt me-1"></i>{{ task.due_date.strftime('%b %d') }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        {% if task.assigned_to %}
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-circle">
+                                                {{ task.assigned_to.first_name[0] }}{{ task.assigned_to.last_name[0] }}
+                                            </div>
+                                            <span class="text-muted small">{{ task.assigned_to.full_name }}</span>
+                                        </div>
+                                        {% else %}
+                                        <div class="text-muted small">Unassigned</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-tasks fa-2x mb-2"></i>
+                                <p class="mb-0">No tasks</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Completed Column -->
+                    <div class="col-md-3 kanban-column">
+                        <div class="kanban-column-header bg-light p-3 border-bottom">
+                            <h6 class="mb-0 d-flex align-items-center">
+                                <span class="badge bg-success me-2">{{ tasks_by_status.completed|length }}</span>
+                                Completed
+                            </h6>
+                        </div>
+                        <div class="kanban-column-body" data-status="completed">
+                            {% for task in tasks_by_status.completed %}
+                            <div class="kanban-card" data-task-id="{{ task.id }}" draggable="true">
+                                <div class="card task-card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ task.title }}</h6>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editTaskModal" data-task-id="{{ task.id }}">
+                                                        <i class="fas fa-edit me-2"></i>Edit
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#" onclick="deleteTask({{ task.id }})">
+                                                        <i class="fas fa-trash me-2"></i>Delete
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text small text-muted mb-2">{{ task.description|truncate(100) }}</p>
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="badge badge-priority-{{ task.priority }}">{{ task.priority_display }}</span>
+                                            {% if task.due_date %}
+                                            <span class="badge {% if task.is_overdue %}bg-danger-subtle text-danger{% else %}bg-light text-secondary{% endif %}">
+                                                <i class="fas fa-calendar-alt me-1"></i>{{ task.due_date.strftime('%b %d') }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        {% if task.assigned_to %}
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-circle">
+                                                {{ task.assigned_to.first_name[0] }}{{ task.assigned_to.last_name[0] }}
+                                            </div>
+                                            <span class="text-muted small">{{ task.assigned_to.full_name }}</span>
+                                        </div>
+                                        {% else %}
+                                        <div class="text-muted small">Unassigned</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-tasks fa-2x mb-2"></i>
+                                <p class="mb-0">No tasks</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTaskModalLabel">Add New Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addTaskForm" action="{{ url_for('tasks.create', project_id=project.id) }}" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="project_id" value="{{ project.id }}">
+                    <input type="hidden" name="created_by_id" value="{{ current_user.id }}">
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="due_date" class="form-label">Due Date</label>
+                            <input type="date" class="form-control" id="due_date" name="due_date">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="priority" class="form-label">Priority</label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="assigned_to_id" class="form-label">Assign To</label>
+                        <select class="form-select" id="assigned_to_id" name="assigned_to_id">
+                            <option value="">Unassigned</option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="todo" selected>To Do</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="on_hold">On Hold</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Task Modal -->
+<div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editTaskModalLabel">Edit Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editTaskForm" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="edit_title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="edit_title" name="title" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="edit_due_date" class="form-label">Due Date</label>
+                            <input type="date" class="form-control" id="edit_due_date" name="due_date">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_priority" class="form-label">Priority</label>
+                            <select class="form-select" id="edit_priority" name="priority">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_assigned_to_id" class="form-label">Assign To</label>
+                        <select class="form-select" id="edit_assigned_to_id" name="assigned_to_id">
+                            <option value="">Unassigned</option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_status" class="form-label">Status</label>
+                        <select class="form-select" id="edit_status" name="status">
+                            <option value="todo">To Do</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="on_hold">On Hold</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Task Modal -->
+<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteTaskModalLabel">Delete Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this task? This action cannot be undone.</p>
+            </div>
+            <form id="deleteTaskForm" method="POST">
+                <div class="modal-footer">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.2/dragula.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var drake = dragula([
+        document.querySelector('#todo .kanban-list'),
+        document.querySelector('#in_progress .kanban-list'),
+        document.querySelector('#on_hold .kanban-list'),
+        document.querySelector('#completed .kanban-list')
+    ]);
+
+    drake.on('drop', function(el, target, source) {
+        var taskId = el.dataset.taskId;
+        var newStatus = target.parentElement.id;
+        
+        fetch(`/tasks/${taskId}/update_status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                status: newStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update task positions
+                updateTaskPositions(target.parentElement);
+            }
+        });
+    });
+
+    function updateTaskPositions(column) {
+        var tasks = column.querySelectorAll('.kanban-card');
+        tasks.forEach((task, index) => {
+            fetch(`/tasks/${task.dataset.taskId}/update_position`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    position: index
+                })
+            });
+        });
+    }
+});
+</script>
+{% endblock %} 

@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import flash, redirect, url_for
+from flask import flash, redirect, url_for, request, jsonify
 from flask_login import current_user
 
 def admin_required(f):
@@ -33,4 +33,27 @@ def permission_required(permission):
                 return redirect(url_for('main.dashboard'))
             return f(*args, **kwargs)
         return decorated_function
-    return decorator 
+    return decorator
+
+def handle_exceptions(f):
+    """
+    Decorator to handle exceptions in route functions.
+    If an exception occurs, it will return a JSON response with an error message
+    for API routes, or redirect to the previous page with a flash message for
+    regular routes.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception as e:
+            # Check if the request wants JSON response
+            if request.is_json:
+                return jsonify({
+                    'success': False,
+                    'error': str(e)
+                }), 400
+            # For regular routes, flash the error and redirect back
+            flash(f'An error occurred: {str(e)}', 'danger')
+            return redirect(request.referrer or url_for('main.dashboard'))
+    return decorated_function 

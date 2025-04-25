@@ -85,7 +85,7 @@
                             <div class="timeline-meta">
                                 <span class="badge bg-{{ interaction.type_color }}">{{ interaction.type }}</span>
                                 <span class="badge bg-{{ interaction.status_color }}">{{ interaction.status }}</span>
-                                <span class="text-muted">{{ interaction.date.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                                <span class="text-muted">{{ interaction.start_date.strftime('%B %d, %Y at %I:%M %p') }}</span>
                             </div>
                         </div>
                         <div class="timeline-body">
@@ -131,11 +131,7 @@
                                 </div>
                             </div>
                             {% else %}
-                            <form action="{{ url_for('interactions.analyze', interaction_id=interaction.id) }}" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-link">
-                                    <i class="bi bi-robot"></i> Generate AI Analysis
-                                </button>
-                            </form>
+                            {# Removed form for interactions.analyze as the endpoint does not exist #}
                             {% endif %}
                         </div>
                     </div>

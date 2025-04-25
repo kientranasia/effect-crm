@@ -29,7 +29,7 @@
     <!-- Contact Profile Header -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-4">
-            <div class="d-flex justify-content-between">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-4">
                 <!-- Left: Contact Info -->
                 <div class="d-flex gap-3">
                     <div class="avatar-circle bg-primary" style="width: 64px; height: 64px; font-size: 1.5rem;">
@@ -40,13 +40,19 @@
                             <h2 class="h4 mb-0">{{ contact.first_name }} {{ contact.last_name }}</h2>
                             <span class="badge bg-success-subtle text-success">Active</span>
                         </div>
-                        <div class="d-flex align-items-center gap-3 text-muted">
-                            {% if contact.phone %}
+                        <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 gap-sm-3 text-muted">
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fas fa-phone"></i>
-                                <a href="tel:{{ contact.phone }}" class="text-muted text-decoration-none">{{ contact.phone }}</a>
+                                {% if contact.phone %}
+                                <a href="tel:{{ contact.phone }}" class="text-muted text-decoration-none d-block">{{ contact.phone }}</a>
+                                {% elif contact.mobile %}
+                                <a href="tel:{{ contact.mobile }}" class="text-muted text-decoration-none d-block">{{ contact.mobile }}</a>
+                                {% elif contact.work_phone %}
+                                <a href="tel:{{ contact.work_phone }}" class="text-muted text-decoration-none d-block">{{ contact.work_phone }}</a>
+                                {% else %}
+                                <span class="text-muted-50">Phone not available</span>
+                                {% endif %}
                             </div>
-                            {% endif %}
                             {% if contact.email %}
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fas fa-envelope"></i>
@@ -66,34 +72,67 @@
                             </div>
                             {% endif %}
                         </div>
+                        <!-- Social Links -->
+                        <div class="d-flex align-items-center gap-3 mt-2">
+                            <a href="{{ contact.linkedin or '#' }}" target="_blank" class="text-muted text-decoration-none {% if not contact.linkedin %}text-muted-50{% endif %}" title="LinkedIn">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="{{ contact.twitter or '#' }}" target="_blank" class="text-muted text-decoration-none {% if not contact.twitter %}text-muted-50{% endif %}" title="Twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="{{ contact.facebook or '#' }}" target="_blank" class="text-muted text-decoration-none {% if not contact.facebook %}text-muted-50{% endif %}" title="Facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="{{ contact.instagram or '#' }}" target="_blank" class="text-muted text-decoration-none {% if not contact.instagram %}text-muted-50{% endif %}" title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="{{ contact.github or '#' }}" target="_blank" class="text-muted text-decoration-none {% if not contact.github %}text-muted-50{% endif %}" title="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Right: Deal Information -->
-                <div class="d-flex gap-4">
-                    <div class="text-end">
-                        <div class="small text-muted mb-1">Deal Value</div>
-                        <div class="h5 mb-0 text-primary">
-                            {% if contact.deal_value is not none %}
-                                ${{ "%.2f"|format(contact.deal_value) }}
-                            {% else %}
-                                $0.00
-                            {% endif %}
+                <div class="d-flex align-items-center justify-content-center">
+                    <div class="d-flex flex-column flex-sm-row gap-4">
+                        {% if contact.organization %}
+                        <div class="text-center">
+                            <div class="mb-3">
+                                <div class="small text-muted mb-1">Organization</div>
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <i class="fas fa-building text-primary"></i>
+                                    <a href="{{ url_for('organizations.show', id=contact.organization.id) }}" class="text-decoration-none">
+                                        {{ contact.organization.name }}
+                                    </a>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="text-end">
-                        <div class="small text-muted mb-1">Probability</div>
-                        <div class="h5 mb-0 text-success">
-                            {% if contact.probability is not none %}
-                                {{ "%.1f"|format(contact.probability) }}%
-                            {% else %}
-                                0%
-                            {% endif %}
+                        {% endif %}
+                        <div class="text-center">
+                            <div class="small text-muted mb-1">Deal Value</div>
+                            <div class="h5 mb-0 text-primary">
+                                {% if contact.deal_value is not none %}
+                                    ${{ "%.2f"|format(contact.deal_value) }}
+                                {% else %}
+                                    $0.00
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="text-end">
-                        <div class="small text-muted mb-1">Pipeline Stage</div>
-                        <div class="h5 mb-0 text-info">{{ contact.stage_display|default('New') }}</div>
+                        <div class="text-center">
+                            <div class="small text-muted mb-1">Probability</div>
+                            <div class="h5 mb-0 text-success">
+                                {% if contact.probability is not none %}
+                                    {{ "%.1f"|format(contact.probability) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="small text-muted mb-1">Pipeline Stage</div>
+                            <div class="h5 mb-0 text-info">{{ contact.stage_display|default('New') }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -104,22 +143,26 @@
     <ul class="nav nav-tabs nav-tabs-custom mb-4">
         <li class="nav-item">
             <a class="nav-link active" data-bs-toggle="tab" href="#accounts">
-                <i class="fas fa-user-circle me-2"></i>Accounts Overview
+                <i class="fas fa-user-circle"></i>
+                <span class="d-none d-sm-inline ms-2">Accounts Overview</span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" data-bs-toggle="tab" href="#interactions">
-                <i class="fas fa-comments me-2"></i>Interactions
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#attachments">
-                <i class="fas fa-paperclip me-2"></i>Attachments
+                <i class="fas fa-comments"></i>
+                <span class="d-none d-sm-inline ms-2">Interactions</span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" data-bs-toggle="tab" href="#organization">
-                <i class="fas fa-building me-2"></i>Organization
+                <i class="fas fa-building"></i>
+                <span class="d-none d-sm-inline ms-2">Organization</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#attachments">
+                <i class="fas fa-paperclip"></i>
+                <span class="d-none d-sm-inline ms-2">Attachments</span>
             </a>
         </li>
     </ul>
@@ -166,8 +209,18 @@
                                     <div class="mb-2">
                                         <label class="small text-muted">Phone</label>
                                         <div>
-                                            {% if contact.phone %}
-                                            <a href="tel:{{ contact.phone }}" class="text-decoration-none">{{ contact.phone }}</a>
+                                            {% if contact.phone or contact.mobile or contact.work_phone %}
+                                                {% if contact.phone %}
+                                                <a href="tel:{{ contact.phone }}" class="text-decoration-none d-block">{{ contact.phone }}</a>
+                                                {% endif %}
+                                                {% if contact.mobile %}
+                                                <a href="tel:{{ contact.mobile }}" class="text-decoration-none d-block text-muted small">Mobile: {{ contact.mobile }}</a>
+                                                {% endif %}
+                                                {% if contact.work_phone %}
+                                                <a href="tel:{{ contact.work_phone }}" class="text-decoration-none d-block text-muted small">Work: {{ contact.work_phone }}</a>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -223,11 +276,13 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="mb-3">
+                                    <div class="mb-2">
                                         <label class="small text-muted">Work Phone</label>
                                         <div>
                                             {% if contact.work_phone %}
-                                            <a href="tel:{{ contact.work_phone }}" class="text-decoration-none">{{ contact.work_phone }}</a>
+                                            <a href="tel:{{ contact.work_phone }}" class="text-decoration-none d-block">{{ contact.work_phone }}</a>
+                                            {% else %}
+                                            <span class="text-muted">-</span>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -251,10 +306,29 @@
 
                 <!-- Right Column -->
                 <div class="col-lg-4">
-                    <!-- Organization Details -->
+                    <!-- Organization Overview -->
                     <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-transparent border-0">
-                            <h5 class="card-title mb-0">Organization Details</h5>
+                        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-building text-primary me-2"></i>Organization Overview
+                            </h5>
+                            {% if contact.organization %}
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('organizations.show', id=contact.organization.id) }}" class="btn btn-sm btn-light" title="View Organization">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#selectOrganizationModal" title="Change Organization">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </button>
+                                <a href="{{ url_for('organizations.edit', id=contact.organization.id, return_url=url_for('contacts.show', id=contact.id, _external=True)) }}" 
+                                   class="btn btn-sm btn-light" title="Edit Organization">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-sm btn-light text-danger" onclick="removeOrganization()" title="Remove Organization">
+                                    <i class="fas fa-unlink"></i>
+                                </button>
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="card-body">
                             {% if contact.organization %}
@@ -314,18 +388,24 @@
                                 </div>
                                 <h6 class="text-muted">No Organization Associated</h6>
                                 <p class="text-muted small mb-3">This contact is not associated with any organization</p>
-                                <button class="btn btn-light">
-                                    <i class="fas fa-plus me-2"></i>Add Organization
-                                </button>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#selectOrganizationModal">
+                                        <i class="fas fa-building me-2"></i>Select Organization
+                                    </button>
+                                    <a href="{{ url_for('organizations.create', return_url=url_for('contacts.show', id=contact.id, _external=True)) }}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-plus me-2"></i>Add New Organization
+                                    </a>
+                                </div>
                             </div>
                             {% endif %}
                         </div>
                     </div>
 
-                    <!-- Connections Management -->
+                    <!-- Connections Card -->
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">Connections Management</h5>
+                            <h5 class="card-title mb-0">Connections</h5>
                             <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addConnectionModal">
                                 <i class="fas fa-plus"></i>
                             </button>
@@ -340,85 +420,6 @@
                                 </div>
                                 <h6 class="text-muted">No Connections</h6>
                                 <p class="text-muted small mb-0">Add connections to link this contact with others</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Social Information -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-transparent border-0">
-                            <h5 class="card-title mb-0">Social Information</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-4">
-                                <div class="col-12">
-                                    <div class="d-flex flex-column gap-3">
-                                        {% if contact.linkedin %}
-                                        <div class="d-flex align-items-center">
-                                            <div class="icon-circle bg-primary-subtle text-primary me-3" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                                                <i class="fab fa-linkedin-in"></i>
-                                            </div>
-                                            <div>
-                                                <label class="small text-muted d-block">LinkedIn</label>
-                                                <a href="{{ contact.linkedin }}" target="_blank" class="text-decoration-none">{{ contact.linkedin }}</a>
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                        {% if contact.twitter %}
-                                        <div class="d-flex align-items-center">
-                                            <div class="icon-circle bg-info-subtle text-info me-3" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                                                <i class="fab fa-twitter"></i>
-                                            </div>
-                                            <div>
-                                                <label class="small text-muted d-block">Twitter</label>
-                                                <a href="{{ contact.twitter }}" target="_blank" class="text-decoration-none">{{ contact.twitter }}</a>
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                        {% if contact.facebook %}
-                                        <div class="d-flex align-items-center">
-                                            <div class="icon-circle bg-primary-subtle text-primary me-3" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                                                <i class="fab fa-facebook-f"></i>
-                                            </div>
-                                            <div>
-                                                <label class="small text-muted d-block">Facebook</label>
-                                                <a href="{{ contact.facebook }}" target="_blank" class="text-decoration-none">{{ contact.facebook }}</a>
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                        {% if contact.instagram %}
-                                        <div class="d-flex align-items-center">
-                                            <div class="icon-circle bg-danger-subtle text-danger me-3" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                                                <i class="fab fa-instagram"></i>
-                                            </div>
-                                            <div>
-                                                <label class="small text-muted d-block">Instagram</label>
-                                                <a href="{{ contact.instagram }}" target="_blank" class="text-decoration-none">{{ contact.instagram }}</a>
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                        {% if contact.github %}
-                                        <div class="d-flex align-items-center">
-                                            <div class="icon-circle bg-dark-subtle text-dark me-3" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                                                <i class="fab fa-github"></i>
-                                            </div>
-                                            <div>
-                                                <label class="small text-muted d-block">GitHub</label>
-                                                <a href="{{ contact.github }}" target="_blank" class="text-decoration-none">{{ contact.github }}</a>
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                        {% if not contact.linkedin and not contact.twitter and not contact.facebook and not contact.instagram and not contact.github %}
-                                        <div class="text-center py-3">
-                                            <div class="icon-circle bg-light text-muted mx-auto mb-3">
-                                                <i class="fas fa-share-alt"></i>
-                                            </div>
-                                            <h6 class="text-muted">No Social Profiles</h6>
-                                            <p class="text-muted small mb-0">No social media profiles have been added yet</p>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -514,29 +515,56 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">Interaction History</h5>
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newInteractionModal">
+                            <a href="{{ url_for('interactions.create', contact_id=contact.id) }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus me-2"></i>New Interaction
-                            </button>
+                            </a>
                         </div>
                         <div class="card-body p-0">
                             <div class="list-group list-group-flush">
                                 {% for interaction in contact.interactions %}
                                 <div class="list-group-item px-4 py-3">
                                     <div class="d-flex align-items-start gap-3">
-                                        <div class="icon-circle {% if interaction.type == 'call' %}bg-primary-subtle text-primary{% elif interaction.type == 'meeting' %}bg-success-subtle text-success{% elif interaction.type == 'email' %}bg-info-subtle text-info{% else %}bg-warning-subtle text-warning{% endif %}">
-                                            <i class="fas {% if interaction.type == 'call' %}fa-phone{% elif interaction.type == 'meeting' %}fa-handshake{% elif interaction.type == 'email' %}fa-envelope{% else %}fa-tasks{% endif %}"></i>
+                                        <div class="icon-circle bg-{{ interaction.type_color }}-subtle text-{{ interaction.type_color }}">
+                                            <i class="fas fa-{{ interaction.type_icon }}"></i>
                                         </div>
                                         <div class="flex-grow-1">
                                             <div class="d-flex justify-content-between align-items-start mb-2">
                                                 <h6 class="mb-0">{{ interaction.title }}</h6>
-                                                <span class="badge {% if interaction.status == 'completed' %}bg-success-subtle text-success{% elif interaction.status == 'pending' %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %}">
-                                                    {{ interaction.status|title }}
+                                                <span class="badge bg-{{ interaction.status_color }}-subtle text-{{ interaction.status_color }}">
+                                                    {{ interaction.status_display }}
+                                                </span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <span class="badge bg-{{ interaction.priority_color }}-subtle text-{{ interaction.priority_color }} me-2">
+                                                    {{ interaction.priority_display }}
+                                                </span>
+                                                <span class="badge bg-{{ interaction.type_color }}-subtle text-{{ interaction.type_color }}">
+                                                    {{ interaction.type_display }}
                                                 </span>
                                             </div>
                                             <p class="text-muted small mb-2">{{ interaction.description }}</p>
-                                            <div class="d-flex align-items-center gap-3 small text-muted">
-                                                <span><i class="far fa-clock me-1"></i>{{ interaction.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                                            {% if interaction.notes %}
+                                            <div class="mb-1"><strong>Notes:</strong> {{ interaction.notes }}</div>
+                                            {% endif %}
+                                            {% if interaction.outcome %}
+                                            <div class="mb-1"><strong>Outcome:</strong> {{ interaction.outcome }}</div>
+                                            {% endif %}
+                                            {% if interaction.next_steps %}
+                                            <div class="mb-1"><strong>Next Steps:</strong> {{ interaction.next_steps }}</div>
+                                            {% endif %}
+                                            {% if interaction.location %}
+                                            <div class="mb-1"><strong>Location:</strong> {{ interaction.location }}</div>
+                                            {% endif %}
+                                            <div class="d-flex align-items-center gap-3 small text-muted flex-wrap">
+                                                <span><i class="far fa-calendar me-1"></i>Start: {{ interaction.start_date|parse_datetime|strftime('%b %d, %Y %I:%M %p') if interaction.start_date }}</span>
+                                                {% if interaction.end_date %}
+                                                <span><i class="far fa-calendar-check me-1"></i>End: {{ interaction.end_date|parse_datetime|strftime('%b %d, %Y %I:%M %p') }}</span>
+                                                {% endif %}
+                                                <span><i class="far fa-clock me-1"></i>Created: {{ interaction.created_at|parse_datetime|strftime('%b %d, %Y %I:%M %p') }}</span>
                                                 <span><i class="far fa-user me-1"></i>{{ interaction.created_by.full_name }}</span>
+                                                {% if interaction.assigned_to %}
+                                                <span><i class="fas fa-user-check me-1"></i>Assigned: {{ interaction.assigned_to.full_name }}</span>
+                                                {% endif %}
                                             </div>
                                         </div>
                                         <div class="dropdown">
@@ -544,8 +572,16 @@
                                                 <i class="fas fa-ellipsis-h"></i>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Edit</a></li>
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>View Details</a></li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ url_for('interactions.edit', interaction_id=interaction.id) }}">
+                                                        <i class="fas fa-edit me-2"></i>Edit
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ url_for('interactions.show', interaction_id=interaction.id) }}">
+                                                        <i class="fas fa-eye me-2"></i>View Details
+                                                    </a>
+                                                </li>
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Delete</a></li>
                                             </ul>
@@ -562,6 +598,167 @@
                                 </div>
                                 {% endfor %}
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Organization Tab -->
+        <div class="tab-pane fade" id="organization">
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Organization Details</h5>
+                            {% if not contact.organization %}
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('organizations.create', return_url=url_for('contacts.show', id=contact.id)) }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus me-2"></i>Create Organization
+                                </a>
+                                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#selectOrganizationModal">
+                                    <i class="fas fa-link me-2"></i>Select Organization
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            {% if contact.organization %}
+                            <div class="row g-4">
+                                <!-- Organization Overview -->
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center gap-4 p-4 bg-light rounded-3">
+                                        <div class="organization-logo rounded-circle bg-white d-flex align-items-center justify-content-center shadow-sm" 
+                                             style="width: 80px; height: 80px;">
+                                            <i class="fas fa-building text-primary fa-2x"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center gap-3 mb-2">
+                                                <h4 class="mb-0">{{ contact.organization.name }}</h4>
+                                                <span class="badge bg-primary">{{ contact.organization.industry_display }}</span>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-3 text-muted">
+                                                {% if contact.organization.website %}
+                                                <a href="{{ contact.organization.website }}" target="_blank" class="text-decoration-none">
+                                                    <i class="fas fa-globe me-1"></i>{{ contact.organization.website }}
+                                                </a>
+                                                {% endif %}
+                                                {% if contact.organization.phone %}
+                                                <a href="tel:{{ contact.organization.phone }}" class="text-decoration-none">
+                                                    <i class="fas fa-phone me-1"></i>{{ contact.organization.phone }}
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ url_for('organizations.show', id=contact.organization.id) }}" class="btn btn-light" title="View Organization">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#selectOrganizationModal" title="Change Organization">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </button>
+                                            <a href="{{ url_for('organizations.edit', id=contact.organization.id, return_url=url_for('contacts.show', id=contact.id)) }}" 
+                                               class="btn btn-light" title="Edit Organization">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button class="btn btn-light text-danger" onclick="removeOrganization()" title="Remove Organization">
+                                                <i class="fas fa-unlink"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Organization Details -->
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-4">Organization Information</h6>
+                                            <div class="row g-3">
+                                                <div class="col-6">
+                                                    <label class="small text-muted">Size</label>
+                                                    <div class="fw-medium">{{ contact.organization.size_display }}</div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label class="small text-muted">Status</label>
+                                                    <div class="fw-medium">{{ contact.organization.status_display }}</div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label class="small text-muted">Founded</label>
+                                                    <div class="fw-medium">{{ contact.organization.founded|default('Not provided', true) }}</div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label class="small text-muted">Email</label>
+                                                    <div class="fw-medium">
+                                                        {% if contact.organization.primary_email %}
+                                                        <a href="mailto:{{ contact.organization.primary_email }}" class="text-decoration-none">
+                                                            {{ contact.organization.primary_email }}
+                                                        </a>
+                                                        {% else %}
+                                                        Not provided
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Address Information -->
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-4">Address</h6>
+                                            {% if contact.organization.address_line1 %}
+                                            <div class="mb-2">
+                                                {{ contact.organization.address_line1 }}
+                                                {% if contact.organization.address_line2 %}
+                                                <div>{{ contact.organization.address_line2 }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="text-muted">
+                                                {% if contact.organization.city %}{{ contact.organization.city }}{% endif %}
+                                                {% if contact.organization.state %}, {{ contact.organization.state }}{% endif %}
+                                                {% if contact.organization.postal_code %} {{ contact.organization.postal_code }}{% endif %}
+                                                {% if contact.organization.country %}
+                                                <div>{{ contact.organization.country }}</div>
+                                                {% endif %}
+                                            </div>
+                                            {% else %}
+                                            <div class="text-muted">No address provided</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                {% if contact.organization.description %}
+                                <div class="col-12">
+                                    <div class="card border-0">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-3">About</h6>
+                                            <p class="mb-0">{{ contact.organization.description }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <div class="icon-circle bg-light text-muted mx-auto mb-3">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <h6 class="text-muted">No Organization Linked</h6>
+                                <p class="text-muted small mb-4">This contact is not associated with any organization.</p>
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <a href="{{ url_for('organizations.create', return_url=url_for('contacts.show', id=contact.id)) }}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Create Organization
+                                    </a>
+                                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#selectOrganizationModal">
+                                        <i class="fas fa-link me-2"></i>Select Organization
+                                    </button>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -616,733 +813,451 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Organization Tab -->
-        <div class="tab-pane fade" id="organization">
-            <div class="row g-4">
-                <div class="col-12">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-transparent border-0">
-                            <h5 class="card-title mb-0">Organization Details</h5>
-                        </div>
-                        <div class="card-body">
-                            {% if contact.organization %}
-                            <div class="d-flex align-items-center gap-4 mb-4">
-                                <div class="organization-logo rounded bg-light d-flex align-items-center justify-content-center" 
-                                     style="width: 64px; height: 64px;">
-                                    <i class="fas fa-building text-primary fa-2x"></i>
-                                </div>
-                                <div>
-                                    <h4 class="mb-1">{{ contact.organization.name }}</h4>
-                                    <span class="badge bg-light text-secondary">{{ contact.organization.industry }}</span>
-                                </div>
-                            </div>
-                            <div class="row g-4">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="small text-muted">Website</label>
-                                        <div>
-                                            {% if contact.organization.website %}
-                                            <a href="{{ contact.organization.website }}" target="_blank" class="text-decoration-none">
-                                                {{ contact.organization.website }}
-                                                <i class="fas fa-external-link-alt ms-1 small"></i>
-                                            </a>
-                                            {% else %}
-                                            <span class="text-muted">Not provided</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="small text-muted">Phone</label>
-                                        <div>{{ contact.organization.phone|default('Not provided', true) }}</div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="small text-muted">Email</label>
-                                        <div>{{ contact.organization.email|default('Not provided', true) }}</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="small text-muted">Address</label>
-                                        <div>{{ contact.organization.address|default('Not provided', true) }}</div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="small text-muted">Size</label>
-                                        <div>{{ contact.organization.size|default('Not provided', true) }}</div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="small text-muted">Founded</label>
-                                        <div>{{ contact.organization.founded|default('Not provided', true) }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% else %}
-                            <div class="text-center py-5">
-                                <div class="icon-circle bg-light text-muted mx-auto mb-3">
-                                    <i class="fas fa-building"></i>
-                                </div>
-                                <h6 class="text-muted">No Organization Associated</h6>
-                                <p class="text-muted small mb-3">This contact is not associated with any organization</p>
-                                <button class="btn btn-light">
-                                    <i class="fas fa-plus me-2"></i>Add Organization
-                                </button>
-                            </div>
-                            {% endif %}
-                        </div>
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-body text-center p-4">
+                    <div class="icon-circle bg-danger-subtle text-danger mx-auto mb-4" style="width: 48px; height: 48px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h5 class="modal-title mb-3">Delete Contact</h5>
+                    <p class="text-muted mb-4">Are you sure you want to delete this contact? This action cannot be undone.</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <form action="{{ url_for('contacts.delete', id=contact.id) }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger">Delete Contact</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- New Interaction Modal -->
-    <div class="modal fade" id="newInteractionModal" tabindex="-1">
+    <!-- Import vCard Modal -->
+    <div class="modal fade" id="importVCardModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title">New Interaction</h5>
+                    <h5 class="modal-title">Import vCard Contacts</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label class="form-label">Type</label>
-                            <select class="form-select">
-                                <option value="call">Call</option>
-                                <option value="meeting">Meeting</option>
-                                <option value="email">Email</option>
-                                <option value="task">Task</option>
-                            </select>
+                    <form id="vCardImportForm" action="{{ url_for('contacts.import_vcard') }}" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- File Upload -->
+                        <div class="mb-4">
+                            <div class="upload-zone p-4 text-center border rounded-3" id="dropZone">
+                                <i class="fas fa-file-upload fa-2x text-muted mb-3"></i>
+                                <h6>Drag & Drop vCard Files</h6>
+                                <p class="text-muted small mb-3">or</p>
+                                <label class="btn btn-light">
+                                    <input type="file" name="vcard_files" multiple accept=".vcf,text/vcard" class="d-none" id="vCardInput">
+                                    Browse Files
+                                </label>
+                                <div class="text-muted small mt-2">Supports .vcf files</div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Title</label>
-                            <input type="text" class="form-control" placeholder="Enter title">
+
+                        <!-- Selected Files List -->
+                        <div id="selectedFiles" class="mb-4 d-none">
+                            <h6 class="mb-3">Selected Files</h6>
+                            <div class="selected-files-list">
+                                <!-- Files will be listed here via JavaScript -->
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" rows="3" placeholder="Enter description"></textarea>
+
+                        <!-- Import Options -->
+                        <div class="mb-4">
+                            <h6 class="mb-3">Import Options</h6>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="skipDuplicates" name="skip_duplicates" checked>
+                                <label class="form-check-label" for="skipDuplicates">Skip duplicate contacts</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="updateExisting" name="update_existing">
+                                <label class="form-check-label" for="updateExisting">Update existing contacts</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="importPhotos" name="import_photos" checked>
+                                <label class="form-check-label" for="importPhotos">Import contact photos</label>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Date & Time</label>
-                            <input type="datetime-local" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <select class="form-select">
-                                <option value="pending">Pending</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
+
+                        <!-- Progress Bar (Hidden by default) -->
+                        <div class="progress d-none mb-3" id="importProgress">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary">Create Interaction</button>
+                    <button type="button" class="btn btn-primary" id="startImport">
+                        <i class="fas fa-file-import me-2"></i>Start Import
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Delete Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-body text-center p-4">
-                <div class="icon-circle bg-danger-subtle text-danger mx-auto mb-4" style="width: 48px; height: 48px;">
-                    <i class="fas fa-exclamation-triangle"></i>
+    <!-- Add Connection Modal -->
+    <div class="modal fade" id="addConnectionModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Add Connection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <h5 class="modal-title mb-3">Delete Contact</h5>
-                <p class="text-muted mb-4">Are you sure you want to delete this contact? This action cannot be undone.</p>
-                <div class="d-flex gap-2 justify-content-center">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <form action="{{ url_for('contacts.delete', id=contact.id) }}" method="POST">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-danger">Delete Contact</button>
+                <div class="modal-body">
+                    <form id="addConnectionForm">
+                        <div class="mb-4">
+                            <label class="form-label">Search Contact</label>
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" id="contactSearch" 
+                                       placeholder="Search by name, email, or phone number..."
+                                       autocomplete="off">
+                                <button class="btn btn-outline-secondary" type="button" id="searchContact">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                Search by: full name, email, phone, work phone, or home phone
+                            </div>
+                        </div>
+
+                        <!-- Contact List -->
+                        <div class="mb-4">
+                            <div class="contact-list border rounded-3 overflow-auto" style="max-height: 300px;">
+                                <div id="contactListContainer" class="list-group list-group-flush">
+                                    <!-- Contacts will be loaded here -->
+                                </div>
+                                <div id="noContactsFound" class="text-center py-4 d-none">
+                                    <div class="text-muted">No contacts found</div>
+                                    <small class="text-muted d-block mt-2">Try different search terms</small>
+                                </div>
+                                <div id="loadingContacts" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selected Contact Info -->
+                        <div id="selectedContactInfo" class="mb-4 d-none">
+                            <div class="d-flex align-items-center p-3 bg-light rounded-3">
+                                <div class="avatar-circle bg-primary me-3">
+                                    <span class="contact-initials"></span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 selected-contact-name"></h6>
+                                    <div class="text-muted small selected-contact-details"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Relationship Type</label>
+                            <select class="form-select" id="relationshipType" required>
+                                <option value="Friend">Friend</option>
+                                <option value="Colleague">Colleague</option>
+                                <option value="Family">Family</option>
+                                <option value="Client">Client</option>
+                                <option value="Partner">Partner</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" id="connectionNotes" rows="3" placeholder="Add any notes about this connection..."></textarea>
+                        </div>
+
+                        <input type="hidden" id="selectedContactId" value="">
                     </form>
                 </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveConnection">Add Connection</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Import vCard Modal -->
-<div class="modal fade" id="importVCardModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-header border-0">
-                <h5 class="modal-title">Import vCard Contacts</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="vCardImportForm" action="{{ url_for('contacts.import_vcard') }}" method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    
-                    <!-- File Upload -->
-                    <div class="mb-4">
-                        <div class="upload-zone p-4 text-center border rounded-3" id="dropZone">
-                            <i class="fas fa-file-upload fa-2x text-muted mb-3"></i>
-                            <h6>Drag & Drop vCard Files</h6>
-                            <p class="text-muted small mb-3">or</p>
-                            <label class="btn btn-light">
-                                <input type="file" name="vcard_files" multiple accept=".vcf,text/vcard" class="d-none" id="vCardInput">
-                                Browse Files
-                            </label>
-                            <div class="text-muted small mt-2">Supports .vcf files</div>
+    <!-- Edit Connection Modal -->
+    <div class="modal fade" id="editConnectionModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Edit Connection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editConnectionForm">
+                        <div class="mb-4">
+                            <label class="form-label">Relationship Type</label>
+                            <select class="form-select" id="editRelationshipType" required>
+                                <option value="Friend">Friend</option>
+                                <option value="Colleague">Colleague</option>
+                                <option value="Family">Family</option>
+                                <option value="Client">Client</option>
+                                <option value="Partner">Partner</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
-                    </div>
 
-                    <!-- Selected Files List -->
-                    <div id="selectedFiles" class="mb-4 d-none">
-                        <h6 class="mb-3">Selected Files</h6>
-                        <div class="selected-files-list">
-                            <!-- Files will be listed here via JavaScript -->
+                        <div class="mb-4">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" id="editConnectionNotes" rows="3" placeholder="Add any notes about this connection..."></textarea>
                         </div>
-                    </div>
 
-                    <!-- Import Options -->
-                    <div class="mb-4">
-                        <h6 class="mb-3">Import Options</h6>
-                        <div class="form-check mb-2">
-                            <input type="checkbox" class="form-check-input" id="skipDuplicates" name="skip_duplicates" checked>
-                            <label class="form-check-label" for="skipDuplicates">Skip duplicate contacts</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input type="checkbox" class="form-check-input" id="updateExisting" name="update_existing">
-                            <label class="form-check-label" for="updateExisting">Update existing contacts</label>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="importPhotos" name="import_photos" checked>
-                            <label class="form-check-label" for="importPhotos">Import contact photos</label>
-                        </div>
-                    </div>
-
-                    <!-- Progress Bar (Hidden by default) -->
-                    <div class="progress d-none mb-3" id="importProgress">
-                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="startImport">
-                    <i class="fas fa-file-import me-2"></i>Start Import
-                </button>
+                        <input type="hidden" id="editConnectionId" value="">
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveConnectionEdit">Save Changes</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Add Connection Modal -->
-<div class="modal fade" id="addConnectionModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-header border-0">
-                <h5 class="modal-title">Add Connection</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- Unlink Organization Modal -->
+    <div class="modal fade" id="unlinkOrganizationModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-body text-center p-4">
+                    <div class="icon-circle bg-warning-subtle text-warning mx-auto mb-4" style="width: 48px; height: 48px;">
+                        <i class="fas fa-unlink"></i>
+                    </div>
+                    <h5 class="modal-title mb-3">Unlink Organization</h5>
+                    <p class="text-muted mb-4">Are you sure you want to unlink this organization from the contact? This will not delete the organization.</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <form action="/contacts/{{ contact.id }}/associate-organization" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="organization_id" value="">
+                            <button type="submit" class="btn btn-warning">Unlink Organization</button>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="modal-body">
-                <form id="addConnectionForm">
-                    <div class="mb-4">
-                        <label class="form-label">Search Contact</label>
-                        <div class="input-group mb-2">
-                            <input type="text" class="form-control" id="contactSearch" 
-                                   placeholder="Search by name, email, or phone number..."
-                                   autocomplete="off">
-                            <button class="btn btn-outline-secondary" type="button" id="searchContact">
+        </div>
+    </div>
+
+    <!-- Select Organization Modal -->
+    <div class="modal fade" id="selectOrganizationModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Select Organization</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="p-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
                                 <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                        <div class="form-text">
-                            Search by: full name, email, phone, work phone, or home phone
+                            </span>
+                            <input type="text" class="form-control border-start-0 ps-0" id="organizationSearch" placeholder="Search organizations...">
                         </div>
                     </div>
-
-                    <!-- Contact List -->
-                    <div class="mb-4">
-                        <div class="contact-list border rounded-3 overflow-auto" style="max-height: 300px;">
-                            <div id="contactListContainer" class="list-group list-group-flush">
-                                <!-- Contacts will be loaded here -->
-                            </div>
-                            <div id="noContactsFound" class="text-center py-4 d-none">
-                                <div class="text-muted">No contacts found</div>
-                                <small class="text-muted d-block mt-2">Try different search terms</small>
-                            </div>
-                            <div id="loadingContacts" class="text-center py-4">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
+                    <div class="list-group list-group-flush px-4 pb-4" id="organizationsList">
+                        {% for org in organizations %}
+                        <div class="list-group-item border-0 mb-3 organization-item" data-organization-id="{{ org.id }}">
+                            <form action="/contacts/{{ contact.id }}/associate-organization" method="POST" class="d-flex align-items-center gap-3">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="organization_id" value="{{ org.id }}">
+                                <div class="organization-logo rounded-circle bg-light d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 48px; height: 48px;">
+                                    <i class="fas fa-building text-primary"></i>
                                 </div>
-                            </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ org.name }}</h6>
+                                    <div class="d-flex align-items-center gap-3 text-muted small">
+                                        {% if org.industry %}
+                                        <span class="badge bg-light text-secondary">{{ org.industry_display }}</span>
+                                        {% endif %}
+                                        {% if org.website %}
+                                        <a href="{{ org.website }}" target="_blank" class="text-decoration-none">
+                                            {{ org.website }} <i class="fas fa-external-link-alt ms-1"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm">Select</button>
+                            </form>
                         </div>
-                    </div>
-
-                    <!-- Selected Contact Info -->
-                    <div id="selectedContactInfo" class="mb-4 d-none">
-                        <div class="d-flex align-items-center p-3 bg-light rounded-3">
-                            <div class="avatar-circle bg-primary me-3">
-                                <span class="contact-initials"></span>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <div class="icon-circle bg-light text-muted mx-auto mb-3">
+                                <i class="fas fa-building"></i>
                             </div>
-                            <div>
-                                <h6 class="mb-1 selected-contact-name"></h6>
-                                <div class="text-muted small selected-contact-details"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label">Relationship Type</label>
-                        <select class="form-select" id="relationshipType" required>
-                            <option value="Friend">Friend</option>
-                            <option value="Colleague">Colleague</option>
-                            <option value="Family">Family</option>
-                            <option value="Client">Client</option>
-                            <option value="Partner">Partner</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label">Notes</label>
-                        <textarea class="form-control" id="connectionNotes" rows="3" placeholder="Add any notes about this connection..."></textarea>
-                    </div>
-
-                    <input type="hidden" id="selectedContactId" value="">
-                </form>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveConnection">Add Connection</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Connection Modal -->
-<div class="modal fade" id="editConnectionModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-header border-0">
-                <h5 class="modal-title">Edit Connection</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editConnectionForm">
-                    <div class="mb-4">
-                        <label class="form-label">Relationship Type</label>
-                        <select class="form-select" id="editRelationshipType" required>
-                            <option value="Friend">Friend</option>
-                            <option value="Colleague">Colleague</option>
-                            <option value="Family">Family</option>
-                            <option value="Client">Client</option>
-                            <option value="Partner">Partner</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label">Notes</label>
-                        <textarea class="form-control" id="editConnectionNotes" rows="3" placeholder="Add any notes about this connection..."></textarea>
-                    </div>
-
-                    <input type="hidden" id="editConnectionId" value="">
-                </form>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveConnectionEdit">Save Changes</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-.contact-list {
-    border: 1px solid #dee2e6;
-}
-
-.contact-list .list-group-item {
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.contact-list .list-group-item:hover {
-    background-color: #f8f9fa;
-}
-
-.contact-list .list-group-item.selected {
-    background-color: #e9ecef;
-}
-
-.avatar-circle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 500;
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const contactId = {{ contact.id }};
-    const connectionsList = document.getElementById('connectionsList');
-    const noConnections = document.getElementById('noConnections');
-    const addConnectionModal = new bootstrap.Modal(document.getElementById('addConnectionModal'));
-    const editConnectionModal = new bootstrap.Modal(document.getElementById('editConnectionModal'));
-    const contactSearch = document.getElementById('contactSearch');
-    const searchContactBtn = document.getElementById('searchContact');
-    const contactListContainer = document.getElementById('contactListContainer');
-    const noContactsFound = document.getElementById('noContactsFound');
-    const loadingContacts = document.getElementById('loadingContacts');
-    const selectedContactInfo = document.getElementById('selectedContactInfo');
-    const selectedContactId = document.getElementById('selectedContactId');
-    
-    // Load connections
-    function loadConnections() {
-        fetch(`/contacts/${contactId}/connections`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                connectionsList.innerHTML = '';
-                if (!data.connections || data.connections.length === 0) {
-                    noConnections.classList.remove('d-none');
-                    return;
-                }
-                noConnections.classList.add('d-none');
-                data.connections.forEach(conn => {
-                    const connectionItem = document.createElement('div');
-                    connectionItem.className = 'list-group-item d-flex align-items-center gap-3 px-4 py-3';
-                    connectionItem.innerHTML = `
-                        <div class="avatar-circle bg-primary">${conn.other_contact.avatar}</div>
-                        <div class="flex-grow-1">
-                            <a href="/contacts/${conn.other_contact.id}" class="text-decoration-none">
-                                <h6 class="mb-0">${conn.other_contact.name}</h6>
+                            <h6 class="text-muted">No Organizations Found</h6>
+                            <p class="text-muted small mb-4">Create a new organization to link to this contact</p>
+                            <a href="{{ url_for('organizations.create', return_url=url_for('contacts.show', id=contact.id)) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-2"></i>Create Organization
                             </a>
-                            <small class="text-muted">${conn.relationship_type}</small>
-                            ${conn.notes ? `<small class="text-muted d-block">${conn.notes}</small>` : ''}
                         </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-light edit-connection" data-id="${conn.id}" 
-                                    data-relationship="${conn.relationship_type}" 
-                                    data-notes="${conn.notes || ''}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-light delete-connection" data-id="${conn.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
-                    connectionsList.appendChild(connectionItem);
-                });
-            })
-            .catch(error => {
-                console.error('Error loading connections:', error);
-                noConnections.classList.remove('d-none');
-            });
-    }
-    
-    // Load all contacts
-    function loadContacts() {
-        loadingContacts.classList.remove('d-none');
-        noContactsFound.classList.add('d-none');
-        contactListContainer.innerHTML = '';
-        
-        fetch('/contacts/search')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                displayContacts(data.contacts || []);
-            })
-            .catch(error => {
-                console.error('Error loading contacts:', error);
-                noContactsFound.classList.remove('d-none');
-            })
-            .finally(() => {
-                loadingContacts.classList.add('d-none');
-            });
-    }
-    
-    // Search contacts
-    function searchContacts(query) {
-        loadingContacts.classList.remove('d-none');
-        noContactsFound.classList.add('d-none');
-        contactListContainer.innerHTML = '';
-        
-        fetch(`/contacts/search?query=${encodeURIComponent(query)}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                displayContacts(data.contacts || []);
-            })
-            .catch(error => {
-                console.error('Error searching contacts:', error);
-                noContactsFound.classList.remove('d-none');
-            })
-            .finally(() => {
-                loadingContacts.classList.add('d-none');
-            });
-    }
-    
-    // Display contacts
-    function displayContacts(contacts) {
-        contactListContainer.innerHTML = '';
-        loadingContacts.classList.add('d-none');
-        
-        if (!contacts || contacts.length === 0) {
-            noContactsFound.classList.remove('d-none');
-            return;
-        }
-        
-        noContactsFound.classList.add('d-none');
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        // Get existing connections
-        fetch(`/contacts/${contactId}/connections`)
-            .then(response => response.json())
-            .then(data => {
-                const connectedIds = data.connections.map(conn => 
-                    conn.other_contact.id
-                );
-
-                contacts.forEach(contact => {
-                    if (contact.id !== contactId && !connectedIds.includes(contact.id)) {
-                        const item = document.createElement('div');
-                        item.className = 'list-group-item d-flex align-items-center py-3 px-4';
-                        
-                        const phones = [
-                            { type: '', number: contact.phone },
-                            { type: 'Work', number: contact.work_phone },
-                            { type: 'Home', number: contact.home_phone }
-                        ].filter(p => p.number)
-                         .map(p => p.type ? `${p.type}: ${p.number}` : p.number)
-                         .join(' • ');
-                        
-                        const email = contact.email;
-                        
-                        item.innerHTML = `
-                            <div class="avatar-circle bg-primary me-3">
-                                <span>${contact.first_name[0]}${contact.last_name[0]}</span>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1">${contact.first_name} ${contact.last_name}</h6>
-                                <div class="text-muted small">
-                                    ${phones ? `<div><i class="fas fa-phone me-1"></i>${phones}</div>` : ''}
-                                    ${email ? `<div><i class="fas fa-envelope me-1"></i>${email}</div>` : ''}
-                                </div>
-                            </div>
-                        `;
-                        
-                        item.addEventListener('click', () => selectContact(contact, item));
-                        contactListContainer.appendChild(item);
-                    }
-                });
-            });
-    }
-    
-    // Select a contact
-    function selectContact(contact, element) {
-        // Remove selection from other items
-        contactListContainer.querySelectorAll('.list-group-item').forEach(item => {
-            item.classList.remove('selected');
-        });
-        
-        // Add selection to clicked item
-        element.classList.add('selected');
-        
-        // Update selected contact info
-        selectedContactId.value = contact.id;
-        selectedContactInfo.classList.remove('d-none');
-        selectedContactInfo.querySelector('.contact-initials').textContent = `${contact.first_name[0]}${contact.last_name[0]}`;
-        selectedContactInfo.querySelector('.selected-contact-name').textContent = `${contact.first_name} ${contact.last_name}`;
-        
-        const phones = [
-            { type: '', number: contact.phone },
-            { type: 'Work', number: contact.work_phone },
-            { type: 'Home', number: contact.home_phone }
-        ].filter(p => p.number)
-         .map(p => p.type ? `${p.type}: ${p.number}` : p.number)
-         .join(' • ');
-        
-        const details = [
-            phones ? `<div><i class="fas fa-phone me-1"></i>${phones}</div>` : '',
-            contact.email ? `<div><i class="fas fa-envelope me-1"></i>${contact.email}</div>` : ''
-        ].filter(Boolean).join('');
-        
-        selectedContactInfo.querySelector('.selected-contact-details').innerHTML = details || 'No contact information';
+    <style>
+    /* Organization Selection Modal Styles */
+    #selectOrganizationModal .modal-content {
+        border-radius: 12px;
     }
 
-    // Unselect contact
-    function unselectContact() {
-        contactListContainer.querySelectorAll('.list-group-item').forEach(item => {
-            item.classList.remove('selected');
-        });
-        selectedContactId.value = '';
-        selectedContactInfo.classList.add('d-none');
+    #selectOrganizationModal .modal-title {
+        color: #1a1a1a;
     }
 
-    // Add unselect button to selected contact info
-    selectedContactInfo.querySelector('.d-flex').insertAdjacentHTML('beforeend', `
-        <button type="button" class="btn btn-sm btn-light ms-auto" id="unselectContact">
-            <i class="fas fa-times"></i>
-        </button>
-    `);
+    .search-box .form-control {
+        height: 48px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        background-color: #f8f9fa;
+        border-color: #f8f9fa;
+    }
 
-    document.getElementById('unselectContact').addEventListener('click', (e) => {
-        e.preventDefault();
-        unselectContact();
-    });
-    
-    // Search button click handler
-    searchContactBtn.addEventListener('click', () => {
-        const query = contactSearch.value.trim();
-        if (query) {
-            searchContacts(query);
-        } else {
-            loadContacts();
+    .search-box .form-control:focus {
+        background-color: #fff;
+        border-color: #e9ecef;
+        box-shadow: none;
+    }
+
+    .organization-item {
+        cursor: pointer;
+        border: 1px solid #e9ecef !important;
+        background-color: #fff;
+        transition: all 0.2s ease;
+        border-radius: 8px !important;
+        padding: 1rem !important;
+    }
+
+    .organization-item:hover {
+        background-color: #f8f9fa;
+        border-color: #dee2e6 !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .organization-item.selected {
+        background-color: #fff;
+        border-color: #0d6efd !important;
+    }
+
+    .organization-logo {
+        width: 48px;
+        height: 48px;
+        background-color: #f8f9fa;
+        color: #0d6efd;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+
+    .organization-item:hover .organization-logo {
+        background-color: #e7f1ff;
+        border-color: #0d6efd;
+    }
+
+    .organization-item h6 {
+        color: #1a1a1a;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .industry-badge {
+        font-size: 0.8rem;
+        color: #6c757d;
+        background-color: #e9ecef;
+        padding: 0.25em 0.75em;
+        border-radius: 20px;
+    }
+
+    .website-link {
+        color: #6c757d;
+        text-decoration: none;
+    }
+
+    .website-link:hover {
+        color: #0d6efd;
+    }
+
+    #selectOrganizationBtn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+
+    /* Improve scrolling */
+    #organizationsList {
+        max-height: 400px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #dee2e6 #fff;
+    }
+
+    #organizationsList::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #organizationsList::-webkit-scrollbar-track {
+        background: #fff;
+    }
+
+    #organizationsList::-webkit-scrollbar-thumb {
+        background-color: #dee2e6;
+        border-radius: 3px;
+    }
+
+    /* Add responsive styles for tabs */
+    .nav-tabs-custom .nav-link {
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .nav-tabs-custom .nav-link i {
+        font-size: 1.1rem;
+    }
+
+    @media (max-width: 576px) {
+        .nav-tabs-custom .nav-link {
+            padding: 0.75rem;
         }
-    });
-    
-    // Search input handlers
-    contactSearch.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            searchContactBtn.click();
-        }
-    });
-    
-    contactSearch.addEventListener('input', () => {
-        if (!contactSearch.value.trim()) {
-            loadContacts();
-        }
-    });
-    
-    // Add connection
-    document.getElementById('saveConnection').addEventListener('click', () => {
-        const targetContactId = selectedContactId.value;
-        const relationshipType = document.getElementById('relationshipType').value;
-        const notes = document.getElementById('connectionNotes').value;
         
-        if (!targetContactId) {
-            alert('Please select a contact');
-            return;
+        .nav-tabs-custom .nav-link i {
+            margin: 0;
         }
+    }
+    </style>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contactId = "{{ contact.id }}";
+        const connectionsList = document.getElementById('connectionsList');
+        const noConnections = document.getElementById('noConnections');
+        const addConnectionModal = new bootstrap.Modal(document.getElementById('addConnectionModal'));
+        const editConnectionModal = new bootstrap.Modal(document.getElementById('editConnectionModal'));
+        const contactSearch = document.getElementById('contactSearch');
+        const searchContactBtn = document.getElementById('searchContact');
+        const contactListContainer = document.getElementById('contactListContainer');
+        const noContactsFound = document.getElementById('noContactsFound');
+        const loadingContacts = document.getElementById('loadingContacts');
+        const selectedContactInfo = document.getElementById('selectedContactInfo');
+        const selectedContactId = document.getElementById('selectedContactId');
         
-        fetch(`/contacts/${contactId}/connections`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({
-                target_contact_id: targetContactId,
-                relationship_type: relationshipType,
-                notes: notes
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            addConnectionModal.hide();
-            loadConnections();
-            // Reset form
-            document.getElementById('addConnectionForm').reset();
-            selectedContactInfo.classList.add('d-none');
-            selectedContactId.value = '';
-            contactListContainer.querySelectorAll('.list-group-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-        })
-        .catch(error => {
-            console.error('Error adding connection:', error);
-            alert('Failed to add connection: ' + error.message);
-        });
-    });
-    
-    // Edit connection
-    connectionsList.addEventListener('click', (e) => {
-        if (e.target.closest('.edit-connection')) {
-            const button = e.target.closest('.edit-connection');
-            const connectionId = button.dataset.id;
-            const relationshipType = button.dataset.relationship;
-            const notes = button.dataset.notes;
-
-            document.getElementById('editConnectionId').value = connectionId;
-            document.getElementById('editRelationshipType').value = relationshipType;
-            document.getElementById('editConnectionNotes').value = notes;
-
-            editConnectionModal.show();
-        }
-    });
-
-    // Save connection edit
-    document.getElementById('saveConnectionEdit').addEventListener('click', () => {
-        const connectionId = document.getElementById('editConnectionId').value;
-        const relationshipType = document.getElementById('editRelationshipType').value;
-        const notes = document.getElementById('editConnectionNotes').value;
-
-        fetch(`/contacts/connections/${connectionId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({
-                relationship_type: relationshipType,
-                notes: notes
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            editConnectionModal.hide();
-            loadConnections();
-        })
-        .catch(error => {
-            console.error('Error updating connection:', error);
-            alert('Failed to update connection: ' + error.message);
-        });
-    });
-    
-    // Delete connection
-    connectionsList.addEventListener('click', (e) => {
-        if (e.target.closest('.delete-connection')) {
-            const connectionId = e.target.closest('.delete-connection').dataset.id;
-            if (confirm('Are you sure you want to delete this connection?')) {
-                fetch(`/contacts/connections/${connectionId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token() }}'
-                    }
-                })
+        // Load connections
+        function loadConnections() {
+            fetch(`/contacts/${contactId}/connections`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -1350,31 +1265,532 @@ document.addEventListener('DOMContentLoaded', function() {
                     return response.json();
                 })
                 .then(data => {
-                    if (data.error) {
-                        throw new Error(data.error);
+                    connectionsList.innerHTML = '';
+                    if (!data.connections || data.connections.length === 0) {
+                        noConnections.classList.remove('d-none');
+                        return;
                     }
-                    loadConnections();
+                    noConnections.classList.add('d-none');
+                    data.connections.forEach(conn => {
+                        const connectionItem = document.createElement('div');
+                        connectionItem.className = 'list-group-item d-flex align-items-center gap-3 px-4 py-3';
+                        connectionItem.innerHTML = `
+                            <div class="avatar-circle bg-primary">${conn.other_contact.avatar}</div>
+                            <div class="flex-grow-1">
+                                <a href="/contacts/${conn.other_contact.id}" class="text-decoration-none">
+                                    <h6 class="mb-0">${conn.other_contact.name}</h6>
+                                </a>
+                                <small class="text-muted">${conn.relationship_type}</small>
+                                ${conn.notes ? `<small class="text-muted d-block">${conn.notes}</small>` : ''}
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-light edit-connection" data-id="${conn.id}" 
+                                        data-relationship="${conn.relationship_type}" 
+                                        data-notes="${conn.notes || ''}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-light delete-connection" data-id="${conn.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                        connectionsList.appendChild(connectionItem);
+                    });
                 })
                 .catch(error => {
-                    console.error('Error deleting connection:', error);
-                    alert('Failed to delete connection: ' + error.message);
+                    console.error('Error loading connections:', error);
+                    noConnections.classList.remove('d-none');
+                });
+        }
+        
+        // Load all contacts
+        function loadContacts() {
+            loadingContacts.classList.remove('d-none');
+            noContactsFound.classList.add('d-none');
+            contactListContainer.innerHTML = '';
+            
+            fetch('/contacts/search')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displayContacts(data.contacts || []);
+                })
+                .catch(error => {
+                    console.error('Error loading contacts:', error);
+                    noContactsFound.classList.remove('d-none');
+                })
+                .finally(() => {
+                    loadingContacts.classList.add('d-none');
+                });
+        }
+        
+        // Search contacts
+        function searchContacts(query) {
+            loadingContacts.classList.remove('d-none');
+            noContactsFound.classList.add('d-none');
+            contactListContainer.innerHTML = '';
+            
+            fetch(`/contacts/search?query=${encodeURIComponent(query)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displayContacts(data.contacts || []);
+                })
+                .catch(error => {
+                    console.error('Error searching contacts:', error);
+                    noContactsFound.classList.remove('d-none');
+                })
+                .finally(() => {
+                    loadingContacts.classList.add('d-none');
+                });
+        }
+        
+        // Display contacts
+        function displayContacts(contacts) {
+            contactListContainer.innerHTML = '';
+            loadingContacts.classList.add('d-none');
+            
+            if (!contacts || contacts.length === 0) {
+                noContactsFound.classList.remove('d-none');
+                return;
+            }
+            
+            noContactsFound.classList.add('d-none');
+
+            // Get existing connections
+            fetch(`/contacts/${contactId}/connections`)
+                .then(response => response.json())
+                .then(data => {
+                    const connectedIds = data.connections.map(conn => 
+                        conn.other_contact.id
+                    );
+
+                    contacts.forEach(contact => {
+                        if (contact.id !== contactId && !connectedIds.includes(contact.id)) {
+                            const item = document.createElement('div');
+                            item.className = 'list-group-item d-flex align-items-center py-3 px-4';
+                            
+                            const phones = [
+                                { type: '', number: contact.phone },
+                                { type: 'Work', number: contact.work_phone },
+                                { type: 'Home', number: contact.home_phone }
+                            ].filter(p => p.number)
+                             .map(p => p.type ? `${p.type}: ${p.number}` : p.number)
+                             .join(' • ');
+                            
+                            const email = contact.email;
+                            
+                            item.innerHTML = `
+                                <div class="avatar-circle bg-primary me-3">
+                                    <span>${contact.first_name[0]}${contact.last_name[0]}</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">${contact.first_name} ${contact.last_name}</h6>
+                                    <div class="text-muted small">
+                                        ${phones ? `<div><i class="fas fa-phone me-1"></i>${phones}</div>` : ''}
+                                        ${email ? `<div><i class="fas fa-envelope me-1"></i>${email}</div>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                            
+                            item.addEventListener('click', () => selectContact(contact, item));
+                            contactListContainer.appendChild(item);
+                        }
+                    });
+                });
+        }
+        
+        // Select a contact
+        function selectContact(contact, element) {
+            // Remove selection from other items
+            contactListContainer.querySelectorAll('.list-group-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Add selection to clicked item
+            element.classList.add('selected');
+            
+            // Update selected contact info
+            selectedContactId.value = contact.id;
+            selectedContactInfo.classList.remove('d-none');
+            selectedContactInfo.querySelector('.contact-initials').textContent = `${contact.first_name[0]}${contact.last_name[0]}`;
+            selectedContactInfo.querySelector('.selected-contact-name').textContent = `${contact.first_name} ${contact.last_name}`;
+            
+            const phones = [
+                { type: '', number: contact.phone },
+                { type: 'Work', number: contact.work_phone },
+                { type: 'Home', number: contact.home_phone }
+            ].filter(p => p.number)
+             .map(p => p.type ? `${p.type}: ${p.number}` : p.number)
+             .join(' • ');
+            
+            const details = [
+                phones ? `<div><i class="fas fa-phone me-1"></i>${phones}</div>` : '',
+                contact.email ? `<div><i class="fas fa-envelope me-1"></i>${contact.email}</div>` : ''
+            ].filter(Boolean).join('');
+            
+            selectedContactInfo.querySelector('.selected-contact-details').innerHTML = details || 'No contact information';
+        }
+
+        // Unselect contact
+        function unselectContact() {
+            contactListContainer.querySelectorAll('.list-group-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            selectedContactId.value = '';
+            selectedContactInfo.classList.add('d-none');
+        }
+
+        // Add unselect button to selected contact info
+        selectedContactInfo.querySelector('.d-flex').insertAdjacentHTML('beforeend', `
+            <button type="button" class="btn btn-sm btn-light ms-auto" id="unselectContact">
+                <i class="fas fa-times"></i>
+            </button>
+        `);
+
+        document.getElementById('unselectContact').addEventListener('click', (e) => {
+            e.preventDefault();
+            unselectContact();
+        });
+        
+        // Search button click handler
+        searchContactBtn.addEventListener('click', () => {
+            const query = contactSearch.value.trim();
+            if (query) {
+                searchContacts(query);
+            } else {
+                loadContacts();
+            }
+        });
+        
+        // Search input handlers
+        contactSearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchContactBtn.click();
+            }
+        });
+        
+        contactSearch.addEventListener('input', () => {
+            if (!contactSearch.value.trim()) {
+                loadContacts();
+            }
+        });
+        
+        // Add connection
+        document.getElementById('saveConnection').addEventListener('click', () => {
+            const targetContactId = selectedContactId.value;
+            const relationshipType = document.getElementById('relationshipType').value;
+            const notes = document.getElementById('connectionNotes').value;
+            
+            if (!targetContactId) {
+                alert('Please select a contact');
+                return;
+            }
+            
+            fetch(`/contacts/${contactId}/connections`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    target_contact_id: targetContactId,
+                    relationship_type: relationshipType,
+                    notes: notes
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                addConnectionModal.hide();
+                loadConnections();
+                // Reset form
+                document.getElementById('addConnectionForm').reset();
+                selectedContactInfo.classList.add('d-none');
+                selectedContactId.value = '';
+                contactListContainer.querySelectorAll('.list-group-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+            })
+            .catch(error => {
+                console.error('Error adding connection:', error);
+                alert('Failed to add connection: ' + error.message);
+            });
+        });
+        
+        // Edit connection
+        connectionsList.addEventListener('click', (e) => {
+            if (e.target.closest('.edit-connection')) {
+                const button = e.target.closest('.edit-connection');
+                const connectionId = button.dataset.id;
+                const relationshipType = button.dataset.relationship;
+                const notes = button.dataset.notes;
+
+                document.getElementById('editConnectionId').value = connectionId;
+                document.getElementById('editRelationshipType').value = relationshipType;
+                document.getElementById('editConnectionNotes').value = notes;
+
+                editConnectionModal.show();
+            }
+        });
+
+        // Save connection edit
+        document.getElementById('saveConnectionEdit').addEventListener('click', () => {
+            const connectionId = document.getElementById('editConnectionId').value;
+            const relationshipType = document.getElementById('editRelationshipType').value;
+            const notes = document.getElementById('editConnectionNotes').value;
+
+            fetch(`/contacts/connections/${connectionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    relationship_type: relationshipType,
+                    notes: notes
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                editConnectionModal.hide();
+                loadConnections();
+            })
+            .catch(error => {
+                console.error('Error updating connection:', error);
+                alert('Failed to update connection: ' + error.message);
+            });
+        });
+        
+        // Delete connection
+        connectionsList.addEventListener('click', (e) => {
+            if (e.target.closest('.delete-connection')) {
+                const connectionId = e.target.closest('.delete-connection').dataset.id;
+                if (confirm('Are you sure you want to delete this connection?')) {
+                    fetch(`/contacts/connections/${connectionId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        loadConnections();
+                    })
+                    .catch(error => {
+                        console.error('Error deleting connection:', error);
+                        alert('Failed to delete connection: ' + error.message);
+                    });
+                }
+            }
+        });
+        
+        // Load contacts when modal is shown
+        document.getElementById('addConnectionModal').addEventListener('show.bs.modal', () => {
+            loadContacts();
+            // Reset form
+            document.getElementById('addConnectionForm').reset();
+            selectedContactInfo.classList.add('d-none');
+            selectedContactId.value = '';
+        });
+        
+        // Initial load of connections
+        loadConnections();
+        
+        // Interaction form handling
+        const newInteractionModal = new bootstrap.Modal(document.getElementById('newInteractionModal'));
+        const interactionForm = document.getElementById('newInteractionForm');
+        const saveInteractionBtn = document.getElementById('saveInteraction');
+        const interactionTypeSelect = document.getElementById('type');
+        const endDateField = document.querySelector('.end-date-field');
+        const endTimeField = document.querySelector('.end-time-field');
+        
+        // Show/hide end date/time fields based on interaction type
+        interactionTypeSelect.addEventListener('change', function() {
+            if (this.value === 'meeting') {
+                endDateField.classList.remove('d-none');
+                endTimeField.classList.remove('d-none');
+            } else {
+                endDateField.classList.add('d-none');
+                endTimeField.classList.add('d-none');
+            }
+        });
+        
+        // Set default date to today
+        const today = new Date();
+        const formattedDate = today.toISOString().split('T')[0];
+        document.getElementById('start_date').value = formattedDate;
+        
+        // Set default time to current time (rounded to nearest 15 minutes)
+        const hours = today.getHours().toString().padStart(2, '0');
+        const minutes = Math.ceil(today.getMinutes() / 15) * 15;
+        const formattedMinutes = minutes.toString().padStart(2, '0');
+        document.getElementById('start_time').value = `${hours}:${formattedMinutes}`;
+        
+        // Handle form submission
+        saveInteractionBtn.addEventListener('click', function() {
+            if (interactionForm.checkValidity()) {
+                // Combine date and time for start_date
+                const startDate = document.getElementById('start_date').value;
+                const startTime = document.getElementById('start_time').value;
+                const startDateTime = new Date(startDate + 'T' + startTime);
+                
+                // Create a hidden input for the combined datetime
+                const startDateTimeInput = document.createElement('input');
+                startDateTimeInput.type = 'hidden';
+                startDateTimeInput.name = 'start_date';
+                startDateTimeInput.value = startDateTime.toISOString();
+                interactionForm.appendChild(startDateTimeInput);
+                
+                // If meeting type, combine end date and time
+                if (interactionTypeSelect.value === 'meeting') {
+                    const endDate = document.getElementById('end_date').value;
+                    const endTime = document.getElementById('end_time').value;
+                    if (endDate && endTime) {
+                        const endDateTime = new Date(endDate + 'T' + endTime);
+                        const endDateTimeInput = document.createElement('input');
+                        endDateTimeInput.type = 'hidden';
+                        endDateTimeInput.name = 'end_date';
+                        endDateTimeInput.value = endDateTime.toISOString();
+                        interactionForm.appendChild(endDateTimeInput);
+                    }
+                }
+                
+                // Submit the form
+                interactionForm.submit();
+            } else {
+                interactionForm.reportValidity();
+            }
+        });
+        
+        // Reset form when modal is closed
+        document.getElementById('newInteractionModal').addEventListener('hidden.bs.modal', function() {
+            interactionForm.reset();
+            // Reset to default values
+            document.getElementById('start_date').value = formattedDate;
+            document.getElementById('start_time').value = `${hours}:${formattedMinutes}`;
+            endDateField.classList.add('d-none');
+            endTimeField.classList.add('d-none');
+        });
+    });
+
+    // Organization selection functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const organizationSearch = document.getElementById('organizationSearch');
+        const organizationsList = document.getElementById('organizationsList');
+        const noOrganizationsFound = document.getElementById('noOrganizationsFound');
+        
+        // Handle organization search
+        if (organizationSearch) {
+            organizationSearch.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                const items = organizationsList.getElementsByClassName('organization-item');
+                let visibleCount = 0;
+                
+                Array.from(items).forEach(item => {
+                    const name = item.querySelector('h6').textContent.toLowerCase();
+                    const industry = item.querySelector('.badge') ? item.querySelector('.badge').textContent.toLowerCase() : '';
+                    const websiteLink = item.querySelector('a');
+                    const website = websiteLink ? websiteLink.textContent.toLowerCase() : '';
+                    
+                    const isVisible = name.includes(searchTerm) || 
+                                    industry.includes(searchTerm) || 
+                                    website.includes(searchTerm);
+                    
+                    item.style.display = isVisible ? '' : 'none';
+                    if (isVisible) visibleCount++;
+                });
+
+                // Show/hide no results message
+                if (noOrganizationsFound) {
+                    noOrganizationsFound.classList.toggle('d-none', visibleCount > 0);
+                }
+                organizationsList.classList.toggle('d-none', visibleCount === 0);
+            });
+
+            // Clear search when modal is opened
+            document.getElementById('selectOrganizationModal').addEventListener('show.bs.modal', function () {
+                organizationSearch.value = '';
+                organizationSearch.dispatchEvent(new Event('input'));
+            });
+        }
+
+        // Reset modal state when hidden
+        document.getElementById('selectOrganizationModal').addEventListener('hidden.bs.modal', function () {
+            if (organizationSearch) {
+                organizationSearch.value = '';
+                organizationSearch.dispatchEvent(new Event('input'));
+            }
+            if (organizationsList) {
+                organizationsList.querySelectorAll('.organization-item').forEach(item => {
+                    item.style.display = '';
                 });
             }
-        }
+            if (noOrganizationsFound) {
+                noOrganizationsFound.classList.add('d-none');
+            }
+            organizationsList.classList.remove('d-none');
+        });
     });
-    
-    // Load contacts when modal is shown
-    document.getElementById('addConnectionModal').addEventListener('show.bs.modal', () => {
-        loadContacts();
-        // Reset form
-        document.getElementById('addConnectionForm').reset();
-        selectedContactInfo.classList.add('d-none');
-        selectedContactId.value = '';
-    });
-    
-    // Initial load of connections
-    loadConnections();
-});
-</script>
 
+    // Function to remove organization association
+    function removeOrganization() {
+        if (confirm('Are you sure you want to remove this organization from the contact?')) {
+            fetch(`/contacts/{{ contact.id }}/associate-organization`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    organization_id: null
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Failed to remove organization from contact');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while removing the organization');
+            });
+        }
+    }
+    </script>
 {% endblock %} 

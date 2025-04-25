@@ -3,209 +3,468 @@
 {% block title %}Organizations - Effect CRM{% endblock %}
 
 {% block styles %}
-<!-- DataTables CSS -->
-<link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-<link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
 <style>
-    .table > :not(caption) > * > * {
-        padding: 0.75rem 1rem;
+    :root {
+        --primary-color: #0d6efd;
+        --primary-light: rgba(13, 110, 253, 0.1);
+        --danger-color: #dc3545;
+        --danger-light: rgba(220, 53, 69, 0.1);
+        --text-primary: #111827;
+        --text-secondary: #6b7280;
+        --border-color: #e5e7eb;
+        --bg-light: #f8f9fa;
     }
-    
-    .btn-group .btn {
-        padding: 0.25rem 0.5rem;
+
+    .container-wrapper {
+        max-width: 1618px;
+        margin: 0 auto;
+        padding: 24px;
     }
-    
-    .badge {
+
+    /* Header Styles */
+    .page-header {
+        background: white;
+        padding: 24px;
+        margin-bottom: 24px;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    /* Button Styles */
+    .btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        height: 40px;
+    }
+
+    .btn i {
+        font-size: 16px;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+        border-color: #0b5ed7;
+        transform: translateY(-1px);
+    }
+
+    /* Search Box */
+    .search-box {
+        position: relative;
+        margin-bottom: 24px;
+    }
+
+    .search-box .form-control {
+        height: 44px;
+        padding-left: 40px;
+        padding-right: 16px;
+        border-radius: 8px;
+        border-color: var(--border-color);
+        font-size: 14px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .search-box .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 16px;
+        pointer-events: none;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .filter-title a {
+        font-size: 12px;
+        color: var(--primary-color);
+        text-decoration: none;
         font-weight: 500;
     }
-    
-    .table-hover tbody tr:hover {
-        background-color: rgba(var(--bs-primary-rgb), 0.025);
+
+    .filter-title a:hover {
+        text-decoration: underline;
     }
 
-    .dataTables_wrapper .dataTables_length select {
-        width: 5rem;
-        padding: 0.25rem 0.5rem;
+    .filter-group {
+        max-height: 240px;
+        overflow-y: auto;
+        padding-right: 8px;
     }
 
-    .dataTables_wrapper .dataTables_filter input {
-        padding: 0.25rem 0.5rem;
-        margin-left: 0.5rem;
+    .filter-group::-webkit-scrollbar {
+        width: 4px;
     }
 
-    .dataTables_wrapper .dataTables_info {
-        padding-top: 1rem;
-        font-size: 0.875rem;
+    .filter-group::-webkit-scrollbar-track {
+        background: var(--bg-light);
+        border-radius: 2px;
     }
 
-    .dt-buttons {
-        margin-bottom: 1rem;
+    .filter-group::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 2px;
     }
 
-    .dt-button {
-        font-size: 0.875rem !important;
-        padding: 0.25rem 0.5rem !important;
+    .form-check {
+        margin-bottom: 8px;
+        padding-left: 28px;
+    }
+
+    .form-check:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-check-input {
+        width: 16px;
+        height: 16px;
+        margin-left: -28px;
+        margin-top: 2px;
+        border-color: #cbd5e1;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .form-check-label {
+        font-size: 14px;
+        color: var(--text-primary);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .form-check-count {
+        font-size: 12px;
+        color: var(--text-secondary);
+        background: var(--bg-light);
+        padding: 2px 8px;
+        border-radius: 12px;
+        min-width: 24px;
+        text-align: center;
+    }
+
+    /* Organization Card */
+    .org-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: block;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .org-card:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .org-card-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .org-card-logo {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .org-card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .org-card-subtitle {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .org-card-stats {
+        display: flex;
+        gap: 24px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .org-card-stat {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .org-card-stat i {
+        font-size: 16px;
+        color: var(--primary-color);
+    }
+
+    .org-card-stat-value {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    /* Empty State */
+    .empty-state {
+        background: white;
+        border-radius: 12px;
+        padding: 48px 24px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+    }
+
+    .empty-state-text {
+        font-size: 16px;
+        color: var(--text-secondary);
+        margin-bottom: 24px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid h-100 py-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container-wrapper">
+    <!-- Page Header -->
+    <div class="page-header d-flex justify-content-between align-items-center">
         <div>
-            <h1 class="h3 mb-0">Organizations</h1>
-            <p class="text-muted mb-0">Manage your business relationships</p>
+            <h1 class="page-title">Organizations</h1>
+            <p class="page-subtitle">Manage your business relationships</p>
         </div>
         <a href="{{ url_for('organizations.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i> New Organization
+            <i class="bi bi-plus-lg"></i>
+            Add Organization
         </a>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table id="organizationsTable" class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Organization</th>
-                            <th>Industry</th>
-                            <th>Website</th>
-                            <th>Created By</th>
-                            <th>Contacts</th>
-                            <th>Created</th>
-                            <th class="text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for org in organizations %}
-                        <tr>
-                            <td>
-                                <div>
-                                    <a href="{{ url_for('organizations.show', id=org.id) }}" class="text-decoration-none fw-medium">
-                                        {{ org.name }}
-                                    </a>
-                                </div>
-                            </td>
-                            <td>
-                                {% if org.industry %}
-                                <span class="badge rounded-pill bg-light text-dark">{{ org.industry }}</span>
-                                {% else %}
-                                <span class="text-muted">-</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if org.website %}
-                                <a href="{{ org.website }}" target="_blank" class="text-decoration-none small">
-                                    {{ org.website.replace('https://', '').replace('http://', '') }}
-                                    <i class="bi bi-box-arrow-up-right ms-1"></i>
-                                </a>
-                                {% else %}
-                                <span class="text-muted">-</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div>
-                                    <span class="fw-medium">{{ org.created_by.full_name }}</span>
-                                    <div class="small text-muted">{{ org.created_by.email }}</div>
-                                </div>
-                            </td>
-                            <td>
-                                <a href="{{ url_for('contacts.index', organization_id=org.id) }}" class="text-decoration-none">
-                                    {{ org.contacts|length }} contacts
-                                </a>
-                            </td>
-                            <td data-order="{{ org.created_at.isoformat() }}">
-                                {{ org.created_at.strftime('%Y-%m-%d') }}
-                            </td>
-                            <td class="text-end">
-                                <div class="btn-group">
-                                    <a href="{{ url_for('organizations.show', id=org.id) }}" 
-                                       class="btn btn-sm btn-outline-secondary" title="View">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="{{ url_for('organizations.edit', id=org.id) }}" 
-                                       class="btn btn-sm btn-outline-secondary" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#deleteModal{{ org.id }}">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-
-                                <!-- Delete Modal -->
-                                <div class="modal fade" id="deleteModal{{ org.id }}" tabindex="-1">
-                                    <div class="modal-dialog modal-sm">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Delete Organization</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body text-center">
-                                                <p class="mb-0">Are you sure you want to delete <strong>{{ org.name }}</strong>?</p>
-                                                <small class="text-muted">This action cannot be undone.</small>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                <form action="{{ url_for('organizations.delete', id=org.id) }}" method="POST" class="d-inline">
-                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3">
+            <!-- Search -->
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" class="form-control" placeholder="Search organizations...">
             </div>
+
+            <!-- Industry Filter -->
+            <div class="filter-section">
+                <h3 class="filter-title">
+                    Industry
+                    <a href="#" class="clear-filter">Clear</a>
+                </h3>
+                <div class="filter-group">
+                    {% if industry_counts %}
+                        {% for industry, data in industry_counts.items() %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="industry-{{ industry }}" name="industry" value="{{ industry }}">
+                            <label class="form-check-label" for="industry-{{ industry }}">
+                                {{ data.label }}
+                                <span class="form-check-count">{{ data.count }}</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <small>No industries available</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Size Filter -->
+            <div class="filter-section">
+                <h3 class="filter-title">
+                    Company Size
+                    <a href="#" class="clear-filter">Clear</a>
+                </h3>
+                <div class="filter-group">
+                    {% if size_counts %}
+                        {% for size, data in size_counts.items() %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="size-{{ size }}" name="size" value="{{ size }}">
+                            <label class="form-check-label" for="size-{{ size }}">
+                                {{ data.label }}
+                                <span class="form-check-count">{{ data.count }}</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <small>No company sizes available</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Organizations List -->
+        <div class="col-lg-9">
+            {% if organizations %}
+            <div class="row">
+                {% for org in organizations %}
+                <div class="col-12">
+                    <a href="{{ url_for('organizations.show', id=org.id) }}" class="org-card">
+                        <div class="org-card-header">
+                            <div class="org-card-logo">
+                                {{ org.name[0] }}
+                            </div>
+                            <div>
+                                <h3 class="org-card-title">{{ org.name }}</h3>
+                                <p class="org-card-subtitle">{{ org.industry or 'No industry specified' }}</p>
+                            </div>
+                        </div>
+                        <div class="org-card-stats">
+                            <div class="org-card-stat">
+                                <i class="bi bi-people-fill"></i>
+                                <span class="org-card-stat-value">{{ org.contacts_count }} contacts</span>
+                            </div>
+                            <div class="org-card-stat">
+                                <i class="bi bi-building"></i>
+                                <span class="org-card-stat-value">{{ org.size_display or 'Unknown size' }}</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="bi bi-building"></i>
+                <p class="empty-state-text">No organizations found</p>
+                <a href="{{ url_for('organizations.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i>
+                    Add Organization
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-
 <script>
-$(document).ready(function() {
-    $('#organizationsTable').DataTable({
-        dom: '<"row"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"p>>',
-        buttons: [
-            {
-                extend: 'csv',
-                className: 'btn btn-sm btn-outline-secondary',
-                text: '<i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV'
-            },
-            {
-                extend: 'excel',
-                className: 'btn btn-sm btn-outline-secondary',
-                text: '<i class="bi bi-file-earmark-excel me-1"></i> Export Excel'
-            }
-        ],
-        pageLength: 25,
-        order: [[5, 'desc']], // Sort by created date by default
-        columnDefs: [
-            { orderable: false, targets: 6 } // Disable sorting on actions column
-        ],
-        language: {
-            search: "",
-            searchPlaceholder: "Search organizations...",
-            lengthMenu: "Show _MENU_ entries",
-            info: "Showing _START_ to _END_ of _TOTAL_ organizations",
-            infoEmpty: "No organizations found",
-            infoFiltered: "(filtered from _MAX_ total organizations)"
-        }
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.querySelector('.search-box input');
+    const orgCards = document.querySelectorAll('.org-card');
+
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        orgCards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.closest('.col-12').style.display = 
+                text.includes(searchTerm) ? '' : 'none';
+        });
     });
+
+    // Filter functionality
+    const filterInputs = document.querySelectorAll('.form-check-input');
+    
+    filterInputs.forEach(input => {
+        input.addEventListener('change', applyFilters);
+    });
+
+    // Clear filter functionality
+    const clearButtons = document.querySelectorAll('.clear-filter');
+    
+    clearButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const filterSection = this.closest('.filter-section');
+            const checkboxes = filterSection.querySelectorAll('.form-check-input');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+            applyFilters();
+        });
+    });
+
+    function applyFilters() {
+        const selectedIndustries = Array.from(document.querySelectorAll('input[name="industry"]:checked'))
+            .map(cb => cb.value);
+        const selectedSizes = Array.from(document.querySelectorAll('input[name="size"]:checked'))
+            .map(cb => cb.value);
+
+        orgCards.forEach(card => {
+            const industry = card.querySelector('.org-card-subtitle').textContent;
+            const size = card.querySelector('.org-card-stat:last-child .org-card-stat-value').textContent;
+            
+            const matchesIndustry = selectedIndustries.length === 0 || 
+                selectedIndustries.some(i => industry.includes(i));
+            const matchesSize = selectedSizes.length === 0 || 
+                selectedSizes.some(s => size.includes(s));
+
+            card.closest('.col-12').style.display = 
+                (matchesIndustry && matchesSize) ? '' : 'none';
+        });
+    }
 });
 </script>
 {% endblock %} 

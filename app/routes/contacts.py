@@ -4,16 +4,30 @@ from app import db
 from app.models.contact import Contact
 from app.models.organization import Organization
 from app.forms import ContactForm
+from app.forms import InteractionForm
 from datetime import datetime
 from app.models.user import User
 from app.models.interaction import Interaction
-from app.utils.decorators import permission_required
+from app.utils.decorators import permission_required, handle_exceptions
 from werkzeug.utils import secure_filename
 import vobject
 import os
 from app.models.contact_connection import ContactConnection
+from app.modules.interactions.routes import INTERACTION_TYPES, INTERACTION_PRIORITIES, INTERACTION_STATUSES
+from app.services.dashboard_service import get_revenue_forecast_data
 
 contacts_bp = Blueprint('contacts', __name__)
+
+def parse_float(value):
+    """
+    Convert a string to float, or return None if the string is empty or invalid.
+    """
+    try:
+        if value is None or value == '':
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 @contacts_bp.route('/contacts')
 @login_required
@@ -24,7 +38,7 @@ def index():
     
     # Get filter parameters
     search = request.args.get('search', '')
-    status = request.args.get('status', '')
+    stage = request.args.get('stage', '')
     organization_id = request.args.get('organization_id', type=int)
     created_by = request.args.get('created_by', 'all')
     
@@ -39,7 +53,7 @@ def index():
             (Contact.email.ilike(f'%{search}%')) |
             (Contact.company_name.ilike(f'%{search}%')) |
             (Contact.phone.ilike(f'%{search}%')) |
-            (Contact.mobile_phone.ilike(f'%{search}%')) |
+            (Contact.mobile.ilike(f'%{search}%')) |
             (Contact.work_phone.ilike(f'%{search}%')) |
             (Contact.home_phone.ilike(f'%{search}%')) |
             (Contact.alternate_email.ilike(f'%{search}%')) |
@@ -49,6 +63,9 @@ def index():
             (Contact.instagram.ilike(f'%{search}%')) |
             (Contact.github.ilike(f'%{search}%'))
         )
+    
+    if stage:
+        query = query.filter(Contact.stage == stage)
     
     if organization_id:
         query = query.filter(Contact.organization_id == organization_id)
@@ -70,6 +87,7 @@ def index():
                          organizations=organizations,
                          users=users,
                          search=search,
+                         stage=stage,
                          organization_id=organization_id,
                          created_by=created_by)
 
@@ -87,6 +105,13 @@ def new():
         # Set the created_by_id to the current user's ID
         contact.created_by_id = current_user.id
         
+        if contact.deal_value == '':
+            contact.deal_value = None
+        if contact.lifetime_value == '':
+            contact.lifetime_value = None
+        if contact.probability == '':
+            contact.probability = None
+        
         db.session.add(contact)
         db.session.commit()
         
@@ -97,26 +122,21 @@ def new():
 
 @contacts_bp.route('/contacts/<int:id>')
 @login_required
+@handle_exceptions
 def show(id):
     contact = Contact.query.get_or_404(id)
-    interactions = list(Interaction.query.filter_by(contact_id=id).order_by(Interaction.date.desc()).all())
-    
-    # Calculate interaction counts by type
-    interaction_counts = {
-        'call': len([i for i in interactions if i.type == 'call']),
-        'meeting': len([i for i in interactions if i.type == 'meeting']),
-        'email': len([i for i in interactions if i.type == 'email']),
-        'note': len([i for i in interactions if i.type == 'note']),
-        'task': len([i for i in interactions if i.type == 'task'])
-    }
-    
-    # Add total count
-    interaction_counts['total'] = len(interactions)
-    
-    return render_template('contacts/show.html', 
-                         contact=contact, 
-                         interactions=interactions,
-                         interaction_counts=interaction_counts)
+    form = InteractionForm()
+    organizations = Organization.query.all()
+    return render_template(
+        'contacts/show.html',
+        contact=contact,
+        form=form,
+        Interaction=Interaction,
+        interaction_types=INTERACTION_TYPES,
+        interaction_priorities=INTERACTION_PRIORITIES,
+        interaction_statuses=INTERACTION_STATUSES,
+        organizations=organizations
+    )
 
 @contacts_bp.route('/contacts/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -318,7 +338,7 @@ def import_vcard():
                         phones = vcard.tel_list if hasattr(vcard, 'tel_list') else [vcard.tel]
                         
                         # Reset phone fields
-                        contact.mobile_phone = None
+                        contact.mobile = None
                         contact.work_phone = None
                         contact.home_phone = None
                         contact.phone = None
@@ -337,7 +357,7 @@ def import_vcard():
                             
                             # Map phone types to contact fields
                             if any(t in ['cell', 'mobile'] for t in phone_types):
-                                contact.mobile_phone = phone_value
+                                contact.mobile = phone_value
                             elif any(t in ['work', 'office'] for t in phone_types):
                                 contact.work_phone = phone_value
                             elif any(t in ['home', 'residence'] for t in phone_types):
@@ -578,4 +598,184 @@ def search():
             'work_phone': contact.work_phone,
             'home_phone': contact.home_phone
         } for contact in contacts]
-    }) 
+    })
+
+@contacts_bp.route('/contacts/<int:id>/associate-organization', methods=['POST'])
+@login_required
+def associate_organization(id):
+    contact = Contact.query.get_or_404(id)
+    
+    # Check if the request is JSON or form data
+    if request.is_json:
+        data = request.get_json()
+        organization_id = data.get('organization_id')
+        
+        # If organization_id is empty or None, unlink the organization
+        if not organization_id:
+            contact.organization_id = None
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Organization unlinked successfully'})
+        
+        # Otherwise, link the organization
+        organization = Organization.query.get(organization_id)
+        if not organization:
+            return jsonify({'success': False, 'error': 'Organization not found'}), 404
+        
+        contact.organization_id = organization_id
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Organization linked successfully'})
+    else:
+        organization_id = request.form.get('organization_id')
+        
+        # If organization_id is empty or None, unlink the organization
+        if not organization_id:
+            contact.organization_id = None
+            db.session.commit()
+            flash('Organization unlinked successfully', 'success')
+            return redirect(url_for('contacts.show', id=id))
+        
+        # Otherwise, link the organization
+        organization = Organization.query.get(organization_id)
+        if not organization:
+            flash('Organization not found', 'error')
+            return redirect(url_for('contacts.show', id=id))
+        
+        contact.organization_id = organization_id
+        db.session.commit()
+        
+        flash('Organization linked successfully', 'success')
+        return redirect(url_for('contacts.show', id=id))
+
+# --- 1. Database Cleanup Script (SQLAlchemy) ---
+def cleanup_contact_floats():
+    """
+    Set empty string values for float fields in Contact to None (NULL in DB).
+    Run this as a one-off script or from a management command.
+    """
+    from app import db
+    from app.models.contact import Contact
+    updated = 0
+    contacts = Contact.query.all()
+    for contact in contacts:
+        changed = False
+        if hasattr(contact, 'deal_value') and contact.deal_value == '':
+            contact.deal_value = None
+            changed = True
+        if hasattr(contact, 'lifetime_value') and contact.lifetime_value == '':
+            contact.lifetime_value = None
+            changed = True
+        if hasattr(contact, 'probability') and contact.probability == '':
+            contact.probability = None
+            changed = True
+        if changed:
+            db.session.add(contact)
+            updated += 1
+    db.session.commit()
+    print(f"[Cleanup] Updated {updated} contacts with float fields set to None where needed.")
+
+# --- 2. FastAPI Pydantic Model for Contact Creation ---
+from typing import Optional
+from pydantic import BaseModel, validator
+
+class ContactCreate(BaseModel):
+    first_name: str
+    last_name: str
+    deal_value: Optional[float] = None
+    lifetime_value: Optional[float] = None
+    probability: Optional[float] = None
+    # ... add other fields as needed ...
+
+    @validator('deal_value', 'lifetime_value', 'probability', pre=True)
+    def empty_str_to_none(cls, v):
+        if v == '' or v is None:
+            return None
+        return v
+
+# --- 3. Example FastAPI Endpoint using the Pydantic Model ---
+# (This is a code snippet for your FastAPI app, not Flask)
+# from fastapi import APIRouter, Depends, HTTPException
+# from sqlalchemy.orm import Session
+# from app.models import Contact
+# from app.database import get_db
+#
+# router = APIRouter()
+#
+# @router.post('/contacts/')
+# def create_contact(contact: ContactCreate, db: Session = Depends(get_db)):
+#     db_contact = Contact(
+#         first_name=contact.first_name,
+#         last_name=contact.last_name,
+#         deal_value=contact.deal_value,
+#         lifetime_value=contact.lifetime_value,
+#         probability=contact.probability,
+#         # ... other fields ...
+#     )
+#     db.add(db_contact)
+#     db.commit()
+#     db.refresh(db_contact)
+#     return db_contact
+
+# --- 4. Usage ---
+# 1. Run cleanup_contact_floats() once to clean up your DB.
+# 2. Use ContactCreate as your FastAPI request model for contact creation/update.
+# 3. Use the model fields directly in your SQLAlchemy object creation.
+# 4. The validator ensures empty strings become None for float fields. 
+
+@contacts_bp.route('/api/pipeline-contacts', methods=['GET'])
+@login_required
+@permission_required('contact_view')
+def api_pipeline_contacts():
+    """
+    API endpoint to query contacts with pipeline stage, deal value, created date, created by, probability.
+    Supports filtering by stage, created_by, and date range via query parameters.
+    """
+    stage = request.args.get('stage')
+    created_by = request.args.get('created_by', type=int)
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+
+    query = Contact.query
+    if stage:
+        query = query.filter(Contact.stage == stage)
+    if created_by:
+        query = query.filter(Contact.created_by_id == created_by)
+    if start_date:
+        try:
+            start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+            query = query.filter(Contact.created_at >= start_dt)
+        except Exception:
+            pass
+    if end_date:
+        try:
+            end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+            query = query.filter(Contact.created_at <= end_dt)
+        except Exception:
+            pass
+
+    contacts = query.all()
+    result = []
+    for c in contacts:
+        result.append({
+            'id': c.id,
+            'pipeline_stage': c.stage,
+            'deal_value': c.deal_value,
+            'created_at': c.created_at.isoformat() if c.created_at else None,
+            'created_by': c.created_by.full_name if c.created_by else None,
+            'probability': c.probability
+        })
+    return jsonify({
+        'count': len(result),
+        'contacts': result
+    })
+
+@contacts_bp.route('/dashboard')
+@login_required
+def contacts_dashboard():
+    revenue_data = get_revenue_forecast_data(current_user)
+    data = {
+        'revenue_forecast': revenue_data['revenue_forecast'],
+        'forecast_data': revenue_data['forecast_data'],
+        # ... other cards ...
+    }
+    return render_template('dashboard.html', **data) 

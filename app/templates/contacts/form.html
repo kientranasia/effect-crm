@@ -67,50 +67,14 @@
                             <div class="card-body">
                                 <div class="row g-3">
                                     <!-- Personal Information -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         {{ form.first_name.label(class="form-label required") }}
                                         {{ form.first_name(class="form-control", placeholder="Enter first name") }}
                                     </div>
-                                    <div class="col-md-4">
-                                        {{ form.middle_name.label(class="form-label") }}
-                                        {{ form.middle_name(class="form-control", placeholder="Enter middle name") }}
-                                    </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         {{ form.last_name.label(class="form-label required") }}
                                         {{ form.last_name(class="form-control", placeholder="Enter last name") }}
                                     </div>
-                                    <div class="col-md-4">
-                                        {{ form.nickname.label(class="form-label") }}
-                                        {{ form.nickname(class="form-control", placeholder="Enter nickname") }}
-                                    </div>
-                                    <div class="col-md-4">
-                                        {{ form.birthday.label(class="form-label") }}
-                                        {{ form.birthday(class="form-control", type="date") }}
-                                    </div>
-                                    <div class="col-md-4">
-                                        {{ form.language.label(class="form-label") }}
-                                        {{ form.language(class="form-select") }}
-                                    </div>
-                                    <div class="col-md-6">
-                                        {{ form.gender.label(class="form-label") }}
-                                        {{ form.gender(class="form-select") }}
-                                    </div>
-                                    <div class="col-md-6">
-                                        {{ form.marital_status.label(class="form-label") }}
-                                        {{ form.marital_status(class="form-select") }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contact Details Tab -->
-                    <div class="tab-pane fade" id="contact-details">
-                        <div class="card shadow-sm">
-                            <div class="card-body">
-                                <!-- Contact Information -->
-                                <h6 class="card-subtitle mb-3">Contact Information</h6>
-                                <div class="row g-3">
                                     <div class="col-md-6">
                                         {{ form.email.label(class="form-label required") }}
                                         {{ form.email(class="form-control", placeholder="Enter email") }}
@@ -119,57 +83,27 @@
                                         {{ form.alternate_email.label(class="form-label") }}
                                         {{ form.alternate_email(class="form-control", placeholder="Enter alternate email") }}
                                     </div>
-                                    <div class="col-md-4">
-                                        {{ form.phone.label(class="form-label") }}
-                                        {{ form.phone(class="form-control", placeholder="Enter phone") }}
-                                    </div>
-                                    <div class="col-md-4">
-                                        {{ form.mobile.label(class="form-label") }}
-                                        {{ form.mobile(class="form-control", placeholder="Enter mobile") }}
-                                    </div>
-                                    <div class="col-md-4">
-                                        {{ form.work_phone.label(class="form-label") }}
-                                        {{ form.work_phone(class="form-control", placeholder="Enter work phone") }}
-                                    </div>
-                                </div>
-
-                                <!-- Address Information -->
-                                <h6 class="card-subtitle mb-3 mt-4">Address Information</h6>
-                                <div class="row g-3">
                                     <div class="col-12">
-                                        {{ form.address_line1.label(class="form-label") }}
-                                        {{ form.address_line1(class="form-control", placeholder="Enter street address") }}
+                                        <h6 class="text-muted mb-3">Phone Numbers</h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                {{ form.phone.label(class="form-label") }}
+                                                {{ form.phone(class="form-control", placeholder="Enter primary phone") }}
+                                            </div>
+                                            <div class="col-md-6">
+                                                {{ form.mobile.label(class="form-label") }}
+                                                {{ form.mobile(class="form-control", placeholder="Enter mobile phone") }}
+                                            </div>
+                                            <div class="col-md-6">
+                                                {{ form.work_phone.label(class="form-label") }}
+                                                {{ form.work_phone(class="form-control", placeholder="Enter work phone") }}
+                                            </div>
+                                            <div class="col-md-6">
+                                                {{ form.home_phone.label(class="form-label") }}
+                                                {{ form.home_phone(class="form-control", placeholder="Enter home phone") }}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-12">
-                                        {{ form.address_line2.label(class="form-label") }}
-                                        {{ form.address_line2(class="form-control", placeholder="Apartment, suite, unit, etc.") }}
-                                    </div>
-                                    <div class="col-md-6">
-                                        {{ form.city.label(class="form-label") }}
-                                        {{ form.city(class="form-control", placeholder="Enter city") }}
-                                    </div>
-                                    <div class="col-md-6">
-                                        {{ form.state.label(class="form-label") }}
-                                        {{ form.state(class="form-control", placeholder="Enter state/province") }}
-                                    </div>
-                                    <div class="col-md-6">
-                                        {{ form.postal_code.label(class="form-label") }}
-                                        {{ form.postal_code(class="form-control", placeholder="Enter postal code") }}
-                                    </div>
-                                    <div class="col-md-6">
-                                        {{ form.country.label(class="form-label") }}
-                                        {{ form.country(class="form-select") }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Professional Info Tab -->
-                    <div class="tab-pane fade" id="professional-info">
-                        <div class="card shadow-sm">
-                            <div class="card-body">
-                                <div class="row g-3">
                                     <div class="col-md-6">
                                         {{ form.title.label(class="form-label") }}
                                         {{ form.title(class="form-control", placeholder="Enter job title") }}
@@ -207,8 +141,44 @@
                         </div>
                     </div>
 
-                    <!-- Pipeline Info Tab -->
-                    <div class="tab-pane fade" id="pipeline-info">
+                    <!-- Contact Details Tab -->
+                    <div class="tab-pane fade" id="contact-details">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <!-- Contact Information -->
+                                <h6 class="card-subtitle mb-3">Contact Information</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        {{ form.address_line1.label(class="form-label") }}
+                                        {{ form.address_line1(class="form-control", placeholder="Enter street address") }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.address_line2.label(class="form-label") }}
+                                        {{ form.address_line2(class="form-control", placeholder="Apartment, suite, unit, etc.") }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.city.label(class="form-label") }}
+                                        {{ form.city(class="form-control", placeholder="Enter city") }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.state.label(class="form-label") }}
+                                        {{ form.state(class="form-control", placeholder="Enter state/province") }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.postal_code.label(class="form-label") }}
+                                        {{ form.postal_code(class="form-control", placeholder="Enter postal code") }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.country.label(class="form-label") }}
+                                        {{ form.country(class="form-select") }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Professional Info Tab -->
+                    <div class="tab-pane fade" id="professional-info">
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <div class="row g-3">
@@ -225,8 +195,38 @@
                                         {{ form.deal_value(class="form-control", type="number", step="0.01") }}
                                     </div>
                                     <div class="col-md-6">
-                                        {{ form.expected_close_date.label(class="form-label") }}
-                                        {{ form.expected_close_date(class="form-control", type="date") }}
+                                        {{ form.source.label(class="form-label") }}
+                                        {{ form.source(class="form-select") }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.source_channel.label(class="form-label") }}
+                                        {{ form.source_channel(class="form-control", placeholder="Enter source channel") }}
+                                    </div>
+                                    <div class="col-12">
+                                        {{ form.requirements.label(class="form-label") }}
+                                        {{ form.requirements(class="form-control", rows="4", placeholder="Enter requirements") }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pipeline Info Tab -->
+                    <div class="tab-pane fade" id="pipeline-info">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        {{ form.stage.label(class="form-label") }}
+                                        {{ form.stage(class="form-select") }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.probability.label(class="form-label") }}
+                                        {{ form.probability(class="form-control", type="number", min="0", max="100", step="1") }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.deal_value.label(class="form-label") }}
+                                        {{ form.deal_value(class="form-control", type="number", step="0.01") }}
                                     </div>
                                     <div class="col-md-6">
                                         {{ form.source.label(class="form-label") }}
@@ -334,14 +334,6 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <div class="mb-3">
-                            {{ form.owner_id.label(class="form-label") }}
-                            {{ form.owner_id(class="form-select") }}
-                        </div>
-                        <div class="mb-3">
-                            {{ form.is_active.label(class="form-label") }}
-                            {{ form.is_active(class="form-check-input") }}
-                        </div>
                         {% if contact %}
                         <div class="system-info">
                             <div class="text-muted small mb-2">Created</div>

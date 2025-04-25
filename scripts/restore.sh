@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Effect CRM Database Restore Script
+# Partner OS Database Restore Script
 # This script helps with database restoration in Docker
 
 # Exit on error
@@ -13,7 +13,7 @@ BACKUP_FILE=""
 
 # Display help
 function show_help {
-    echo "Effect CRM Database Restore Script"
+    echo "Partner OS Database Restore Script"
     echo ""
     echo "Usage: $0 [options] BACKUP_FILE"
     echo ""

@@ -1,0 +1,103 @@
+{% macro task_card(task) %}
+<div class="kanban-card mb-2" draggable="true" 
+     data-task-id="{{ task.id }}"
+     data-priority="{{ task.priority }}"
+     data-due-date="{{ task.due_date.isoformat() if task.due_date else '' }}"
+     data-assignee="{{ task.assigned_to.id if task.assigned_to else '' }}"
+     data-assignee-name="{{ task.assigned_to.full_name if task.assigned_to else '' }}"
+     data-created-at="{{ task.created_at.isoformat() if task.created_at else '' }}"
+     data-title="{{ task.title }}">
+    <a href="{{ url_for('tasks.edit', id=task.id) }}" class="text-decoration-none">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-3">
+                <!-- Task Header -->
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="card-title mb-0 text-dark">{{ task.title }}</h6>
+                    <span class="badge bg-{{ task.priority_color }}">{{ task.priority_display }}</span>
+                </div>
+                
+                <!-- Task Description -->
+                {% if task.description %}
+                <p class="card-text small text-muted mb-3">{{ task.description|truncate(100) }}</p>
+                {% endif %}
+                
+                <!-- Task Meta -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <!-- Due Date -->
+                    {% if task.due_date %}
+                    <div class="small text-muted">
+                        <i class="far fa-calendar-alt me-1"></i>
+                        {{ task.due_date.strftime('%b %d') }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Assignee -->
+                    {% if task.assigned_to %}
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avatar-circle bg-primary text-white" 
+                             style="width: 28px; height: 28px; font-size: 12px;"
+                             data-bs-toggle="tooltip" 
+                             title="{{ task.assigned_to.full_name }}">
+                            {{ task.assigned_to.first_name[0] }}{{ task.assigned_to.last_name[0] }}
+                        </div>
+                        <span class="small text-muted">{{ task.assigned_to.full_name }}</span>
+                    </div>
+                    {% else %}
+                    <div class="small text-muted">
+                        <i class="fas fa-user-slash me-1"></i>
+                        Unassigned
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
+
+<style>
+.kanban-card {
+    cursor: pointer;
+}
+
+.kanban-card .card {
+    transition: all 0.2s;
+    border-radius: 8px;
+}
+
+.kanban-card .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+}
+
+.kanban-card.dragging {
+    opacity: 0.5;
+}
+
+.kanban-card.dragging .card {
+    transform: scale(1.02);
+}
+
+.avatar-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    font-weight: 500;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+}
+
+.card-title {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+</style>
+{% endmacro %} 

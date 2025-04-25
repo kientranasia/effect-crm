@@ -7,17 +7,14 @@ class Interaction(db.Model, TimestampMixin, PermissionMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     contact_id = db.Column(db.Integer, db.ForeignKey('contacts.id'), nullable=False)
-    type = db.Column(db.String(50), nullable=False)  # call, meeting, email, note, task
-    title = db.Column(db.String(255), nullable=False)
+    type = db.Column(db.String(20), nullable=False)  # call, meeting, email, note, task
+    priority = db.Column(db.String(20), nullable=False)  # low, medium, high, urgent
+    title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    end_date = db.Column(db.DateTime)  # end date/time
-    duration = db.Column(db.Integer)  # Duration in minutes
-    priority = db.Column(db.String(20))  # low, medium, high, urgent
-    status = db.Column(db.String(50), default='pending')  # pending, completed, cancelled
-    location = db.Column(db.String(255))
+    date = db.Column(db.DateTime)
+    status = db.Column(db.String(20), nullable=False)  # pending, in_progress, completed, cancelled
+    location = db.Column(db.String(200))
     notes = db.Column(db.Text)
-    outcome = db.Column(db.Text)
     next_steps = db.Column(db.Text)
     created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     assigned_to_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -50,6 +47,7 @@ class Interaction(db.Model, TimestampMixin, PermissionMixin):
     # Status choices and their display values
     STATUS_CHOICES = {
         'pending': 'Pending',
+        'in_progress': 'In Progress',
         'completed': 'Completed',
         'cancelled': 'Cancelled'
     }
@@ -74,6 +72,7 @@ class Interaction(db.Model, TimestampMixin, PermissionMixin):
     # Status colors for UI
     STATUS_COLORS = {
         'pending': 'primary',
+        'in_progress': 'info',
         'completed': 'success',
         'cancelled': 'danger'
     }
@@ -122,12 +121,16 @@ class Interaction(db.Model, TimestampMixin, PermissionMixin):
         return {
             'id': self.id,
             'type': self.type_display,
+            'priority': self.priority_display,
             'title': self.title,
             'description': self.description,
-            'date': self.date.isoformat(),
-            'duration': self.duration,
+            'date': self.date.isoformat() if self.date else None,
             'status': self.status_display,
+            'location': self.location,
+            'notes': self.notes,
+            'next_steps': self.next_steps,
             'contact': self.contact.full_name,
             'created_by': self.created_by.full_name,
-            'created_at': self.created_at.isoformat()
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
         } 

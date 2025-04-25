@@ -124,7 +124,6 @@ class Contact(db.Model, TimestampMixin, PermissionMixin):
     # Contact information
     work_phone = db.Column(db.String(20))
     home_phone = db.Column(db.String(20))
-    fax = db.Column(db.String(20))
     alternate_email = db.Column(db.String(120))
     
     # Professional information

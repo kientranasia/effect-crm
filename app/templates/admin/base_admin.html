@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Partner OS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.index') }}">Admin</a></li>
+            {% block breadcrumb %}{% endblock %}
+        </ol>
+    </nav>
+
+    <!-- Admin Content -->
+    {% block admin_content %}{% endblock %}
+</div>
+{% endblock %} 

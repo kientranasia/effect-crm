@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Effect CRM Database Initialization Script
+# Partner OS Database Initialization Script
 # This script helps with initializing the database in Docker
 
 # Exit on error
@@ -13,7 +13,7 @@ SEED_DATA=false
 
 # Display help
 function show_help {
-    echo "Effect CRM Database Initialization Script"
+    echo "Partner OS Database Initialization Script"
     echo ""
     echo "Usage: $0 [options]"
     echo ""

@@ -3,6 +3,26 @@
 {% block title %}{{ 'Edit' if user else 'Create' }} User{% endblock %}
 
 {% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{% if form and form.errors %}
+  <div class="alert alert-danger">
+    <ul>
+      {% for field, errors in form.errors.items() %}
+        {% for error in errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
 <div class="container-fluid p-0">
     <div class="row">
         <div class="col-12">
@@ -47,6 +67,17 @@
                                 </small>
                                 {% endif %}
                             </div>
+
+                            <!-- Confirm Password (only for create) -->
+                            {% if not user %}
+                            <div class="col-md-6 mb-3">
+                                <label for="confirm_password" class="form-label">Confirm Password *</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                <div class="invalid-feedback">
+                                    Please confirm your password.
+                                </div>
+                            </div>
+                            {% endif %}
 
                             <!-- First Name -->
                             <div class="col-md-6 mb-3">

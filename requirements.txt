@@ -32,6 +32,9 @@ redis==5.0.1
 
 # Production
 gunicorn==21.2.0
+supervisor==4.2.5
+sentry-sdk[flask]==1.40.6
+newrelic==9.9.0
 
 # Validation
 email_validator==2.2.0
@@ -39,7 +42,26 @@ email_validator==2.2.0
 # Contact Management
 vobject==0.9.6.1
 
-# Development Tools
+# Image Processing
+Pillow==10.2.0
+
+# Development tools
+ipython==8.22.2
+ipdb==0.13.13
+watchdog==4.0.0
+
+# Testing
 pytest==8.0.2
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+factory-boy==3.3.0
+
+# Linting and formatting
 black==24.2.0
-flake8==7.0.0 
+flake8==7.0.0
+isort==5.13.2
+mypy==1.8.0
+
+# Documentation
+Sphinx==7.2.6
+sphinx-rtd-theme==2.0.0 

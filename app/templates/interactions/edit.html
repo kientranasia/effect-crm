@@ -9,56 +9,9 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="{{ url_for('interactions.index') }}">Interactions</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('interactions.show', interaction_id=interaction.id) }}">View Interaction</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Edit</li>
+            <li class="breadcrumb-item active" aria-current="page">Edit Interaction</li>
         </ol>
     </nav>
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">Edit Interaction</h1>
-    </div>
-
-    <!-- Form -->
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('interactions.edit', interaction_id=interaction.id) }}">
-                <div class="mb-3">
-                    <label for="customer" class="form-label">Customer</label>
-                    <input type="text" class="form-control" value="{{ interaction.customer.name }}" disabled>
-                </div>
-
-                <div class="mb-3">
-                    <label for="type" class="form-label">Interaction Type *</label>
-                    <select class="form-select" id="type" name="type" required>
-                        <option value="">Select type</option>
-                        <option value="Call" {% if interaction.type == 'Call' %}selected{% endif %}>Call</option>
-                        <option value="Email" {% if interaction.type == 'Email' %}selected{% endif %}>Email</option>
-                        <option value="Meeting" {% if interaction.type == 'Meeting' %}selected{% endif %}>Meeting</option>
-                        <option value="Note" {% if interaction.type == 'Note' %}selected{% endif %}>Note</option>
-                        <option value="Other" {% if interaction.type == 'Other' %}selected{% endif %}>Other</option>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label for="summary" class="form-label">Summary *</label>
-                    <input type="text" class="form-control" id="summary" name="summary" required
-                           value="{{ interaction.summary }}"
-                           placeholder="Brief summary of the interaction">
-                </div>
-
-                <div class="mb-3">
-                    <label for="details" class="form-label">Details</label>
-                    <textarea class="form-control" id="details" name="details" rows="5"
-                              placeholder="Additional details about the interaction">{{ interaction.details }}</textarea>
-                </div>
-
-                <div class="d-flex justify-content-end gap-2">
-                    <a href="{{ url_for('interactions.show', interaction_id=interaction.id) }}" class="btn btn-outline-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    {% include "interactions/form.html" %}
 </div>
 {% endblock %} 

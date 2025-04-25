@@ -9,6 +9,7 @@ from app.models.role import Role
 from app.models.setting import Setting
 from app.models.security_setting import SecuritySetting
 from app.models.project import Project
+from app.models.task import Task
 from app.models.mixins import TimestampMixin
 
 __all__ = [
@@ -23,5 +24,6 @@ __all__ = [
     'Setting',
     'SecuritySetting',
     'Project',
+    'Task',
     'TimestampMixin'
 ] 

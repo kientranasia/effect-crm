@@ -1,20 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - Effect CRM{% endblock %}
+{% block title %}Dashboard - Partner OS{% endblock %}
 
 {% block styles %}
 <style>
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --primary-subtle: rgba(13, 110, 253, 0.1);
+    --success-subtle: rgba(25, 135, 84, 0.1);
+    --warning-subtle: rgba(255, 193, 7, 0.1);
+    --info-subtle: rgba(13, 202, 240, 0.1);
+}
+
 .stat-card {
     border: none;
     border-radius: 12px;
     transition: all 0.2s;
     background: white;
     height: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .stat-icon {
@@ -29,9 +39,10 @@
 }
 
 .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
+    color: #344767;
 }
 
 .stat-label {
@@ -39,28 +50,29 @@
     font-size: 0.875rem;
 }
 
-.recent-activity {
+.recent-activity, .upcoming-tasks, .recent-interactions, .chart-container {
     background: white;
     border-radius: 12px;
     border: 1px solid rgba(0,0,0,0.1);
     height: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.activity-item {
+.activity-item, .task-item, .interaction-item {
     padding: 1rem;
     border-bottom: 1px solid rgba(0,0,0,0.1);
     transition: all 0.2s;
 }
 
-.activity-item:last-child {
+.activity-item:last-child, .task-item:last-child, .interaction-item:last-child {
     border-bottom: none;
 }
 
-.activity-item:hover {
-    background-color: rgba(13, 110, 253, 0.02);
+.activity-item:hover, .task-item:hover, .interaction-item:hover {
+    background-color: var(--primary-subtle);
 }
 
-.activity-icon {
+.activity-icon, .interaction-icon {
     width: 32px;
     height: 32px;
     border-radius: 8px;
@@ -71,39 +83,19 @@
     margin-right: 1rem;
 }
 
-.activity-content {
+.activity-content, .task-content, .interaction-content {
     flex: 1;
 }
 
-.activity-title {
+.activity-title, .task-title, .interaction-title {
     font-weight: 500;
     margin-bottom: 0.25rem;
+    color: #344767;
 }
 
-.activity-meta {
+.activity-meta, .task-meta, .interaction-meta {
     font-size: 0.875rem;
     color: var(--secondary-color);
-}
-
-.upcoming-tasks {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid rgba(0,0,0,0.1);
-    height: 100%;
-}
-
-.task-item {
-    padding: 1rem;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-    transition: all 0.2s;
-}
-
-.task-item:last-child {
-    border-bottom: none;
-}
-
-.task-item:hover {
-    background-color: rgba(13, 110, 253, 0.02);
 }
 
 .task-priority {
@@ -113,72 +105,21 @@
     margin-right: 0.75rem;
 }
 
-.task-content {
-    flex: 1;
+.task-priority.bg-high {
+    background-color: #dc3545;
 }
 
-.task-title {
-    font-weight: 500;
-    margin-bottom: 0.25rem;
+.task-priority.bg-medium {
+    background-color: #ffc107;
 }
 
-.task-meta {
-    font-size: 0.875rem;
-    color: var(--secondary-color);
-}
-
-.recent-interactions {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid rgba(0,0,0,0.1);
-    height: 100%;
-}
-
-.interaction-item {
-    padding: 1rem;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-    transition: all 0.2s;
-}
-
-.interaction-item:last-child {
-    border-bottom: none;
-}
-
-.interaction-item:hover {
-    background-color: rgba(13, 110, 253, 0.02);
-}
-
-.interaction-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    margin-right: 1rem;
-}
-
-.interaction-content {
-    flex: 1;
-}
-
-.interaction-title {
-    font-weight: 500;
-    margin-bottom: 0.25rem;
-}
-
-.interaction-meta {
-    font-size: 0.875rem;
-    color: var(--secondary-color);
+.task-priority.bg-low {
+    background-color: #198754;
 }
 
 .chart-container {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid rgba(0,0,0,0.1);
     padding: 1.5rem;
-    height: 100%;
+    min-height: 300px;
 }
 
 .section-header {
@@ -204,6 +145,323 @@
 
 .view-all:hover {
     text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .view-all {
+        align-self: flex-end;
+    }
+}
+
+.chart-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    height: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.chart-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #344767;
+    margin-bottom: 1rem;
+}
+
+.pipeline-stage {
+    padding: 0.5rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pipeline-stage-name {
+    font-weight: 500;
+}
+
+.pipeline-stage-value {
+    font-weight: 600;
+}
+
+.pipeline-progress {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--primary-subtle);
+    margin-top: 0.25rem;
+}
+
+.pipeline-progress-bar {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.pipeline-progress-bar[data-width="100"] { width: 100%; }
+.pipeline-progress-bar[data-width="75"] { width: 75%; }
+.pipeline-progress-bar[data-width="67"] { width: 67%; }
+.pipeline-progress-bar[data-width="50"] { width: 50%; }
+.pipeline-progress-bar[data-width="25"] { width: 25%; }
+.pipeline-progress-bar[data-width="0"] { width: 0%; }
+
+.forecast-card {
+    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+    color: white;
+    position: relative;
+    overflow: hidden;
+    min-height: 400px;
+}
+
+.forecast-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+.forecast-card .chart-title {
+    color: white;
+    opacity: 0.9;
+}
+
+.forecast-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 1rem 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.forecast-label {
+    font-size: 0.875rem;
+    opacity: 0.8;
+    margin-bottom: 2rem;
+}
+
+.forecast-stats {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.forecast-stat {
+    flex: 1;
+}
+
+.forecast-stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.forecast-stat-label {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+/* Leads Card Specific Styles */
+.leads-card {
+    min-height: 400px;
+}
+
+.leads-card .chart-legend {
+    margin-top: 1rem;
+    padding: 0.5rem;
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.leads-user {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+
+.leads-user:hover {
+    background: rgba(13, 110, 253, 0.05);
+}
+
+.leads-user-info {
+    flex: 1;
+}
+
+.leads-user-name {
+    font-weight: 500;
+    color: #344767;
+    margin-bottom: 0.25rem;
+}
+
+.leads-user-count {
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+}
+
+.recent-interactions {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    height: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.interactions-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 400px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.2) transparent;
+}
+
+.interactions-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.interactions-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.interactions-list::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
+}
+
+.interaction-item {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    transition: all 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.interaction-item:last-child {
+    border-bottom: none;
+}
+
+.interaction-item:hover {
+    background-color: rgba(13, 110, 253, 0.02);
+}
+
+.interaction-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.interaction-content {
+    flex: 1;
+    min-width: 0; /* Prevents flex item from overflowing */
+}
+
+.interaction-title {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: #344767;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.interaction-meta {
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.interaction-contact {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.interaction-time {
+    white-space: nowrap;
+}
+
+.trend-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    height: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+    max-height: 400px;
+}
+
+.trend-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.trend-filters {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.trend-filter {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.trend-filter.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
 }
 </style>
 {% endblock %}
@@ -262,6 +520,149 @@
                 </div>
                 <div class="stat-value">{{ active_projects }}</div>
                 <div class="stat-label">Active Projects</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row g-4 mb-4">
+        <!-- Deal Progress -->
+        <div class="col-md-6">
+            <div class="chart-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="chart-title">Deal Progress</h3>
+                    <select class="form-select form-select-sm w-auto">
+                        <option>This Year</option>
+                        <option>Last Year</option>
+                        <option>Last 6 Months</option>
+                    </select>
+                </div>
+                {% set has_deal_progress_data = false %}
+                {% if deal_progress_data and deal_progress_data.datasets %}
+                    {% for ds in deal_progress_data.datasets %}
+                        {% if ds.data|sum > 0 %}
+                            {% set has_deal_progress_data = true %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                {% if has_deal_progress_data %}
+                    <canvas id="dealProgressChart" height="300"></canvas>
+                    <div class="chart-legend">
+                        {% for ds in deal_progress_data.datasets %}
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: {{ ds.backgroundColor }}"></div>
+                            <span>{{ ds.label }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-chart-bar fa-3x"></i>
+                        </div>
+                        <h5 class="text-muted">No deal progress data available</h5>
+                        <p class="text-muted small">Start adding deals to see progress here.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Deal Conversion -->
+        <div class="col-md-6">
+            <div class="chart-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="chart-title">Deal Conversion</h3>
+                    <div class="badge bg-success">Win Rate: {{ win_rate }}%</div>
+                </div>
+                <div class="pipeline-stages">
+                    {% for stage in pipeline_stages %}
+                    <div class="pipeline-stage">
+                        <div class="flex-grow-1">
+                            <div class="pipeline-stage-name">{{ stage.name }}</div>
+                            <div class="pipeline-progress">
+                                <div class="pipeline-progress-bar" data-width="{{ stage.conversion_rate }}"></div>
+                            </div>
+                        </div>
+                        <div class="pipeline-stage-value ms-3">
+                            {{ stage.count }} ({{ stage.conversion_rate }}%)
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Leads Created -->
+        <div class="col-md-6">
+            <div class="chart-card leads-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="chart-title">Leads Created by User</h3>
+                    <select class="form-select form-select-sm w-auto">
+                        <option>This Month</option>
+                        <option>Last Month</option>
+                        <option>This Year</option>
+                    </select>
+                </div>
+                {% if leads_data and leads_data.labels and leads_data.values and leads_data.labels|length > 0 %}
+                    <div class="leads-list mb-4">
+                        {% for user in leads_data.labels %}
+                            <div class="leads-user">
+                                <div class="leads-user-info">
+                                    <div class="leads-user-name">{{ user }}</div>
+                                    <div class="leads-user-count">{{ leads_data.values[loop.index0] }} leads</div>
+                                </div>
+                                <div class="progress" style="width: 100px; height: 6px;">
+                                    {% set percentage = (leads_data.values[loop.index0] / leads_data.values[0] * 100)|round %}
+                                    <div class="progress-bar bg-primary" role="progressbar" 
+                                         aria-valuenow="{{ percentage }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100" 
+                                         style="width: {{ percentage }}%">
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <canvas id="leadsChart" height="200"></canvas>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-chart-bar fa-3x"></i>
+                        </div>
+                        <h5 class="text-muted">No leads data available</h5>
+                        <p class="text-muted small">Start creating leads to see the statistics here.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Revenue Forecast -->
+        <div class="col-md-6">
+            <div class="chart-card forecast-card">
+                <h3 class="chart-title">Revenue Forecast</h3>
+                <div class="forecast-value">${{ revenue_forecast|default(0)|format_currency }}</div>
+                <div class="forecast-label">Projected for next 30 days</div>
+                {% if forecast_data and forecast_data.values and forecast_data.values|sum > 0 %}
+                    <div class="forecast-stats">
+                        <div class="forecast-stat">
+                            <div class="forecast-stat-value">${{ (revenue_forecast * 0.8)|default(0)|format_currency }}</div>
+                            <div class="forecast-stat-label">Best Case (80%)</div>
+                        </div>
+                        <div class="forecast-stat">
+                            <div class="forecast-stat-value">${{ (revenue_forecast * 0.5)|default(0)|format_currency }}</div>
+                            <div class="forecast-stat-label">Expected (50%)</div>
+                        </div>
+                    </div>
+                    <canvas id="revenueForecastChart" height="200"></canvas>
+                {% else %}
+                    <div class="text-center py-4">
+                        <div class="text-white mb-3 opacity-75">
+                            <i class="fas fa-chart-line fa-3x"></i>
+                        </div>
+                        <h5 class="text-white opacity-75">No forecast data available</h5>
+                        <p class="text-white opacity-50 small">Add deals with expected close dates to see the forecast.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -332,32 +733,66 @@
                         <a href="{{ url_for('interactions.index') }}" class="view-all">View All</a>
                     </div>
                 </div>
-                <div class="p-0">
+                {% if recent_interactions %}
+                <div class="interactions-list">
                     {% for interaction in recent_interactions %}
-                    <div class="interaction-item d-flex align-items-start">
+                    <div class="interaction-item">
                         <div class="interaction-icon bg-{{ interaction.type_color }}-subtle text-{{ interaction.type_color }}">
                             <i class="fas fa-{{ interaction.type_icon }}"></i>
                         </div>
                         <div class="interaction-content">
                             <div class="interaction-title">{{ interaction.title }}</div>
                             <div class="interaction-meta">
-                                <span>With {{ interaction.contact.full_name }}</span>
-                                <span class="ms-2">{{ interaction.created_at|timeago }}</span>
+                                <span class="interaction-contact">
+                                    <i class="fas fa-user me-1"></i>
+                                    {{ interaction.contact.full_name }}
+                                </span>
+                                <span class="interaction-time">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ interaction.created_at|timeago }}
+                                </span>
                             </div>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="text-muted mb-3">
+                        <i class="fas fa-comments fa-3x"></i>
+                    </div>
+                    <h5 class="text-muted">No recent interactions</h5>
+                    <p class="text-muted small">Start adding interactions to see them here.</p>
+                    <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#addInteractionModal">
+                        <i class="fas fa-plus me-2"></i>Add Interaction
+                    </button>
+                </div>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Interaction Chart -->
+        <!-- Interaction Trend -->
         <div class="col-md-6">
-            <div class="chart-container">
-                <div class="section-header">
+            <div class="trend-card">
+                <div class="trend-header">
                     <h2 class="section-title">Interaction Trends</h2>
+                    <div class="trend-filters">
+                        <div class="trend-filter active">Week</div>
+                        <div class="trend-filter">Month</div>
+                        <div class="trend-filter">Quarter</div>
+                    </div>
                 </div>
-                <canvas id="interactionChart" height="300"></canvas>
+                {% if interaction_dates and interaction_counts %}
+                    <canvas id="interactionChart" style="flex: 1;"></canvas>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-chart-line fa-3x"></i>
+                        </div>
+                        <h5 class="text-muted">No trend data available</h5>
+                        <p class="text-muted small">Add more interactions to see trends.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -466,19 +901,220 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Interaction Chart
+    // Debug: Log the data being passed to JavaScript
+    console.log('Deal Progress Data:', JSON.parse('{{ deal_progress_data|default({})|tojson|safe }}'));
+    
+    // Deal Progress Chart
+    const dealProgressCanvas = document.getElementById('dealProgressChart');
+    if (dealProgressCanvas) {
+        const dealProgressCtx = dealProgressCanvas.getContext('2d');
+        const dealProgressData = JSON.parse('{{ deal_progress_data|default({})|tojson|safe }}');
+        console.log('Parsed Deal Progress Data:', dealProgressData);
+        
+        if (dealProgressData && dealProgressData.labels && dealProgressData.datasets) {
+            new Chart(dealProgressCtx, {
+                type: 'bar',
+                data: {
+                    labels: dealProgressData.labels,
+                    datasets: dealProgressData.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            console.error('Invalid deal progress data structure:', dealProgressData);
+        }
+    } else {
+        console.error('Deal progress chart canvas not found');
+    }
+
+    // Leads Chart
+    const leadsCtx = document.getElementById('leadsChart').getContext('2d');
+    const leadsData = JSON.parse('{{ leads_data|default({'labels': [], 'values': []})|tojson|safe }}');
+    
+    if (leadsData && leadsData.labels && leadsData.values) {
+        new Chart(leadsCtx, {
+            type: 'bar',
+            data: {
+                labels: leadsData.labels,
+                datasets: [{
+                    label: 'Leads Created',
+                    data: leadsData.values,
+                    backgroundColor: '#0d6efd',
+                    borderRadius: 6,
+                    maxBarThickness: 12
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11,
+                                weight: '500'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Revenue Forecast Chart
+    const forecastCtx = document.getElementById('revenueForecastChart').getContext('2d');
+    const forecastData = JSON.parse('{{ forecast_data|default({'labels': [], 'values': []})|tojson|safe }}');
+    
+    if (forecastData && forecastData.labels && forecastData.values) {
+        new Chart(forecastCtx, {
+            type: 'line',
+            data: {
+                labels: forecastData.labels,
+                datasets: [{
+                    label: 'Forecast',
+                    data: forecastData.values,
+                    borderColor: 'rgba(255,255,255,0.8)',
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    pointHoverBackgroundColor: 'white',
+                    pointHoverBorderColor: 'rgba(255,255,255,0.8)',
+                    pointHoverBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        titleColor: '#000',
+                        bodyColor: '#666',
+                        bodyFont: {
+                            size: 12
+                        },
+                        padding: 12,
+                        borderColor: 'rgba(0,0,0,0.1)',
+                        borderWidth: 1
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: 'rgba(255,255,255,0.8)',
+                            font: {
+                                size: 10
+                            },
+                            maxRotation: 0
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255,255,255,0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: 'rgba(255,255,255,0.8)',
+                            font: {
+                                size: 10
+                            },
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Interaction Trend Chart
     const ctx = document.getElementById('interactionChart').getContext('2d');
+    const interactionData = JSON.parse('{{ interaction_data|default({'dates': [], 'counts': []})|tojson|safe }}');
+    
+    if (interactionData && interactionData.dates && interactionData.counts) {
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: {{ interaction_dates|tojson }},
+                labels: interactionData.dates,
             datasets: [{
                 label: 'Interactions',
-                data: {{ interaction_counts|tojson }},
+                    data: interactionData.counts,
                 borderColor: '#0d6efd',
                 backgroundColor: 'rgba(13, 110, 253, 0.1)',
                 tension: 0.4,
-                fill: true
+                    fill: true,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#0d6efd',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#0d6efd',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2
             }]
         },
         options: {
@@ -487,17 +1123,56 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
                 legend: {
                     display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        titleColor: '#000',
+                        bodyColor: '#666',
+                        bodyFont: {
+                            size: 12
+                        },
+                        padding: 12,
+                        borderColor: 'rgba(0,0,0,0.1)',
+                        borderWidth: 1
                 }
             },
             scales: {
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
                 y: {
                     beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)',
+                            drawBorder: false
+                        },
                     ticks: {
+                            font: {
+                                size: 11
+                            },
                         stepSize: 1
+                        }
                     }
                 }
             }
-        }
+        });
+    }
+
+    // Handle trend filter clicks
+    document.querySelectorAll('.trend-filter').forEach(filter => {
+        filter.addEventListener('click', function() {
+            document.querySelectorAll('.trend-filter').forEach(f => f.classList.remove('active'));
+            this.classList.add('active');
+            // Here you would typically update the chart data based on the selected filter
+        });
     });
 });
 </script>

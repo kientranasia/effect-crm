@@ -63,7 +63,7 @@
             {% endif %}
             {% if contact.birthday %}
             <div class="mb-2 ps-4">
-                <span class="text-muted">Birthday:</span> {{ contact.birthday.strftime('%B %d, %Y') }}
+                <span class="text-muted">Birthday:</span> {{ contact.birthday|parse_datetime|strftime('%B %d, %Y') }}
             </div>
             {% endif %}
             {% if contact.gender %}

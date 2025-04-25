@@ -29,9 +29,9 @@
                 <div class="col-md-3">
                     <select class="form-select" name="type">
                         <option value="">All Types</option>
-                        {% for type in interaction_types %}
-                            <option value="{{ type }}" {% if type == request.args.get('type') %}selected{% endif %}>
-                                {{ type }}
+                        {% for key, value in Interaction.TYPE_CHOICES.items() %}
+                            <option value="{{ key }}" {% if key == request.args.get('type') %}selected{% endif %}>
+                                {{ value }}
                             </option>
                         {% endfor %}
                     </select>
@@ -106,9 +106,11 @@
                                 </span>
                             </td>
                             <td>
+                                {% if interaction.date %}
                                 <div class="small" data-bs-toggle="tooltip" title="{{ interaction.date.strftime('%Y-%m-%d %H:%M') }}">
                                     {{ interaction.date.strftime('%Y-%m-%d') }}
                                 </div>
+                                {% endif %}
                             </td>
                             <td>
                                 {% if interaction.contact %}

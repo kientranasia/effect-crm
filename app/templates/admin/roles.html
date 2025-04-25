@@ -33,15 +33,21 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">{{ role.name }}</h5>
                     <div class="btn-group">
-                        <a href="{{ url_for('admin.edit_role', role_id=role.id) }}" 
-                           class="btn btn-sm btn-outline-primary" 
-                           title="Edit Role">
+                        <a href="/admin/roles/{{ role.id }}/edit"
+                           class="btn btn-sm btn-outline-primary me-1"
+                           title="Edit Role" data-bs-toggle="tooltip">
                             <i class="bi bi-pencil"></i>
                         </a>
                         {% if role.name != 'admin' %}
                         <button class="btn btn-sm btn-outline-danger" 
                                 onclick="deleteRole({{ role.id }})"
-                                title="Delete Role">
+                                title="Delete Role" data-bs-toggle="tooltip">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        {% else %}
+                        <button class="btn btn-sm btn-outline-secondary"
+                                disabled
+                                title="Cannot delete admin role" data-bs-toggle="tooltip">
                             <i class="bi bi-trash"></i>
                         </button>
                         {% endif %}

@@ -11,12 +11,13 @@ class InteractionForm(FlaskForm):
     description = TextAreaField('Description')
     
     date = DateField('Date', validators=[DataRequired()])
-    time = TimeField('Time', validators=[DataRequired()])
     
     status = SelectField('Status',
                         choices=[(k, v) for k, v in Interaction.STATUS_CHOICES.items()])
     
-    outcome = TextAreaField('Outcome')
+    priority = SelectField('Priority', validators=[DataRequired()],
+                           choices=[(k, v) for k, v in Interaction.PRIORITY_CHOICES.items()])
+    
     next_steps = TextAreaField('Next Steps')
     
     submit = SubmitField('Save Interaction') 

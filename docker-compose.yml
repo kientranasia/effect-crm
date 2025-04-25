@@ -4,7 +4,7 @@ services:
   web:
     build: .
     ports:
-      - "5000:5000"
+      - "5001:5000"
     volumes:
       - ./logs:/app/logs
       - ./instance:/app/instance
@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
     command: >
       sh -c "flask db upgrade &&
-             gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 app:create_app()"
+             gunicorn --bind 0.0.0.0:5000 --workers 4 'app:create_app()'"
 
   db:
     image: postgres:15
@@ -29,7 +29,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=effect_crm
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -40,7 +40,7 @@ services:
   redis:
     image: redis:6-alpine
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:

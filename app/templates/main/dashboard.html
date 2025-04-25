@@ -1,10 +1,12 @@
 {% extends "base.html" %}
+{% from "macros/permissions.html" import permission_required %}
 
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
     <div class="row">
+        {% call permission_required('customer_view') %}
         <div class="col-xl-3 col-sm-6 mb-4">
             <div class="card">
                 <div class="card-body p-3">
@@ -26,6 +28,8 @@
                 </div>
             </div>
         </div>
+        {% endcall %}
+        {% call permission_required('customer_view') %}
         <div class="col-xl-3 col-sm-6 mb-4">
             <div class="card">
                 <div class="card-body p-3">
@@ -47,6 +51,8 @@
                 </div>
             </div>
         </div>
+        {% endcall %}
+        {% call permission_required('customer_view') %}
         <div class="col-xl-3 col-sm-6 mb-4">
             <div class="card">
                 <div class="card-body p-3">
@@ -68,6 +74,8 @@
                 </div>
             </div>
         </div>
+        {% endcall %}
+        {% call permission_required('customer_view') %}
         <div class="col-xl-3 col-sm-6 mb-4">
             <div class="card">
                 <div class="card-body p-3">
@@ -89,8 +97,10 @@
                 </div>
             </div>
         </div>
+        {% endcall %}
     </div>
     <div class="row mt-4">
+        {% call permission_required('customer_view') %}
         <div class="col-lg-7 mb-lg-0 mb-4">
             <div class="card">
                 <div class="card-header pb-0">
@@ -122,7 +132,7 @@
                                         <p class="text-xs font-weight-bold mb-0">{{ customer.status }}</p>
                                     </td>
                                     <td class="align-middle text-center">
-                                        <span class="text-secondary text-xs font-weight-bold">{{ customer.created_at.strftime('%Y-%m-%d') }}</span>
+                                        <span class="text-secondary text-xs font-weight-bold">{{ customer.created_at|parse_datetime|strftime('%Y-%m-%d') }}</span>
                                     </td>
                                     <td class="align-middle">
                                         <a href="{{ url_for('customers.show', id=customer.id) }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="View customer">
@@ -137,6 +147,8 @@
                 </div>
             </div>
         </div>
+        {% endcall %}
+        {% call permission_required('interaction_view') %}
         <div class="col-lg-5">
             <div class="card">
                 <div class="card-header pb-0">
@@ -166,7 +178,7 @@
                                         <p class="text-xs font-weight-bold mb-0">{{ interaction.type }}</p>
                                     </td>
                                     <td class="align-middle text-center">
-                                        <span class="text-secondary text-xs font-weight-bold">{{ interaction.created_at.strftime('%Y-%m-%d') }}</span>
+                                        <span class="text-secondary text-xs font-weight-bold">{{ interaction.created_at|parse_datetime|strftime('%Y-%m-%d') }}</span>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -176,6 +188,7 @@
                 </div>
             </div>
         </div>
+        {% endcall %}
     </div>
 </div>
 {% endblock %} 

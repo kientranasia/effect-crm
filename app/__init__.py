@@ -9,8 +9,8 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
-from .utils.filters import timeago
-from app.routes.interactions import interactions as interactions_blueprint
+from .utils.filters import timeago, register_filters
+from app.modules.interactions import bp as interactions_bp
 
 def create_app(config_name='default'):
     """Create and configure the Flask application.
@@ -43,15 +43,18 @@ def create_app(config_name='default'):
     # Register Jinja filters
     app.jinja_env.filters['timeago'] = timeago
     
+    # Register custom filters
+    register_filters(app)
+    
     # Register blueprints
-    from app.routes import main, auth, admin, organizations, contacts, interactions, projects, tasks
+    from app.routes import main, auth, admin, organizations, contacts, projects, tasks
     from app.modules.analytics import analytics_bp
     app.register_blueprint(main.main_bp)
     app.register_blueprint(auth.auth_bp)
     app.register_blueprint(admin.admin_bp)
     app.register_blueprint(organizations.organizations_bp)
     app.register_blueprint(contacts.contacts_bp)
-    app.register_blueprint(interactions_blueprint)
+    app.register_blueprint(interactions_bp, url_prefix='/interactions')
     app.register_blueprint(projects.bp)
     app.register_blueprint(tasks.bp)
     app.register_blueprint(analytics_bp)

@@ -303,21 +303,20 @@ def edit_role(id):
     """Edit an existing role"""
     role = Role.query.get_or_404(id)
     form = RoleForm(obj=role)
+    form.permissions.choices = [(p.id, p.name) for p in Permission.query.all()]
     if form.validate_on_submit():
         role.name = form.name.data
         role.description = form.description.data
-        
         # Update permissions
         if form.permissions.data:
             permissions = Permission.query.filter(Permission.id.in_(form.permissions.data)).all()
             role.permissions = permissions
         else:
             role.permissions = []
-        
         db.session.commit()
         flash('Role updated successfully.', 'success')
         return redirect(url_for('admin.roles'))
-    return render_template('admin/role_form.html', form=form, title='Edit Role')
+    return render_template('admin/role_form.html', form=form, role=role, permissions=Permission.query.all(), title='Edit Role')
 
 @admin_bp.route('/roles', methods=['POST'])
 @login_required
@@ -528,9 +527,14 @@ def users():
 @login_required
 @permission_required('user_create')
 def create_user():
-    """Create a new user"""
-    form = UserForm()
+    roles = Role.query.all()
+    form = UserForm(is_create=True)
+    form.role_id.choices = [(role.id, role.name.title()) for role in roles]
     if form.validate_on_submit():
+        # Check for duplicate email
+        if User.query.filter_by(email=form.email.data).first():
+            flash('Email already exists.', 'danger')
+            return render_template('admin/user_form.html', form=form, roles=roles, title='Create User')
         user = User(
             email=form.email.data,
             first_name=form.first_name.data,
@@ -543,7 +547,7 @@ def create_user():
         db.session.commit()
         flash('User created successfully.', 'success')
         return redirect(url_for('admin.users'))
-    return render_template('admin/user_form.html', form=form, title='Create User')
+    return render_template('admin/user_form.html', form=form, roles=roles, title='Create User')
 
 @admin_bp.route('/admin/users/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -551,18 +555,22 @@ def create_user():
 def edit_user(id):
     """Edit an existing user"""
     user = User.query.get_or_404(id)
-    form = UserForm(obj=user)
+    roles = Role.query.all()
+    form = UserForm(obj=user, is_create=False)
+    form.role_id.choices = [(role.id, role.name.title()) for role in roles]
     if form.validate_on_submit():
         user.email = form.email.data
         user.first_name = form.first_name.data
         user.last_name = form.last_name.data
         user.role_id = form.role_id.data
+        user.is_active = bool(form.is_active.data)
+        user.is_approved = bool(form.is_approved.data)
         if form.password.data:
             user.set_password(form.password.data)
         db.session.commit()
         flash('User updated successfully.', 'success')
         return redirect(url_for('admin.users'))
-    return render_template('admin/user_form.html', form=form, title='Edit User')
+    return render_template('admin/user_form.html', form=form, user=user, roles=roles, title='Edit User')
 
 @admin_bp.route('/admin/users/<int:id>/delete', methods=['POST'])
 @login_required
@@ -935,4 +943,42 @@ def setup_admin():
         flash('Admin user created successfully.', 'success')
         return redirect(url_for('auth.login'))
         
-    return render_template('admin/setup.html') 
+    return render_template('admin/setup.html')
+
+@admin_bp.route('/admin/users/bulk_action', methods=['POST'])
+@login_required
+@permission_required('user_edit')
+def bulk_user_action():
+    data = request.get_json()
+    action = data.get('action')
+    user_ids = data.get('user_ids', [])
+    if not action or not user_ids:
+        return jsonify({'status': 'error', 'message': 'No action or users selected.'}), 400
+    try:
+        users = User.query.filter(User.id.in_(user_ids)).all()
+        count = 0
+        for user in users:
+            if user.id == current_user.id:
+                continue  # Prevent self-action
+            if action == 'activate':
+                user.is_active = True
+                count += 1
+            elif action == 'deactivate':
+                user.is_active = False
+                count += 1
+            elif action == 'delete':
+                db.session.delete(user)
+                count += 1
+        db.session.commit()
+        return jsonify({'status': 'success', 'message': f'{count} users updated.'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500 
+
+@admin_bp.route('/admin/users/<int:id>')
+@login_required
+@permission_required('user_view')
+def user_detail(id):
+    user = User.query.get_or_404(id)
+    audit_logs = AuditLog.query.filter_by(entity_type='user', entity_id=user.id).order_by(AuditLog.created_at.desc()).limit(20).all()
+    return render_template('admin/user_detail.html', user=user, audit_logs=audit_logs) 

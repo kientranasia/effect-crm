@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Effect CRM Deployment Script
-# This script helps deploy the Effect CRM application using Docker
+# Partner OS Deployment Script
+# This script helps deploy the Partner OS application using Docker
 
 # Exit on error
 set -e
@@ -15,7 +15,7 @@ SWARM_MODE=false
 
 # Display help
 function show_help {
-    echo "Effect CRM Deployment Script"
+    echo "Partner OS Deployment Script"
     echo ""
     echo "Usage: $0 [options]"
     echo ""

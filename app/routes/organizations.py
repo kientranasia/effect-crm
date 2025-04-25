@@ -6,18 +6,48 @@ from app.models.user import User
 from datetime import datetime
 from app.forms import OrganizationForm
 from app.utils.decorators import permission_required
+from sqlalchemy import func
 
-organizations_bp = Blueprint('organizations', __name__)
+organizations_bp = Blueprint('organizations', __name__, url_prefix='/organizations')
 
-@organizations_bp.route('/organizations')
+@organizations_bp.route('/')
 @login_required
 @permission_required('org_view')
 def index():
-    # Get organizations created by the current user
     organizations = Organization.query.filter_by(created_by_id=current_user.id).all()
-    return render_template('organizations/index.html', organizations=organizations)
+    
+    # Calculate industry counts
+    industry_counts = {}
+    for industry, label in Organization.INDUSTRY_CHOICES.items():
+        count = Organization.query.filter_by(
+            created_by_id=current_user.id,
+            industry=industry
+        ).count()
+        if count > 0:  # Only include industries that have organizations
+            industry_counts[industry] = {
+                'label': label,
+                'count': count
+            }
+    
+    # Calculate size counts
+    size_counts = {}
+    for size, label in Organization.SIZE_CHOICES.items():
+        count = Organization.query.filter_by(
+            created_by_id=current_user.id,
+            size=size
+        ).count()
+        if count > 0:  # Only include sizes that have organizations
+            size_counts[size] = {
+                'label': label,
+                'count': count
+            }
+    
+    return render_template('organizations/index.html',
+                         organizations=organizations,
+                         industry_counts=industry_counts,
+                         size_counts=size_counts)
 
-@organizations_bp.route('/organizations/create', methods=['GET', 'POST'])
+@organizations_bp.route('/create', methods=['GET', 'POST'])
 @login_required
 @permission_required('org_create')
 def create():
@@ -26,15 +56,34 @@ def create():
         organization = Organization(
             name=form.name.data,
             description=form.description.data,
+            industry=form.industry.data,
+            website=form.website.data,
+            status=form.status.data,
+            size=form.size.data,
+            annual_revenue=form.annual_revenue.data,
+            founded_year=form.founded_year.data,
+            primary_email=form.primary_email.data,
+            phone=form.phone.data,
+            address_line1=form.address_line1.data,
+            address_line2=form.address_line2.data,
+            city=form.city.data,
+            state=form.state.data,
+            postal_code=form.postal_code.data,
+            country=form.country.data,
+            segment_tags=form.segment_tags.data,
+            custom_fields=form.custom_fields.data,
             created_by_id=current_user.id
         )
         db.session.add(organization)
         db.session.commit()
         flash('Organization created successfully.', 'success')
+        return_url = request.args.get('return_url')
+        if return_url:
+            return redirect(return_url)
         return redirect(url_for('organizations.index'))
-    return render_template('organizations/form.html', form=form, title='Create Organization')
+    return render_template('organizations/create.html', form=form)
 
-@organizations_bp.route('/organizations/<int:id>')
+@organizations_bp.route('/<int:id>')
 @login_required
 def show(id):
     organization = Organization.query.filter_by(
@@ -44,7 +93,7 @@ def show(id):
     
     return render_template('organizations/show.html', organization=organization)
 
-@organizations_bp.route('/organizations/<int:id>/edit', methods=['GET', 'POST'])
+@organizations_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
 @permission_required('org_edit')
 def edit(id):
@@ -55,14 +104,16 @@ def edit(id):
     
     form = OrganizationForm(obj=organization)
     if form.validate_on_submit():
-        organization.name = form.name.data
-        organization.description = form.description.data
+        form.populate_obj(organization)
         db.session.commit()
         flash('Organization updated successfully.', 'success')
-        return redirect(url_for('organizations.index'))
-    return render_template('organizations/form.html', form=form, title='Edit Organization')
+        return_url = request.args.get('return_url')
+        if return_url:
+            return redirect(return_url)
+        return redirect(url_for('organizations.show', id=organization.id))
+    return render_template('organizations/edit.html', form=form, organization=organization)
 
-@organizations_bp.route('/organizations/<int:id>/delete', methods=['POST'])
+@organizations_bp.route('/<int:id>/delete', methods=['POST'])
 @login_required
 @permission_required('org_delete')
 def delete(id):
@@ -76,7 +127,7 @@ def delete(id):
     flash('Organization deleted successfully.', 'success')
     return redirect(url_for('organizations.index'))
 
-@organizations_bp.route('/organizations/create_from_contact/<int:id>', methods=['POST'])
+@organizations_bp.route('/create_from_contact/<int:id>', methods=['POST'])
 @login_required
 def create_from_contact(id):
     """Create a new organization from a contact"""
@@ -106,7 +157,7 @@ def create_from_contact(id):
     flash('Organization created successfully!', 'success')
     return redirect(url_for('organizations.show', id=organization.id))
 
-@organizations_bp.route('/organizations/create/ajax', methods=['POST'])
+@organizations_bp.route('/create/ajax', methods=['POST'])
 @login_required
 def create_ajax():
     """Create a new organization via AJAX"""

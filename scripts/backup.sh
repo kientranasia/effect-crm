@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Effect CRM Database Backup Script
+# Partner OS Database Backup Script
 # This script helps with database backups in Docker
 
 # Exit on error
@@ -15,7 +15,7 @@ BACKUP_FILE="$BACKUP_DIR/backup_$TIMESTAMP.sql"
 
 # Display help
 function show_help {
-    echo "Effect CRM Database Backup Script"
+    echo "Partner OS Database Backup Script"
     echo ""
     echo "Usage: $0 [options]"
     echo ""

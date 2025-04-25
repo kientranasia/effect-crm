@@ -118,7 +118,7 @@
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1">{{ interaction.title }}</h6>
                                             <p class="text-muted small mb-0">
-                                                {{ interaction.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                                {{ interaction.created_at|parse_datetime|strftime('%B %d, %Y at %I:%M %p') }}
                                             </p>
                                         </div>
                                     </div>
@@ -229,7 +229,7 @@
                     {% if contact.expected_close_date %}
                     <div class="col-md-6">
                         <label class="text-uppercase small text-muted mb-2">Expected Close Date</label>
-                        <div class="mb-3">{{ contact.expected_close_date.strftime('%B %d, %Y') }}</div>
+                        <div class="mb-3">{{ contact.expected_close_date|parse_datetime|strftime('%B %d, %Y') }}</div>
                     </div>
                     {% endif %}
                     {% if contact.source %}
@@ -293,7 +293,7 @@
                                         </span>
                                     </div>
                                     <p class="text-muted small mb-2">
-                                        {{ interaction.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                        {{ interaction.created_at|parse_datetime|strftime('%B %d, %Y at %I:%M %p') }}
                                     </p>
                                     {% if interaction.description %}
                                     <p class="mb-2">{{ interaction.description }}</p>

@@ -6,9 +6,16 @@ from app import db
 from datetime import datetime, time
 import logging
 from .forms import InteractionForm
+from app.utils.decorators import permission_required
+
+# Exported constants for use in other modules
+INTERACTION_TYPES = list(Interaction.TYPE_CHOICES.items())
+INTERACTION_PRIORITIES = list(Interaction.PRIORITY_CHOICES.items())
+INTERACTION_STATUSES = list(Interaction.STATUS_CHOICES.items())
 
 @bp.route('/')
 @login_required
+@permission_required('interaction_view')
 def index():
     page = request.args.get('page', 1, type=int)
     search = request.args.get('search', '')
@@ -22,9 +29,9 @@ def index():
     if search:
         query = query.filter(Interaction.title.ilike(f'%{search}%'))
     if interaction_type:
-        query = query.filter_by(type=interaction_type)
+        query = query.filter(Interaction.type == interaction_type)
     if contact_id:
-        query = query.filter_by(contact_id=contact_id)
+        query = query.filter(Interaction.contact_id == contact_id)
 
     if sort == 'created_at':
         query = query.order_by(Interaction.created_at.desc())
@@ -41,10 +48,12 @@ def index():
                          interactions=interactions,
                          pagination=pagination,
                          contacts=contacts,
-                         interaction_types=Interaction.TYPE_CHOICES.values())
+                         interaction_types=Interaction.TYPE_CHOICES,
+                         Interaction=Interaction)
 
 @bp.route('/timeline/<int:contact_id>')
 @login_required
+@permission_required('interaction_view')
 def timeline(contact_id):
     """Show the contact journey timeline with all interactions"""
     contact = Contact.query.filter_by(id=contact_id, created_by_id=current_user.id).first_or_404()
@@ -58,48 +67,34 @@ def timeline(contact_id):
 
 @bp.route('/<int:interaction_id>')
 @login_required
+@permission_required('interaction_view')
 def show(interaction_id):
     interaction = Interaction.query.join(Contact).filter(
         Interaction.id == interaction_id,
         Contact.created_by_id == current_user.id
     ).first_or_404()
-    return render_template('interactions/detail.html', interaction=interaction)
+    return render_template('interactions/detail.html', interaction=interaction, Interaction=Interaction)
 
 @bp.route('/create', methods=['GET', 'POST'])
 @login_required
+@permission_required('interaction_create')
 def create():
     form = InteractionForm()
     contact_id = request.args.get('contact_id', type=int)
     contact = Contact.query.filter_by(id=contact_id, created_by_id=current_user.id).first_or_404() if contact_id else None
 
-    # Populate assigned_to choices
-    form.assigned_to_id.choices = [(u.id, u.full_name) for u in User.query.filter_by(is_active=True).all()]
-
     if form.validate_on_submit():
         try:
-            # Combine start date and time into datetime
-            start_datetime = datetime.combine(form.start_date.data, form.start_time.data)
-            
-            # Combine end date and time into datetime if provided
-            end_datetime = None
-            if form.end_date.data and form.end_time.data:
-                end_datetime = datetime.combine(form.end_date.data, form.end_time.data)
-
             interaction = Interaction(
                 contact_id=contact_id,
                 type=form.type.data,
                 title=form.title.data,
                 description=form.description.data,
-                date=start_datetime,
-                end_date=end_datetime,
+                date=datetime.combine(form.date.data, time.min) if form.date.data else None,
                 status=form.status.data,
                 priority=form.priority.data,
-                location=form.location.data,
-                notes=form.notes.data,
-                outcome=form.outcome.data,
                 next_steps=form.next_steps.data,
                 created_by_id=current_user.id,
-                assigned_to_id=form.assigned_to_id.data if form.assigned_to_id.data else None,
                 created_at=datetime.utcnow()
             )
             
@@ -113,13 +108,14 @@ def create():
             db.session.rollback()
             flash('An error occurred while recording the interaction. Please try again.', 'danger')
             logging.error(f'Error creating interaction: {str(e)}')
-            return render_template('interactions/form.html', form=form, contact=contact)
+            return render_template('interactions/form.html', form=form, contact=contact, interaction=None, Interaction=Interaction)
 
     # GET request or form validation failed
-    return render_template('interactions/form.html', form=form, contact=contact)
+    return render_template('interactions/form.html', form=form, contact=contact, interaction=None, Interaction=Interaction)
 
 @bp.route('/<int:interaction_id>/edit', methods=['GET', 'POST'])
 @login_required
+@permission_required('interaction_edit')
 def edit(interaction_id):
     interaction = Interaction.query.join(Contact).filter(
         Interaction.id == interaction_id,
@@ -128,31 +124,15 @@ def edit(interaction_id):
     
     form = InteractionForm(obj=interaction)
     
-    # Populate assigned_to choices
-    form.assigned_to_id.choices = [(u.id, u.full_name) for u in User.query.filter_by(is_active=True).all()]
-    
     if form.validate_on_submit():
         try:
-            # Combine start date and time into datetime
-            start_datetime = datetime.combine(form.start_date.data, form.start_time.data)
-            
-            # Combine end date and time into datetime if provided
-            end_datetime = None
-            if form.end_date.data and form.end_time.data:
-                end_datetime = datetime.combine(form.end_date.data, form.end_time.data)
-
             interaction.type = form.type.data
             interaction.title = form.title.data
             interaction.description = form.description.data
-            interaction.date = start_datetime
-            interaction.end_date = end_datetime
+            interaction.date = datetime.combine(form.date.data, time.min) if form.date.data else None
             interaction.status = form.status.data
             interaction.priority = form.priority.data
-            interaction.location = form.location.data
-            interaction.notes = form.notes.data
-            interaction.outcome = form.outcome.data
             interaction.next_steps = form.next_steps.data
-            interaction.assigned_to_id = form.assigned_to_id.data if form.assigned_to_id.data else None
             
             db.session.commit()
             
@@ -163,20 +143,17 @@ def edit(interaction_id):
             db.session.rollback()
             flash('An error occurred while updating the interaction. Please try again.', 'danger')
             logging.error(f'Error updating interaction: {str(e)}')
-            return render_template('interactions/form.html', form=form, interaction=interaction)
+            return render_template('interactions/form.html', form=form, contact=interaction.contact, interaction=interaction, Interaction=Interaction)
     
-    # GET request - populate date and time fields
+    # GET request - populate date fields only
     if interaction.date:
-        form.start_date.data = interaction.date.date()
-        form.start_time.data = interaction.date.time()
-    if interaction.end_date:
-        form.end_date.data = interaction.end_date.date()
-        form.end_time.data = interaction.end_date.time()
+        form.date.data = interaction.date.date()
     
-    return render_template('interactions/form.html', form=form, interaction=interaction)
+    return render_template('interactions/form.html', form=form, contact=interaction.contact, interaction=interaction, Interaction=Interaction)
 
 @bp.route('/<int:interaction_id>/delete', methods=['POST'])
 @login_required
+@permission_required('interaction_delete')
 def delete(interaction_id):
     interaction = Interaction.query.join(Contact).filter(
         Interaction.id == interaction_id,
@@ -197,6 +174,7 @@ def delete(interaction_id):
 
 @bp.route('/<int:interaction_id>/analyze', methods=['POST'])
 @login_required
+@permission_required('interaction_edit')
 def analyze(interaction_id):
     interaction = Interaction.query.join(Contact).filter(
         Interaction.id == interaction_id,

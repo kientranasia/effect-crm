@@ -1,4 +1,4 @@
-# Effect CRM
+# Partner OS
 
 A modern CRM system built with Flask and SQLAlchemy.
 
